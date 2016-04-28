@@ -131,7 +131,7 @@ static void supervise_child(int fd_o, int fd_e, pid_t pid)
   r = sigaction(SIGQUIT, &old_quit_action, 0);
   check_exit(r, "restoring SIGQUIT");
   int code = WIFEXITED(status) ? WEXITSTATUS(status)
-    : (WIFSIGNALED(status) ?  128 + WTERMSIG(status) : 0);
+    : (WIFSIGNALED(status) ?  128 + WTERMSIG(status) : 1);
   if (code) {
     dump(fd_o, 1);
     dump(fd_e, 2);
