@@ -168,13 +168,15 @@ class Basic(unittest.TestCase):
     p = subprocess.Popen([chronic, echo, 'Foo', '1', '0'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     o, e = p.communicate()
-    # moreutils chronic return 0, i.e. doesn't honor TMPDIR
-    self.assertEqual(p.returncode, 1)
-    self.assertEqual(e, b'opening temp file: No such file or directory\n')
     if old_tmpdir:
       os.environ['TMPDIR'] = old_tmpdir
     else:
       os.environ.pop('TMPDIR')
+
+    # moreutils chronic return 0, i.e. doesn't honor TMPDIR
+    self.assertEqual(p.returncode, 1)
+    self.assertTrue(b'No such file or directory' in e)
+    self.assertTrue(b'open' in e or b'mkstemp' in e)
 
   def test_keep_running(self):
     p = subprocess.Popen([chronic, echo, 'Foo Bar', '1', '0', '3'],

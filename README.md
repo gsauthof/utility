@@ -1,6 +1,7 @@
 This repository contains a collection of command line utilities.
 
 - chronic - silence stdout/stderr unless command fails
+- chronicc - C++ implementation of chronic
 
 For example:
 
@@ -34,6 +35,11 @@ where this chronic writes them to temporary files, thus avoiding
 memory issues with noisy long running commands. Other
 differences are documented in the unittest cases (cf.
 `test/chronic.py`).
+
+## Chronicc
+
+Chronicc is a C++ implementation of Chronic. The main difference
+is the usage of exceptions, thus simplifying the error reporting.
 
 ## Build Instructions
 
