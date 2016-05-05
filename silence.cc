@@ -123,7 +123,7 @@ static int create_unlinked_temp_file(const char *tmpdir)
   // POSIX.1-2001 doesn't specify the mode of mkstemp(),
   // POSIX.1-2008 does specify 0600
   mode_t old_mask = umask(0177);
-  const char suffix[] = "/chronic_XXXXXX";
+  const char suffix[] = "/silence_XXXXXX";
   size_t n = strlen(tmpdir);
   char s[n+sizeof(suffix)];
   memcpy(s, tmpdir, n);

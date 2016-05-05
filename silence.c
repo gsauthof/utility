@@ -137,7 +137,7 @@ static int create_unlinked_temp_file(const char *tmpdir)
   // POSIX.1-2001 doesn't specify the mode of mkstemp(),
   // POSIX.1-2008 does specify 0600
   mode_t old_mask = umask(0177);
-  const char suffix[] = "/chronic_XXXXXX";
+  const char suffix[] = "/silence_XXXXXX";
   size_t n = strlen(tmpdir);
   char s[n+sizeof(suffix)];
   memcpy(s, tmpdir, n);
@@ -282,18 +282,25 @@ static void exec_child(int fd_o, int fd_e, char **argv)
 
 ## Properties
 
-    exit_code(x) == exit_code(chronic x) # where x terminates due to an signal
-    exit_code(x) == exit_code(chronic x)
-    chronic x ; x is long running; kill chronic; => x is still running
-    chronic x ; x is long running; kill x ; => chronic exits with exit_code == 128+SIGTERM
-    chronic x ; in terminal ; Ctrl+C ; => Ctrl+C  (SIGINT) is both sent to chronic and x; chronic ignores it while waiting
-    chronic x ; in terminal ; Ctrl+\ ; => Ctrl+\  (SIGQUIT) is both sent to chronic and x; chrnoic ignores it while waiting
-    chronic x ; x not found ; => exit_code == 127
-    chronic x ; exec fails ; => exit_code = 128
-    chronic ; => help is display, exit_code = 1
-    chronic ... ; any other syscall fails ; => exit_code = 1
-    chronic ... ; read/write syscall is interrupted ; => it is called again (i.e. resumed)
-    chronic ... ; write does not write the complete buffer ; => it is called again with the remaining buffer
+    exit_code(x) == exit_code(silence x) # where x terminates due to an signal
+    exit_code(x) == exit_code(silence x)
+    silence x ; x is long running; kill silence; => x is still running
+    silence x ; x is long running; kill x ;
+        => silence exits with exit_code == 128+SIGTERM
+    silence x ; in terminal ; Ctrl+C ;
+        => Ctrl+C  (SIGINT) is both sent to silence and x;
+           silence ignores it while waiting
+    silence x ; in terminal ; Ctrl+\ ;
+        => Ctrl+\  (SIGQUIT) is both sent to silence and x;
+           silence ignores it while waiting
+    silence x ; x not found ; => exit_code == 127
+    silence x ; exec fails ; => exit_code = 128
+    silence ; => help is display, exit_code = 1
+    silence ... ; any other syscall fails ; => exit_code = 1
+    silence ... ; read/write syscall is interrupted ;
+        => it is called again (i.e. resumed)
+    silence ... ; write does not write the complete buffer ;
+        => it is called again with the remaining buffer
 
    */
 int main(int argc, char **argv)
