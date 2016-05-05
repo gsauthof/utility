@@ -60,7 +60,10 @@ static const char help_str[] =
 #endif
 
 #include <ixxx/ixxx.hh>
+#include <vector>
+#include <algorithm>
 using namespace ixxx;
+using namespace std;
 
 static void help(FILE *f, const char *argv0)
 {
@@ -70,6 +73,7 @@ static void help(FILE *f, const char *argv0)
 struct Arguments {
   const char *tmpdir { "/tmp" };
   bool suicide { false};
+  vector<int> success_codes;
 };
 
 static char **parse_arguments(int argc, char **argv, Arguments &a)
@@ -82,17 +86,29 @@ static char **parse_arguments(int argc, char **argv, Arguments &a)
     exit(0);
   }
   char c = 0;
-  while ((c = getopt(argc, argv, "+kKh")) != -1) {
+  const char opt_str[] = "+e:hkK";
+  size_t success_codes_size = 0;
+  while ((c = getopt(argc, argv, opt_str)) != -1) {
     switch (c) {
+      case '?': help(stderr, argv[0]); exit(1); break;
+      case 'h': help(stdout, argv[0]); exit(0); break;
+      case 'e': ++success_codes_size;
       case 'k': a.suicide = true ; break;
       case 'K': a.suicide = false; break;
-      case 'h': help(stdout, argv[0]); exit(0); break;
-      case '?': help(stderr, argv[0]); exit(1); break;
     }
   }
   if (optind == argc) {
     help(stderr, argv[0]);
     exit(1);
+  }
+  if (success_codes_size) {
+    a.success_codes.reserve(success_codes_size);
+    optind = 1;
+    while ((c = getopt(argc, argv, opt_str)) != -1) {
+      switch (c) {
+        case 'e': a.success_codes.push_back(ansi::strtol(optarg, 0, 10)); break;
+      }
+    }
   }
   return argv + optind;
 }
@@ -186,6 +202,13 @@ static void kill_child(int sig)
 
 #endif
 
+static bool is_successful(int code, const vector<int> &codes)
+{
+  if (count(codes.begin(), codes.end(), code))
+    return true;
+  return !code;
+}
+
 static void supervise_child(int fd_o, int fd_e, pid_t pid, const Arguments &a)
 {
   // we ignore QUIT/INT because when issued via Ctrl+\/Ctrl+C in the terminal,
@@ -217,11 +240,13 @@ static void supervise_child(int fd_o, int fd_e, pid_t pid, const Arguments &a)
   posix::sigaction(SIGQUIT, &old_quit_action, 0);
   int code = siginfo.si_code == CLD_EXITED
     ? siginfo.si_status : 128 + siginfo.si_status;
-  if (code) {
+  if (is_successful(code, a.success_codes)) {
+    exit(0);
+  } else {
     dump(fd_o, 1);
     dump(fd_e, 2);
+    exit(code);
   }
-  exit(code);
 }
 
 static void exec_child(int fd_o, int fd_e, char **argv)
@@ -236,24 +261,6 @@ static void exec_child(int fd_o, int fd_e, char **argv)
   }
 }
 
-/*
-
-## Properties
-
-    exit_code(x) == exit_code(chronic x) # where x terminates due to an signal
-    exit_code(x) == exit_code(chronic x)
-    chronic x ; x is long running; kill chronic; => x is still running
-    chronic x ; x is long running; kill x ; => chronic exits with exit_code == 128+SIGTERM
-    chronic x ; in terminal ; Ctrl+C ; => Ctrl+C  (SIGINT) is both sent to chronic and x; chronic ignores it while waiting
-    chronic x ; in terminal ; Ctrl+\ ; => Ctrl+\  (SIGQUIT) is both sent to chronic and x; chrnoic ignores it while waiting
-    chronic x ; x not found ; => exit_code == 127
-    chronic x ; exec fails ; => exit_code = 128
-    chronic ; => help is display, exit_code = 1
-    chronic ... ; any other syscall fails ; => exit_code = 1
-    chronic ... ; read/write syscall is interrupted ; => it is called again (i.e. resumed)
-    chronic ... ; write does not write the complete buffer ; => it is called again with the remaining buffer
-
-   */
 int main(int argc, char **argv)
 {
   try {
