@@ -99,6 +99,10 @@ class Basic(unittest.TestCase):
     o = subprocess.check_output([chronic, echo, 'Hello World\n23', '1', '0'])
     self.assertEqual(o, b'')
 
+  def test_no_out_other(self):
+    o = subprocess.check_output([chronic, '-e', '11', echo, 'xyz', '1', '11'])
+    self.assertEqual(o, b'')
+
   def test_no_err(self):
     o = subprocess.check_output([chronic, echo, 'Hello World\n23', '2', '0'])
     self.assertEqual(o, b'')

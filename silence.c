@@ -10,6 +10,7 @@ static const char help_str[] =
 "\n"
 "Options:\n"
 "\n"
+"-e N        interpret other return codes besides 0 as success\n"
 "-h,--help   this screen\n"
 "-k,-K       enable/disable suicide on parent exit (default: disabled)\n"
 "            On Linux, a parent death signal is installed in the child\n"
@@ -71,6 +72,8 @@ static void help(FILE *f, const char *argv0)
 struct Arguments {
   const char *tmpdir;
   bool suicide;
+  int *success_codes;
+  size_t success_codes_size;
 };
 typedef struct Arguments Arguments;
 
@@ -88,17 +91,38 @@ static char **parse_arguments(int argc, char **argv, Arguments *a)
     exit(0);
   }
   char c = 0;
-  while ((c = getopt(argc, argv, "+kKh")) != -1) {
+  const char opt_str[] = "+e:hkK";
+  while ((c = getopt(argc, argv, opt_str)) != -1) {
     switch (c) {
+      case '?': help(stderr, argv[0]); exit(1); break;
+      case 'h': help(stdout, argv[0]); exit(0); break;
+      case 'e': ++a->success_codes_size;
       case 'k': a->suicide = true ; break;
       case 'K': a->suicide = false; break;
-      case 'h': help(stdout, argv[0]); exit(0); break;
-      case '?': help(stderr, argv[0]); exit(1); break;
     }
   }
   if (optind == argc) {
     help(stderr, argv[0]);
     exit(1);
+  }
+  if (a->success_codes_size) {
+    a->success_codes = calloc(a->success_codes_size, sizeof(int));
+    if (!a->success_codes)
+      exit(1);
+    int *v = a->success_codes;
+    optind = 1;
+    while ((c = getopt(argc, argv, opt_str)) != -1) {
+      switch (c) {
+        case 'e':
+          errno = 0;
+          *v++ = strtod(optarg, 0);
+          if (errno) {
+            perror("converting -e argument");
+            exit(1);
+          }
+          break;
+      }
+    }
   }
   return argv + optind;
 }
@@ -184,6 +208,14 @@ static void kill_child(int sig)
 
 #endif
 
+static bool is_successful(int code, const Arguments *a)
+{
+  for (size_t i = 0; i < a->success_codes_size; ++i)
+    if (code == a->success_codes[i])
+      return true;
+  return !code;
+}
+
 static void supervise_child(int fd_o, int fd_e, pid_t pid, const Arguments *a)
 {
   // we ignore QUIT/INT because when issued via Ctrl+\/Ctrl+C in the terminal,
@@ -222,11 +254,13 @@ static void supervise_child(int fd_o, int fd_e, pid_t pid, const Arguments *a)
   check_exit(r, "restoring SIGQUIT");
   int code = WIFEXITED(status) ? WEXITSTATUS(status)
     : (WIFSIGNALED(status) ?  128 + WTERMSIG(status) : 1);
-  if (code) {
+  if (is_successful(code, a)) {
+    exit(0);
+  } else {
     dump(fd_o, 1);
     dump(fd_e, 2);
+    exit(code);
   }
-  exit(code);
 }
 
 static void exec_child(int fd_o, int fd_e, char **argv)
