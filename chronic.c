@@ -58,7 +58,7 @@ static const char help_str[] =
 #include <stdbool.h>
 
 #if defined(__linux__)
-#include <sys/prctl.h>
+  #include <sys/prctl.h>
 #endif
 
 #define check_exit(r, s) do { if (r == -1) { perror(s); exit(1); } } while (0)
@@ -85,7 +85,7 @@ static char **parse_arguments(int argc, char **argv, Arguments *a)
     a->tmpdir = tmpdir;
   if (argc > 1 && !strcmp(argv[1], "--help")) {
     help(stdout, argv[0]);
-    return 0;
+    exit(0);
   }
   char c = 0;
   while ((c = getopt(argc, argv, "+kKh")) != -1) {
