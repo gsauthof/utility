@@ -17,7 +17,7 @@ import tempfile
 import shutil
 
 # cf. test/main.py for the global defaults
-chronic = os.getenv('chronic', './silence')
+silence = os.getenv('silence', './silence')
 fail = os.getenv('fail', './fail')
 echo = os.getenv('echo', './echo.sh')
 
@@ -67,20 +67,20 @@ class Basic(unittest.TestCase):
 
   def test_wait(self):
     begin = timeit.default_timer()
-    subprocess.check_output([chronic, 'sleep', '1'], stderr=subprocess.STDOUT)
+    subprocess.check_output([silence, 'sleep', '1'], stderr=subprocess.STDOUT)
     end = timeit.default_timer()
     self.assertTrue(end-begin >= 1)
 
   def test_true(self):
     begin = timeit.default_timer()
-    subprocess.check_output([chronic, 'true'], stderr=subprocess.STDOUT)
+    subprocess.check_output([silence, 'true'], stderr=subprocess.STDOUT)
     end = timeit.default_timer()
     # moreutils chronic fails this on an i7 with SSD
     self.assertTrue(end-begin <= 0.01)
 
   def test_false(self):
     begin = timeit.default_timer()
-    code = subprocess.call([chronic, 'false'])
+    code = subprocess.call([silence, 'false'])
     end = timeit.default_timer()
     # moreutils chronic fails this on an i7 with SSD
     self.assertTrue(end-begin <= 0.01)
@@ -89,26 +89,26 @@ class Basic(unittest.TestCase):
   def test_abort(self):
     code = subprocess.call([fail])
     self.assertEqual(code, -6)
-    code = subprocess.call([chronic, fail])
+    code = subprocess.call([silence, fail])
     # GNU time returns 6
-    # moreutils' chronic returns 1
+    # moreutils chronic returns 1
     self.assertEqual(code, 134)
 
 
   def test_no_out(self):
-    o = subprocess.check_output([chronic, echo, 'Hello World\n23', '1', '0'])
+    o = subprocess.check_output([silence, echo, 'Hello World\n23', '1', '0'])
     self.assertEqual(o, b'')
 
   def test_no_out_other(self):
-    o = subprocess.check_output([chronic, '-e', '11', echo, 'xyz', '1', '11'])
+    o = subprocess.check_output([silence, '-e', '11', echo, 'xyz', '1', '11'])
     self.assertEqual(o, b'')
 
   def test_no_err(self):
-    o = subprocess.check_output([chronic, echo, 'Hello World\n23', '2', '0'])
+    o = subprocess.check_output([silence, echo, 'Hello World\n23', '2', '0'])
     self.assertEqual(o, b'')
 
   def test_out(self):
-    p = subprocess.Popen([chronic, echo, 'Hello World\n23', '1', '1'],
+    p = subprocess.Popen([silence, echo, 'Hello World\n23', '1', '1'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     o, e = p.communicate()
     self.assertEqual(o, b'Hello World\n23\n')
@@ -116,7 +116,7 @@ class Basic(unittest.TestCase):
     self.assertEqual(p.returncode, 1)
 
   def test_opt_ordering(self):
-    p = subprocess.Popen([chronic, echo, '-k', '1', '23'],
+    p = subprocess.Popen([silence, echo, '-k', '1', '23'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     o, e = p.communicate()
     self.assertEqual(o, b'-k\n')
@@ -124,7 +124,7 @@ class Basic(unittest.TestCase):
     self.assertEqual(p.returncode, 23)
 
   def test_err(self):
-    p = subprocess.Popen([chronic, echo, 'Hello World\n23', '2', '1'],
+    p = subprocess.Popen([silence, echo, 'Hello World\n23', '2', '1'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     o, e = p.communicate()
     self.assertEqual(o, b'')
@@ -135,7 +135,7 @@ class Basic(unittest.TestCase):
     o = b''
     code = 0
     try:
-      o = subprocess.check_output([chronic, echo, 'Hello', '1', '23'])
+      o = subprocess.check_output([silence, echo, 'Hello', '1', '23'])
     except subprocess.CalledProcessError as e:
       o = e.output
       code = e.returncode
@@ -144,7 +144,7 @@ class Basic(unittest.TestCase):
 
 
   def test_ctrl_c(self):
-    p = subprocess.Popen([chronic, echo, 'Hello World\n23', '2', '0', '3'],
+    p = subprocess.Popen([silence, echo, 'Hello World\n23', '2', '0', '3'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     t = Ctrl_C_Thread(p.pid)
     t.start()
@@ -152,7 +152,7 @@ class Basic(unittest.TestCase):
     t.join()
     self.assertEqual(len(t.children), 1)
     # GNU time returns 2
-    # moreutils' chronic returns 1
+    # moreutils chronic returns 1
     self.assertEqual(p.returncode, 130)
     self.assertEqual(o, b'')
     self.assertEqual(e, b'Hello World\n23\n')
@@ -164,8 +164,8 @@ class Basic(unittest.TestCase):
     if 'TMPDIR' in os.environ:
       old_tmpdir = os.environ['TMPDIR']
     os.environ['TMPDIR'] = base_dir
-    o = subprocess.check_output([chronic, echo, 'Foo', '1', '0'])
-    e = subprocess.check_output([chronic, echo, 'Bar', '2', '0'])
+    o = subprocess.check_output([silence, echo, 'Foo', '1', '0'])
+    e = subprocess.check_output([silence, echo, 'Bar', '2', '0'])
     self.assertFalse(os.listdir(base_dir))
     if old_tmpdir:
       os.environ['TMPDIR'] = old_tmpdir
@@ -179,7 +179,7 @@ class Basic(unittest.TestCase):
     if 'TMPDIR' in os.environ:
       old_tmpdir = os.environ['TMPDIR']
     os.environ['TMPDIR'] = '/does/not/exist/like/never/ever' 
-    p = subprocess.Popen([chronic, echo, 'Foo', '1', '0'],
+    p = subprocess.Popen([silence, echo, 'Foo', '1', '0'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     o, e = p.communicate()
     if old_tmpdir:
@@ -194,7 +194,7 @@ class Basic(unittest.TestCase):
     # self.assertTrue(b'open' in e or b'mkstemp' in e)
 
   def test_keep_running(self):
-    p = subprocess.Popen([chronic, echo, 'Foo Bar', '1', '0', '3'],
+    p = subprocess.Popen([silence, echo, 'Foo Bar', '1', '0', '3'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     t = Kill_Thread(p.pid)
     t.start()
@@ -206,7 +206,7 @@ class Basic(unittest.TestCase):
     self.assertTrue(t.was_still_running)
 
   def test_keep_running_not(self):
-    p = subprocess.Popen([chronic, '-k', echo, 'Foo Bar', '1', '0', '3'],
+    p = subprocess.Popen([silence, '-k', echo, 'Foo Bar', '1', '0', '3'],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     t = Kill_Thread(p.pid)
     t.start()
