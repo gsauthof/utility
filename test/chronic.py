@@ -55,10 +55,12 @@ class Kill_Thread(threading.Thread):
     if len(p.children()) != 1:
       return
     q = p.children()[0]
-    p.kill()
+    # i.e. kill(pid, SIGTERM)
+    p.terminate()
     time.sleep(1)
     self.was_still_running = q.is_running();
-    q.kill()
+    if self.was_still_running:
+      q.kill()
 
 class Basic(unittest.TestCase):
 
@@ -108,6 +110,14 @@ class Basic(unittest.TestCase):
     self.assertEqual(o, b'Hello World\n23\n')
     self.assertEqual(e, b'')
     self.assertEqual(p.returncode, 1)
+
+  def test_opt_ordering(self):
+    p = subprocess.Popen([chronic, echo, '-k', '1', '23'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    o, e = p.communicate()
+    self.assertEqual(o, b'-k\n')
+    self.assertEqual(e, b'')
+    self.assertEqual(p.returncode, 23)
 
   def test_err(self):
     p = subprocess.Popen([chronic, echo, 'Hello World\n23', '2', '1'],
@@ -185,9 +195,20 @@ class Basic(unittest.TestCase):
     t.start()
     o, e = p.communicate()
     t.join()
-    self.assertEqual(p.returncode, -9)
+    self.assertEqual(p.returncode, -15)
     self.assertEqual(o, b'')
     self.assertEqual(e, b'')
     self.assertTrue(t.was_still_running)
 
+  def test_keep_running_not(self):
+    p = subprocess.Popen([chronic, '-k', echo, 'Foo Bar', '1', '0', '3'],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    t = Kill_Thread(p.pid)
+    t.start()
+    o, e = p.communicate()
+    t.join()
+    self.assertIn(p.returncode, [-15, 143])
+    self.assertEqual(o, b'')
+    self.assertEqual(e, b'')
+    self.assertFalse(t.was_still_running)
 

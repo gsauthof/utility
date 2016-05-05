@@ -25,6 +25,13 @@ the output is only of interest in the event of failure. With
 cron, the output of a program also triggers a notification mail
 (another trigger is the return code).
 
+Chronic provides the -k option for terminating the child in case
+it is terminated before the child has exited. On Linux, this is
+implemented via installing SIGTERM as parent death signal in its
+child before it executes the supplied command. On other systems
+the parent death signal mechanism  is approximated via installing
+a signal handler for SIGTERM that kills the child.
+
 The utility is a C reimplementation of [moreutils
 chronic][moreutils] that is written in Perl. Thus, it has less
 runtime overhead, especially less startup overhead.  The
@@ -32,7 +39,9 @@ unittests actually contain 2 test cases that fail for moreutils
 chronic because of the startup overhead. Another difference is
 that moreutils chronic buffers stdout and stderr lines in memory,
 where this chronic writes them to temporary files, thus avoiding
-memory issues with noisy long running commands. Other
+memory issues with noisy long running commands. Also, moreutils
+chronic doesn't provide means to get the child killed when it is
+terminated. Other
 differences are documented in the unittest cases (cf.
 `test/chronic.py`).
 
