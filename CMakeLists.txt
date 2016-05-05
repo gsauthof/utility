@@ -15,21 +15,21 @@ IF(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   add_subdirectory(libixxx)
 endif()
 
-add_executable(chronic chronic.c)
-set_property(TARGET chronic PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
+add_executable(silence silence.c)
+set_property(TARGET silence PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
 
 add_executable(fail test/fail.c)
 
 
-add_executable(chronicc chronic.cc)
-set_property(TARGET chronicc PROPERTY INCLUDE_DIRECTORIES
+add_executable(silencce silence.cc)
+set_property(TARGET silencce PROPERTY INCLUDE_DIRECTORIES
   ${CMAKE_SOURCE_DIR}/libixxx)
-target_link_libraries(chronicc
+target_link_libraries(silencce
   ixxx_static)
 
 add_custom_target(check
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
-  DEPENDS chronic fail
+  DEPENDS silence fail
   COMMENT "run unittests"
   )
