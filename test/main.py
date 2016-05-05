@@ -21,6 +21,8 @@ if __name__ == '__main__':
 
   unittest.main(module=None, argv=[sys.argv[0], 'discover',
       '--start-directory',  src_dir + '/test', '--pattern', '*.py',
-      '--top-level-directory', src_dir])
+      ])
+      # not necessary, problematic for out-of-source builds:
+      # '--top-level-directory', src_dir])
 
 

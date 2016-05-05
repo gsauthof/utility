@@ -186,7 +186,8 @@ class Basic(unittest.TestCase):
     # moreutils chronic return 0, i.e. doesn't honor TMPDIR
     self.assertEqual(p.returncode, 1)
     self.assertTrue(b'No such file or directory' in e)
-    self.assertTrue(b'open' in e or b'mkstemp' in e)
+    # errno string doesn't include the function everywhere
+    # self.assertTrue(b'open' in e or b'mkstemp' in e)
 
   def test_keep_running(self):
     p = subprocess.Popen([chronic, echo, 'Foo Bar', '1', '0', '3'],
