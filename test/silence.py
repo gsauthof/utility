@@ -17,7 +17,7 @@ import tempfile
 import shutil
 
 # cf. test/main.py for the global defaults
-chronic = os.getenv('chronic', './chronic')
+chronic = os.getenv('chronic', './silence')
 fail = os.getenv('fail', './fail')
 echo = os.getenv('echo', './echo.sh')
 
