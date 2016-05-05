@@ -115,7 +115,7 @@ static char **parse_arguments(int argc, char **argv, Arguments *a)
       switch (c) {
         case 'e':
           errno = 0;
-          *v++ = strtod(optarg, 0);
+          *v++ = strtol(optarg, 0, 10);
           if (errno) {
             perror("converting -e argument");
             exit(1);
