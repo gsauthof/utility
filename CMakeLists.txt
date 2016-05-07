@@ -27,9 +27,11 @@ set_property(TARGET silencce PROPERTY INCLUDE_DIRECTORIES
 target_link_libraries(silencce
   ixxx_static)
 
+add_executable(lockf lockf.c)
+
 add_custom_target(check
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
-  DEPENDS silence fail
+  DEPENDS silence fail lockf
   COMMENT "run unittests"
   )

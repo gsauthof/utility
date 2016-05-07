@@ -13,7 +13,7 @@ if __name__ == '__main__':
     os.environ['bin_dir'] = '.'
   src_dir = os.environ['src_dir']
   bin_dir = os.environ['bin_dir']
-  for i in [ 'silence', 'fail' ]:
+  for i in [ 'silence', 'fail', 'lockf' ]:
     if i not in os.environ:
       os.environ[i] = bin_dir + '/' + i
   if 'echo' not in os.environ:

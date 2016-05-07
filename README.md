@@ -1,5 +1,6 @@
 This repository contains a collection of command line utilities.
 
+- lockf - protect command execution with a lock
 - silence - silence stdout/stderr unless command fails
 - silencce - C++ implementation of silence
 
@@ -10,6 +11,57 @@ For example:
 
 
 2016, Georg Sauthoff <mail@georg.so>
+
+
+## Lockf
+
+`lockf` only executes a provided command if a lock can be
+aquired. Thus, it is able to serialize command execution and
+guard access to exclusive actions. It provides several
+locking methods:
+
+- [`lockf()`][lockf] - hence the name
+- [`fcntl()`][fcntl]
+- [`flock()`][flock] - BSD API, also supported by e.g. Linux
+- [`open(..., ... O_CREAT | O_EXCL)`][open] - exclusive file creation
+- [`link()`][link] - hardlinking
+- [`mkdir()`][mkdir] - not necessarily atomic everywhere
+- [`rename()`][rename] - rename is also atomic
+
+All of the methods are available on Linux. They also specified by
+POSIX, except `flock()` which comes from BSD.
+
+The methods `lockf()`, `fcntl()` and `flock()` support waiting on
+a lock without polling (`-b` option).
+
+Whether different lock methods do interact depends is system
+specific. For example, on recent Linux, `fcntl()` and `flock()`
+don't interact unless they are on NFS. And POSIX allows
+interaction between `lockf()` and `fcntl()` but doesn't require
+it.
+
+Not all methods are necessarily supported and work reliable over
+NFS. Especially in a heterogenous environment. Existing
+implementation may chose to return success even if they implement
+a locking API as null operation. Also, with some NFS
+implementations some methods may become unreliable in case of
+packet loss or a rebooting NFS server. For NFS, the methods worth
+looking into are `lockf()`, `fcntl()`, `open()` and `link()`.
+`mkdir()` is not specified by NFS to be atomic. Linux supports
+`flock()` over NFS since kernel 2.6.37, but only because it is
+emulated via `fcntl()` then.
+
+Similar utilties:
+
+- [Linux-Util flock][lu-flock], uses `flock()`
+- [BSD lockf][bsd-lockf], uses `flock()` despite the name
+- [lockrun][lockrun], uses `lockf()` where available, `flock()`
+  otherwise
+- [Procmail lockfile][lockfile], uses `link()` and supports polling
+
+See also:
+
+- [Correct locking in shell scripts?][1]
 
 ## Silence
 
@@ -79,6 +131,18 @@ or
 
 [GPLv3+][gpl]
 
-
+[1]: http://unix.stackexchange.com/questions/22044/correct-locking-in-shell-scripts
+[bsd-lockf]: https://www.freebsd.org/cgi/man.cgi?query=lockf
 [gpl]: https://www.gnu.org/licenses/gpl.html
+[fcntl]: http://man7.org/linux/man-pages/man2/fcntl.2.html
+[flock]: http://man7.org/linux/man-pages/man2/flock.2.html
+[link]: http://man7.org/linux/man-pages/man2/link.2.html
+[lockf]: http://man7.org/linux/man-pages/man3/lockf.3.html
+[lockfile]: http://linux.die.net/man/1/lockfile
+[lockrun]: http://www.unixwiz.net/tools/lockrun.html
+[lu-flock]: http://linux.die.net/man/1/flock
+[mkdir]: http://man7.org/linux/man-pages/man2/mkdir.2.html
 [moreutils]: the://joeyh.name/code/moreutils/
+[open]: http://man7.org/linux/man-pages/man2/open.2.html
+[rename]: http://man7.org/linux/man-pages/man2/rename.2.html
+
