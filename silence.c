@@ -29,22 +29,6 @@ static const char help_str[] =
 "cf. https://github.com/gsauthof/utility\n"
 "\n";
 
-#ifndef USE_TMPFILE
-  #if defined(__linux__)
-    #define USE_TMPFILE 1
-  #else
-    #define USE_TMPFILE 0
-  #endif
-#endif
-
-#ifndef USE_PRCTL
-  #if defined(__linux__)
-    #define USE_PRCTL 1
-  #else
-    #define USE_PRCTL 0
-  #endif
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -62,7 +46,23 @@ static const char help_str[] =
   #include <sys/prctl.h>
 #endif
 
-#define check_exit(r, s) do { if (r == -1) { perror(s); exit(1); } } while (0)
+#include "utility.h"
+
+#ifndef USE_TMPFILE
+  #if defined(__linux__)
+    #define USE_TMPFILE 1
+  #else
+    #define USE_TMPFILE 0
+  #endif
+#endif
+
+#ifndef USE_PRCTL
+  #if defined(__linux__)
+    #define USE_PRCTL 1
+  #else
+    #define USE_PRCTL 0
+  #endif
+#endif
 
 static void help(FILE *f, const char *argv0)
 {
@@ -114,11 +114,14 @@ static char **parse_arguments(int argc, char **argv, Arguments *a)
     while ((c = getopt(argc, argv, opt_str)) != -1) {
       switch (c) {
         case 'e':
-          errno = 0;
-          *v++ = strtol(optarg, 0, 10);
-          if (errno) {
-            perror("converting -e argument");
-            exit(1);
+          {
+            errno = 0;
+            char *s = 0;
+            *v++ = strtol(optarg, &s, 10);
+            if (errno || s == optarg) {
+              perror("converting -e argument");
+              exit(1);
+            }
           }
           break;
       }
@@ -221,8 +224,9 @@ static void supervise_child(int fd_o, int fd_e, pid_t pid, const Arguments *a)
   // we ignore QUIT/INT because when issued via Ctrl+\/Ctrl+C in the terminal,
   // UNIX sends them both to the parent and the child
   // (cf. http://unix.stackexchange.com/questions/176235/fork-and-how-signals-are-delivered-to-processes)
-  // ignoring them in the parent thus makes sure that any collected output is printed
-  // after the child terminates because of those signals (the default action)
+  // ignoring them in the parent thus makes sure that any
+  // collected output is printed after the child terminates
+  // because of those signals (the default action)
   struct sigaction ignore_action = { .sa_handler = SIG_IGN };
   struct sigaction old_int_action;
   int r = sigaction(SIGINT, &ignore_action, &old_int_action);

@@ -217,3 +217,7 @@ class Basic(unittest.TestCase):
     self.assertEqual(e, b'')
     self.assertFalse(t.was_still_running)
 
+
+if __name__ == '__main__':
+    unittest.main()
+

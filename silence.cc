@@ -214,8 +214,9 @@ static void supervise_child(int fd_o, int fd_e, pid_t pid, const Arguments &a)
   // we ignore QUIT/INT because when issued via Ctrl+\/Ctrl+C in the terminal,
   // UNIX sends them both to the parent and the child
   // (cf. http://unix.stackexchange.com/questions/176235/fork-and-how-signals-are-delivered-to-processes)
-  // ignoring them in the parent thus makes sure that any collected output is printed
-  // after the child terminates because of those signals (the default action)
+  // ignoring them in the parent thus makes sure that any
+  // collected output is printed after the child terminates
+  // because of those signals (the default action)
   struct sigaction ignore_action = {};
   ignore_action.sa_handler = SIG_IGN;
   struct sigaction old_int_action;
@@ -239,7 +240,7 @@ static void supervise_child(int fd_o, int fd_e, pid_t pid, const Arguments &a)
   posix::sigaction(SIGINT, &old_int_action, 0);
   posix::sigaction(SIGQUIT, &old_quit_action, 0);
   int code = siginfo.si_code == CLD_EXITED
-    ? siginfo.si_status : 128 + siginfo.si_status;
+      ? siginfo.si_status : 128 + siginfo.si_status;
   if (is_successful(code, a.success_codes)) {
     exit(0);
   } else {
