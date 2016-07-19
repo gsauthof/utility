@@ -1,5 +1,6 @@
 This repository contains a collection of command line utilities.
 
+- arsort - topologically sort static libraries
 - lockf - protect command execution with a lock
 - silence - silence stdout/stderr unless command fails
 - silencce - C++ implementation of silence
