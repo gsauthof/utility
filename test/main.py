@@ -8,9 +8,9 @@ import os
 if __name__ == '__main__':
 
   if 'src_dir' not in os.environ:
-    os.environ['src_dir'] = '.'
+    os.environ['src_dir'] = os.getcwd() + '/..'
   if 'bin_dir' not in os.environ:
-    os.environ['bin_dir'] = '.'
+    os.environ['bin_dir'] = os.getcwd()
   src_dir = os.environ['src_dir']
   bin_dir = os.environ['bin_dir']
   for i in [ 'silence', 'fail', 'lockf' ]:
