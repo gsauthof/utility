@@ -1,8 +1,9 @@
 This repository contains a collection of command line utilities.
 
-- arsort - topologically sort static libraries
-- lockf - protect command execution with a lock
-- silence - silence stdout/stderr unless command fails
+- arsort   - topologically sort static libraries
+- lockf    - protect command execution with a lock
+- pwhatch  - generate secure and easy to communicate passwords
+- silence  - silence stdout/stderr unless command fails
 - silencce - C++ implementation of silence
 
 For example:
