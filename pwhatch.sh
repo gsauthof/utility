@@ -148,7 +148,8 @@ function parse_args
   quiet=0
   use_dict=1
   use_help=0
-  while getopts "hm:c" arg; do
+  if command -v "$shuf" > /dev/null ; then : ; else shuf=""; fi
+  while getopts "hm:nc" arg; do
     case $arg in
       c)
         words=12
@@ -159,6 +160,9 @@ function parse_args
         ;;
       m)
         min_entropy=$OPTARG
+        ;;
+      n)
+        shuf=""
         ;;
       q)
         quiet=1
@@ -186,8 +190,11 @@ function parse_args
 : ${awk:=awk}
 : ${lang:=en}
 min_entropy=60
+# GNU coreutils paste
 : ${paste:=paste}
 : ${sed:=sed}
+# GNU coreutils shuf
+: ${shuf:=shuf}
 : ${sort:=sort}
 : ${wfile:=~/.cache/words.gz}
 words=4
@@ -204,10 +211,17 @@ n=$(zcat "$wfile" | wc -l)
 entropy=$(echo "l($n^$words)/l(2)" | bc -l | sed 's/\..*$//')
 check_entropy $entropy
 
-for i in `seq 1 $words`; do
-  zcat "$wfile" \
-    | "$sed" -n $(($(< /dev/urandom od -N4 -tu4 -An)%n+1))p \
+if [ -n "$shuf" ]; then
+  zcat "$wfile" | "$shuf" --random-source /dev/urandom -r -n $words \
     | "$awk" '{print(tolower($0))}' \
-    | tr -d "'"
-done | "$paste" -sd '-'
+    | tr -d "'" \
+    | "$paste" -sd '-'
+else
+  for i in `seq 1 $words`; do
+    zcat "$wfile" \
+      | "$sed" -n $(($(< /dev/urandom od -N4 -tu4 -An)%n+1))p \
+      | "$awk" '{print(tolower($0))}' \
+      | tr -d "'"
+  done | "$paste" -sd '-'
+fi
 
