@@ -45,9 +45,12 @@ done
 
 {
 echo "n="$n" min Q1 med mean Q3 max std"
-"$Rscript" --vanilla -e "b=read.csv(file='$f');summary(b);sapply(b, sd);q()" \
-  | tr ': ' '\n'  \
-  | grep '^[=.0-9]\+$' \
+"$Rscript" --vanilla -e \
+    "b=read.csv(file='$f'); summary(b); options(digits=3); sapply(b, sd);" \
+  | sed 's/ [^:]\+:/ /g' \
+  | grep -v 'a' \
+  | tr ' ' '\n' \
+  | grep '[0-9]' \
   | awk 'BEGIN { b[0]="wall"; b[1]="user"; b[2]="sys"; b[3]="rss" }
                { a[(NR-1)%4] = a[(NR-1)%4]$0" " }
            END {for (i=0; i<4; ++i)
