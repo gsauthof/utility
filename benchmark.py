@@ -49,7 +49,7 @@ has its usual meaning (also explicitly specifiying a tag):
 '''
       )
   p.add_argument('argv', nargs='*', help='ARG0.. of the child')
-  p.add_argument('--cmd', nargs='+', default=[],
+  p.add_argument('--cmd', '--cmds', nargs='+', default=[],
       help='extra commands to run')
   p.add_argument('--cols', nargs='+', default=[1,2,3,4],
       help='columns to generate stats for')
@@ -65,6 +65,8 @@ has its usual meaning (also explicitly specifiying a tag):
       help='names for the selected columns')
   p.add_argument('--null-out', type=bool, default=True,
       help='redirect stdout to /dev/null')
+  p.add_argument('--pstat', action=InitPstat,
+      help='set options for `perf stat` instead of GNU time')
   p.add_argument('--precision', type=int, default=3,
       help='precision for printing values')
   p.add_argument('--quiet', '-q', action='store_true', default=False,
@@ -94,6 +96,20 @@ has its usual meaning (also explicitly specifiying a tag):
   p.add_argument('--ymin', type=float, default=0.0,
       help='set lower y-axis limit')
   return p
+
+class InitPstat(argparse.Action):
+  def __init__(self, option_strings, dest, **kwargs):
+    super(InitPstat, self).__init__(
+      option_strings, dest, nargs=0, **kwargs)
+
+  def __call__(self, parser, args, values, option_string=None):
+    args.time = 'perfstat.sh'
+    args.time_args = [ '-o', '$<' ]
+    args.cols = list(range(1,12))
+    args.items = [ 'usec','cswitch','cpu_migr','page_fault','cycles','ghz','ins','ins_cyc','br','br_mis','br_mis_rate' ]
+    args.graph_item = 'ins_cyc'
+    args.title = 'Counter ({})'.format(args.graph_item)
+    args.ylabel = 'rate'
 
 def parse_args(xs = None):
   arg_parser = mk_arg_parser()
@@ -183,7 +199,7 @@ def measure(tag, cmd, args):
     with subprocess.Popen(a, stdout=stdout) as p:
       rc = p.wait(timeout=args.timeout)
       if rc != 0:
-        log.error('Command {} failed with rc: {}', cmd, rc)
+        log.error('Command {} failed with rc: {}'.format(cmd, rc))
         errors = errors + 1
     reader = csv.reader(temp_file)
     r = [tag] + next(reader)
@@ -244,9 +260,8 @@ def write_svg(ys, args, filename):
         labels=tags )
   ymax = args.ymax
   if not args.ymax:
-    ymax = np.ceil(
-      np.amax([np.amax(items[args.graph_item]) for items in items_l ])
-      + 0.4)
+    m = np.amax([np.amax(items[args.graph_item]) for items in items_l ])
+    ymax = np.ceil(m + (m - args.ymin) / 10)
   plt.ylim(ymin=args.ymin, ymax=ymax)
   plt.title(args.title)
   plt.xlabel(args.xlabel)
