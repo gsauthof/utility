@@ -31,13 +31,13 @@ def mk_arg_parser():
 Run 3 programs 20 times each and write stats to stdout and the raw
 data to a file:
 
-    $ benchmark --cmd ./find_memchr ./find_find --raw raw.dat -n 20 \
+    $ benchmark --cmd ./find_memchr ./find_find --raw raw.dat -n 20 \\
         ./find_unroll2 3000 in
 
 Create boxplot SVG (and nicely format the stdout and also write
 the stats to a CSV file):
 
-    $ benchmark --input raw.dat --svg rss.svg --csv rss.csv \
+    $ benchmark --input raw.dat --svg rss.svg --csv rss.csv \\
        | column -t -s, -o ' | '
 
 In case the benchmarked program needs some options the `--` delimiter
