@@ -62,7 +62,7 @@ has its usual meaning (also explicitly specifiying a tag):
   p.add_argument('--debug', nargs='?', metavar='FILE',
       const='benchmark.log', help='log debug messages into file')
   p.add_argument('--graph-item', help='item to plot in a graph')
-  p.add_argument('--height', help='width of the graph (inch)')
+  p.add_argument('--height', type=float, help='height of the graph (inch)')
   p.add_argument('--input', '-i', metavar='FILE',
       help='include raw data from a previous run')
   p.add_argument('--items', nargs='+', default=['wall', 'user', 'sys', 'rss'],
@@ -92,8 +92,10 @@ has its usual meaning (also explicitly specifiying a tag):
       help='default arguments to measurement program')
   p.add_argument('--timeout', help='timeout for waiting on a child')
   p.add_argument('--title', help='title of the graph')
-  p.add_argument('--width', help='width of the graph (inch)')
+  p.add_argument('--width', type=float, help='width of the graph (inch)')
   p.add_argument('--xlabel', default='experiment', help='x-axis label')
+  p.add_argument('--xrotate', type=int,
+      help='rotate x-labels (default: 75 degrees if more than 4 present')
   p.add_argument('--ylabel', default='time (s)', help='y-axis label')
   p.add_argument('--ymax', type=float,
       help='set upper y-axis limit')
@@ -269,6 +271,9 @@ def write_raw(rrs, args, filename):
 
 def write_svg(ys, args, filename):
   tags, items_l = zip(*ys)
+  xrotate = args.xrotate
+  if not xrotate and tags.__len__() > 4:
+    xrotate = 75
   if args.width and args.height:
     plt.figure(figsize=(args.width, args.height))
   r = plt.boxplot( [ items[args.graph_item] for items in items_l ],
@@ -279,8 +284,11 @@ def write_svg(ys, args, filename):
     ymax = np.ceil(m + (m - args.ymin) / 10)
   plt.ylim(ymin=args.ymin, ymax=ymax)
   plt.title(args.title)
+  if xrotate:
+    plt.xticks(rotation=xrotate) # 70 # 90
   plt.xlabel(args.xlabel)
   plt.ylabel(args.ylabel)
+  plt.tight_layout()
   plt.savefig(filename)
 
 # normally, we would just use a csv.writer() but
