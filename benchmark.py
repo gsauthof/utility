@@ -225,11 +225,16 @@ def execute(args):
   for (tag, cmd) in zip(args.tags, args.cmd):
     rs = []
     for i in range(args.repeat):
-      m, errors = measure(tag, cmd, args)
-      if args.sleep > 0:
-        time.sleep(args.sleep)
-      rs.append(m)
-      esum = esum + errors
+      try:
+        m, errors = measure(tag, cmd, args)
+        if args.sleep > 0:
+          time.sleep(args.sleep)
+        rs.append(m)
+        esum = esum + errors
+      except StopIteration:
+        esum = esum + 1
+        log.error("Couldn't read measurements from teporary file"
+                + '- {} - {}'.format(tag, i))
     xs.append( (tag, rs) )
   return (xs, esum)
 
@@ -340,10 +345,7 @@ def run(args):
     write_raw(xs, args, args.raw)
   if args.svg:
     write_svg(ys, args, args.svg)
-  if errors == 0:
-    return 0
-  else:
-    return 1
+  return int(errors != 0)
 
 def main():
   args = parse_args()
