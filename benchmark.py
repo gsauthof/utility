@@ -8,7 +8,11 @@ import csv
 import datetime
 import itertools
 import logging
-import matplotlib.pyplot as plt
+# importing it conditionally iff svg generation is selected
+# otherwise, it may fail on a system with minimal matplotlib
+# install, i.e. where one of the backends loaded by default
+# throws
+#import matplotlib.pyplot as plt
 import numpy as np
 import os
 import subprocess
@@ -133,6 +137,12 @@ def parse_args(xs = None):
     args.graph_item = args.items[0]
   if not args.title:
     args.title = 'Runtime ({})'.format(args.graph_item)
+  if args.svg:
+    #import matplotlib.pyplot as plt
+    global matplotlib
+    global plt
+    matplotlib = __import__('matplotlib.pyplot', globals(), locals())
+    plt = matplotlib.pyplot
   return args
 
 
