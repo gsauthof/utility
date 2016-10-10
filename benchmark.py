@@ -13,7 +13,8 @@ import logging
 # install, i.e. where one of the backends loaded by default
 # throws
 #import matplotlib.pyplot as plt
-import numpy as np
+# importing it conditionally iff csv or not quiet
+#import numpy as np
 import os
 import subprocess
 import sys
@@ -145,6 +146,11 @@ def parse_args(xs = None):
     global plt
     matplotlib = __import__('matplotlib.pyplot', globals(), locals())
     plt = matplotlib.pyplot
+  if args.csv or not args.quiet:
+    global np
+    numpy = __import__('numpy', globals(), locals())
+    np = numpy
+    #import numpy as np
   return args
 
 
@@ -343,7 +349,8 @@ def run(args):
     rxs, errors = execute(args)
     xs = xs + rxs
   ys = [ (tag, get_items(rs, args)) for (tag, rs) in xs ]
-  zs = [ (tag, gen_stats(items, args)) for (tag, items) in ys ]
+  if args.csv or not args.quiet:
+    zs = [ (tag, gen_stats(items, args)) for (tag, items) in ys ]
   if args.csv:
     with open(args.csv, 'w') as f:
       write_csv(zs, args, f)
