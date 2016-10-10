@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # 2016, Georg Sauthoff <mail@georg.so>
 
@@ -38,6 +38,23 @@ trap cleanup EXIT
 
 tfile=$(mktemp)
 
+
+end_clause='END {
+    OFS=",";
+    # CentOS 7 perf does not print those with -x ...
+    if (!a["ghz"])
+      a["ghz"]=a["cycles"]/a["usec"];
+    if (!a["ins_cyc"])
+      a["ins_cyc"]=a["ins"]/a["cycles"];
+    if (!a["br_mis_rate"])
+      a["br_mis_rate"]=a["br_mis"]/a["br"]*100.0;
+
+    print a["usec"],a["cswitch"],a["cpu_migr"],a["page_fault"],a["cycles"],a["ghz"],a["ins"],a["ins_cyc"],a["br"],a["br_mis"],a["br_mis_rate"]
+  }
+'
+
+function perfstat_Linux
+{
 perf stat -x, -o "$tfile" "$@"
 
 awk -F, '
@@ -50,15 +67,23 @@ awk -F, '
   $3 ~ /^instructions(:u)?$/     { a["ins"]=$1;        a["ins_cyc"]=$6; next }
   $3 ~ /^branches(:u)?$/         { a["br"]=$1;                          next }
   $3 ~ /^branch-misses(:u)?$/    { a["br_mis"]=$1;     a["br_mis_rate"]=$6;  }
-  END {
-    OFS=",";
-    # CentOS 7 perf does not print those with -x ...
-    if (!a["ghz"])
-      a["ghz"]=a["cycles"]/a["usec"];
-    if (!a["ins_cyc"])
-      a["ins_cyc"]=a["ins"]/a["cycles"];
-    if (!a["br_mis_rate"])
-      a["br_mis_rate"]=a["br_mis"]/a["br"]*100.0;
+  '"$end_clause" "$tfile" > "$ofile"
+}
 
-    print a["usec"],a["cswitch"],a["cpu_migr"],a["page_fault"],a["cycles"],a["ghz"],a["ins"],a["ins_cyc"],a["br"],a["br_mis"],a["br_mis_rate"]
-  }' "$tfile" > "$ofile"
+function perfstat_SunOS
+{
+  cputrack -o "$tfile" -c Cycles_user,PAPI_tot_ins,PAPI_br_cn,PAPI_br_msp "$@"
+  awk '
+  $3 == "exit" {
+    a["usec"]=$1*1000000;
+    a["cycles"]=$4;
+    a["ins"]=$5;
+    a["br"]=$6;
+    a["br_mis"]=$7;
+  }
+  '"$end_clause" "$tfile" > "$ofile"
+}
+
+sys=$(uname -s)
+perfstat_"$sys" "$@"
+
