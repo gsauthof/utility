@@ -113,7 +113,7 @@ class InitPstat(argparse.Action):
     args.time = 'perfstat.sh'
     args.time_args = [ '-o', '$<' ]
     args.cols = list(range(1,12))
-    args.items = [ 'usec','cswitch','cpu_migr','page_fault','cycles','ghz','ins','ins_cyc','br','br_mis','br_mis_rate' ]
+    args.items = [ 'nsec','cswitch','cpu_migr','page_fault','cycles','ghz','ins','ins_cyc','br','br_mis','br_mis_rate' ]
     args.graph_item = 'ins_cyc'
     args.title = 'Counter ({})'.format(args.graph_item)
     args.ylabel = 'rate'
