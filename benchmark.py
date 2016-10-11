@@ -146,7 +146,7 @@ def parse_args(xs = None):
     global plt
     matplotlib = __import__('matplotlib.pyplot', globals(), locals())
     plt = matplotlib.pyplot
-  if args.csv or not args.quiet:
+  if args.csv or not args.quiet or args.svg:
     global np
     numpy = __import__('numpy', globals(), locals())
     np = numpy
@@ -348,7 +348,8 @@ def run(args):
   if args.cmd:
     rxs, errors = execute(args)
     xs = xs + rxs
-  ys = [ (tag, get_items(rs, args)) for (tag, rs) in xs ]
+  if args.csv or not args.quiet or args.svg:
+    ys = [ (tag, get_items(rs, args)) for (tag, rs) in xs ]
   if args.csv or not args.quiet:
     zs = [ (tag, gen_stats(items, args)) for (tag, items) in ys ]
   if args.csv:
