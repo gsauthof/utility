@@ -321,7 +321,8 @@ def get_items(rs, args):
   for row in rs:
     j = 0
     for c in args.cols:
-      m[i][j] = row[c]
+      v = row[c]
+      m[i][j] = 0 if v == '' else v
       j = j + 1
     i = i + 1
   return m
