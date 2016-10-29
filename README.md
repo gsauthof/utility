@@ -3,6 +3,7 @@ This repository contains a collection of command line utilities.
 - arsort       - topologically sort static libraries
 - benchmark.sh - run a command multiple times and report stats
 - benchmark.py - run a command multiple times and report stats (more features)
+- latest-kernel-running - is the latest installed kernel actually running?
 - lockf        - protect command execution with a lock
 - pwhatch      - generate secure and easy to communicate passwords
 - silence      - silence stdout/stderr unless command fails
@@ -15,6 +16,28 @@ For example:
 
 
 2016, Georg Sauthoff <mail@georg.so>
+
+## Latest Kernel
+
+This script checks if the system actually runs the latest
+installed kernel. This might not be the case if something like
+yum-cron automatically installs updates or if somebody forgot to
+restart the system after a kernel update.
+
+A mismatch in kernel versions is reported via the exit status.
+With option `-v` a diagnostic message is printed, as well.
+
+Thus, the script can be used to send out notification mails (e.g.
+when running it as cron job).
+
+Alternatively, the result  can be used to initiate a restart of a
+machine that already runs yum-cron. If the machine provides a
+clustered service, the restart can be coordinated with something
+like etcd.
+
+This check complements what [tracer][tracer] does.
+Tracer checks if outdated applications or libraries are loaded
+but (currently) doesn't check the kernel (cf. [Issue 45][tracer45]).
 
 
 ## Lockf
@@ -149,4 +172,6 @@ or
 [moreutils]: the://joeyh.name/code/moreutils/
 [open]: http://man7.org/linux/man-pages/man2/open.2.html
 [rename]: http://man7.org/linux/man-pages/man2/rename.2.html
+[tracer]: http://tracer-package.com/
+[tracer45]: https://github.com/FrostyX/tracer/issues/45
 
