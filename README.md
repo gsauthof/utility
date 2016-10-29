@@ -8,6 +8,7 @@ This repository contains a collection of command line utilities.
 - pwhatch      - generate secure and easy to communicate passwords
 - silence      - silence stdout/stderr unless command fails
 - silencce     - C++ implementation of silence
+- train-spam   - feed spam maildir messages into bogofilter and remove them
 
 For example:
 
