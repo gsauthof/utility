@@ -3,6 +3,7 @@ This repository contains a collection of command line utilities.
 - arsort       - topologically sort static libraries
 - benchmark.sh - run a command multiple times and report stats
 - benchmark.py - run a command multiple times and report stats (more features)
+- check-cert   - check approaching expiration/validate certs of remote servers
 - latest-kernel-running - is the latest installed kernel actually running?
 - lockf        - protect command execution with a lock
 - pwhatch      - generate secure and easy to communicate passwords
