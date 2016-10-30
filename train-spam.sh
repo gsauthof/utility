@@ -31,5 +31,5 @@ find  "$base"/{new,cur} -type f -print0 \
 
 if [ -z "$(find "$temp" -prune -empty)" ]; then
   #ls -l "$temp"
-  echo "$bogofilter" -B "$temp" -s -v
+  "$bogofilter" -B "$temp" -s -v
 fi
