@@ -19,6 +19,46 @@ For example:
 
 2016, Georg Sauthoff <mail@georg.so>
 
+## Check-Cert
+
+This script calls [`gnutls-cli`][gnutls] for the specified remote
+services.
+
+Example:
+
+    $ check-cert.py imap.example.org_993 example.org_443
+
+Any validation errors (including OCSP ones) reported by
+[GnuTLS][gnutls] are printed by the script, which finally returns
+with exit status unequal zero. The script also warns and exits
+unsuccessfully if a cert expires in less than 20 days.
+
+If everything is fine the script is silent and exits
+successfully, thus, check-cert is suitable for a Cron scheduled
+execution.
+
+Checking a service that does TLS after a STARTTLS command like in
+
+   $ check-cert.py mail.example.org_25_smtp
+
+requires GnuTLS version 3.4.x or later (e.g. 3.4.15). For example,
+RHEL/CentOS 7 comes with GnuTLS 3.3.8, while Fedora 23 provides
+gnutls 3.4.15.
+
+It may make sense to create a `gnutls-cli` wrapper script and put
+it into `$PATH` such that the right version is called with the
+right CA bundle, e.g.:
+
+    #!/bin/bash
+    exec /nix/var/nix/profiles/default/bin/gnutls-cli \
+      --x509cafile=/etc/pki/tls/cert.pem "$@"
+
+
+The script doesn't use the comparable Openssl command (i.e. `openssl
+s_client`) because it doesn't conveniently present the
+expiration dates and it doesn't even exit with a status unequal
+zero in case of verification errors.
+
 ## Latest Kernel
 
 This script checks if the system actually runs the latest
@@ -165,6 +205,7 @@ or
 [gpl]: https://www.gnu.org/licenses/gpl.html
 [fcntl]: http://man7.org/linux/man-pages/man2/fcntl.2.html
 [flock]: http://man7.org/linux/man-pages/man2/flock.2.html
+[gnutls]: https://gnutls.org/
 [link]: http://man7.org/linux/man-pages/man2/link.2.html
 [lockf]: http://man7.org/linux/man-pages/man3/lockf.3.html
 [lockfile]: http://linux.die.net/man/1/lockfile
