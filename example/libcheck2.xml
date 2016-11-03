@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="http://check.sourceforge.net/xml/check_unittest.xslt"?>
+<testsuites xmlns="http://check.sourceforge.net/ns">
+  <datetime>2016-11-03 21:48:23</datetime>
+  <suite>
+    <title>NoFork</title>
+    <test result="failure">
+      <path>.</path>
+      <fn>check_nofork.c:16</fn>
+      <id>test_nofork_exit</id>
+      <iteration>0</iteration>
+      <duration>0.000028</duration>
+      <description>Exit</description>
+      <message>Assertion &apos;((void *)0) != s&apos; failed</message>
+    </test>
+  </suite>
+  <duration>0.000210</duration>
+</testsuites>
