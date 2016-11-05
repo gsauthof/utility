@@ -4,6 +4,7 @@ This repository contains a collection of command line utilities.
 - benchmark.sh - run a command multiple times and report stats
 - benchmark.py - run a command multiple times and report stats (more features)
 - check-cert   - check approaching expiration/validate certs of remote servers
+- check-dnsbl  - check if mailservers are DNS blacklisted/have rDNS records
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
 - latest-kernel-running - is the latest installed kernel actually running?
 - lockf        - protect command execution with a lock
@@ -59,6 +60,29 @@ The script doesn't use the comparable Openssl command (i.e. `openssl
 s_client`) because it doesn't conveniently present the
 expiration dates and it doesn't even exit with a status unequal
 zero in case of verification errors.
+
+## Check-DNSBL
+
+This utility checks a list of mail servers against some [well
+known blacklists
+(DNSBL)](https://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists)
+By default, 30 or so lists are queried, but other/additional ones
+can be specified via command line arguments or a CSV file.
+
+It also checks, by default, if there are [reverse
+DNS](https://en.wikipedia.org/wiki/Reverse_DNS_lookup) records
+and if they match the forward ones.
+
+The mail server can be specified as a list of IPv4 or IPv6
+addresses and/or domain names. MX records are followed, by
+default. Of course, an outgoing mail server doesn't necessarily
+have to double as MX - in those cases its domain/address have to
+be additionally specified.
+
+If everything is ok, `check-dnsbl.py` doesn't generate any output
+(unless `--debug` is specified). Otherwise, it prints errors to
+stderr and exits with a status unequal zero. Thus, it can be
+used as Cron job for monitoring purposes.
 
 ## Check2junit
 
