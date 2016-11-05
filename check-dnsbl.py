@@ -193,7 +193,7 @@ def check_dnsbl(addr, bl):
         txt = list(r)[0].to_text()
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
         txt = ''
-    log.error('OMG, address {} is listed in DNSBL {}: {} ({})'.format(addr, bl, address, txt))
+    log.error('OMG, {} is listed in DNSBL {}: {} ({})'.format(addr, bl, address, txt))
     return 1
 
 
