@@ -76,13 +76,32 @@ and if they match the forward ones.
 The mail server can be specified as a list of IPv4 or IPv6
 addresses and/or domain names. MX records are followed, by
 default. Of course, an outgoing mail server doesn't necessarily
-have to double as MX - in those cases its domain/address have to
-be additionally specified.
+have to double as MX - in those cases its domain/address has to
+be additionally specified.  In any case, if domains are
+specified, at last, they are resolved via their A or AAAA records
+to IPv4 or IPv6 addresses.
 
 If everything is ok, `check-dnsbl.py` doesn't generate any output
 (unless `--debug` is specified). Otherwise, it prints errors to
 stderr and exits with a status unequal zero. Thus, it can be
 used as Cron job for monitoring purposes.
+
+Examples:
+
+Something is listed:
+
+    $ ./check-dnsbl.py 117.246.201.146
+    2016-11-05 19:01:13 - ERROR    - There is no reverse DNS record for 117.246.201.146
+    2016-11-05 19:01:13 - ERROR    - OMG, 117.246.201.146 is listed in DNSBL zen.spamhaus.org: 127.0.0.11 ("https://www.spamhaus.org/query/ip/117.246.201.146")
+    2016-11-05 19:01:19 - ERROR    - OMG, 117.246.201.146 is listed in DNSBL virbl.dnsbl.bit.nl: 127.0.0.2 ("See: http://virbl.bit.nl/lookup/index.php?ip=117.246.201.146")
+    2016-11-05 19:01:19 - ERROR    - 117.246.201.146 is listed in 2 blacklists
+
+Everything is ok:
+
+    $ ./check-dnstbl.py mail1.example.org mail2.example.org example.net
+    $ echo $?
+    0
+
 
 ## Check2junit
 
