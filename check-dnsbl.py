@@ -42,7 +42,6 @@ default_blacklists = [
     ('bl.blocklist.de',           'fail2ban reports etc.'),
     ('srnblack.surgate.net',      'feeders'),
     ('all.s5h.net',               'traps'),
-    ('rbl.megarbl.net',           'traps'),
     ('rbl.realtimeblacklist.com', 'lists ip ranges'),
     ('b.barracudacentral.org',    'traps'),
     ('virbl.dnsbl.bit.nl',        'Viruse senders')
