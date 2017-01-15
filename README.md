@@ -12,6 +12,7 @@ This repository contains a collection of command line utilities.
 - silence      - silence stdout/stderr unless command fails
 - silencce     - C++ implementation of silence
 - train-spam   - feed spam maildir messages into bogofilter and remove them
+- user-installed.py - list manually installed packages on major distributions
 
 For example:
 
@@ -248,6 +249,44 @@ cases (cf.  `test/chronic.py`).
 
 `silencce` is a C++ implementation of `silence`. The main difference
 is the usage of exceptions, thus simplifying the error reporting.
+
+## User-Installed
+
+`user-installed.py` lists all the packages that were manually
+selected, i.e. that are marked as user-installed in the local
+package database because a user explicitly installed them. That
+means packages that were installed by the system installer or as
+automatic dependencies aren't listed.
+
+It supports different distributions (Fedora/CentOS/Termux).
+
+Such a package list can be used for:
+
+- preparing a kickstart file
+- 'cloning' a good package selection of one system
+- restoring the package selection after a vanilla install (e.g.
+  because of a major distribution version upgrade or a system
+  recovery)
+
+Excluding the automatically installed packages from the list
+protects against:
+
+- installing old dependency packages that are now obsolete on the
+  new version of the distribution
+- wrongly marking the old dependency packages as user-installed
+  on the new system
+- and thus making auto-cleaning after a future package removal of
+  then unneeded dependency packages ineffective
+- failed installs due to dependency packages that are removed in
+  the new distribution version
+
+Example for restoring a package list on a Fedora system:
+
+    # dnf install $(cat example-org.pkg.lst)
+
+Ignoring any unavailable packages:
+
+    # dnf install --setopt=strict=0 $(cat example-org.pkg.lst)
 
 ## Build Instructions
 

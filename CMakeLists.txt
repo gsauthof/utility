@@ -29,9 +29,16 @@ target_link_libraries(silencce
 
 add_executable(lockf lockf.c)
 
-add_custom_target(check
+add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
   DEPENDS silence fail lockf
   COMMENT "run unittests"
   )
+
+add_custom_target(check-new
+  COMMAND py.test-3 ${CMAKE_CURRENT_SOURCE_DIR}/user-installed.py
+  COMMENT "run pytests"
+  )
+
+add_custom_target(check DEPENDS check-old check-new)
