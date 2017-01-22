@@ -212,6 +212,30 @@ def list_debian():
     if m not in ts:
       print(m)
 
+def test_list_debian():
+  f_linux_distribution = lambda : ('debian', '', '')
+  def f_check_output(*args, **kargs):
+    return b'''acl
+apt
+grub-common
+curl
+vim
+'''
+  f_listdir = lambda x : [ 'acl:amd64.list', 'apt.list', 'e',
+      'grub-common.list', 'curl.list', 'd' ]
+  class F_Getmtime:
+    def __init__(self):
+      self.l = range(10).__iter__()
+    def __call__(self, fn):
+      return next(self.l)
+  with mock.patch('platform.linux_distribution', f_linux_distribution), \
+       mock.patch('subprocess.check_output', f_check_output), \
+       mock.patch('os.listdir', f_listdir), \
+       mock.patch('os.path.getmtime', F_Getmtime()), \
+       mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
+    main() # calls list_debian()
+    assert fake_out.getvalue() == 'curl\nvim\n'
+
 # work-around bug:
 # http://bugs.python.org/issue21258
 # cf. http://stackoverflow.com/questions/24779893/customizing-unittest-mock-mock-open-for-iteration
