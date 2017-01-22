@@ -18,6 +18,7 @@ import operator
 import os
 import platform
 import subprocess
+import sys
 import unittest.mock as mock
 
 # to try something different: pytest instead of unittest and
@@ -170,6 +171,47 @@ def list_termux():
       if s not in auto_installed and s not in default_termux_pkgs:
         print(s)
 
+def takefind(f, g):
+  for i in g:
+    yield i
+    if f(i):
+      break
+
+# we basically approximate a package list similar to what would be
+# in /var/log/installer/initial-status.gz via looking at
+# the mtime of /var/lib/dpkg/info/*.list files - until a well-known
+# system package
+def get_initial_lst(dirname='/var/lib/dpkg/info', last_pkg='grub-common'):
+  l = set(takefind(lambda fn: fn == last_pkg,
+      map(lambda fn: fn.split(':')[0],
+        map(lambda fn: fn[:-5],
+          map(operator.itemgetter(0),
+            sorted(
+              map(lambda fn: (fn, os.path.getmtime(dirname+'/'+fn)),
+                filter(lambda fn: fn.endswith('.list'),
+                  os.listdir(dirname))),
+              key=operator.itemgetter(1)))))))
+  return l
+
+
+# - in contrast to termux: debian has `apt-mark showmanual`, i.e.
+# we don't need to parse extended_states ourselves
+# - similar to termux: there are installations without
+# /var/log/installer/initial-status.gz
+# - there is /var/log/dpkg.log - grepping for 'install ' there
+# yields all packages that are installed after sys-creation (i.e. inner join
+# with apt-mark showmanual), but
+# this file gets rotated away after 12 months
+# - /var/log/apt/history.log gets also rotated away and takes more
+# effort to parse because uninstalls have to be taken into account
+def list_debian():
+  ms = subprocess.check_output(['apt-mark', 'showmanual']).decode() \
+      .splitlines()
+  ts = get_initial_lst('/var/lib/dpkg/info', 'grub-common')
+  for m in ms:
+    if m not in ts:
+      print(m)
+
 # work-around bug:
 # http://bugs.python.org/issue21258
 # cf. http://stackoverflow.com/questions/24779893/customizing-unittest-mock-mock-open-for-iteration
@@ -214,7 +256,8 @@ Auto-Installed: 1
 list_fn = {
     'Fedora': list_fedora,
     'CentOS Linux': list_centos,
-    'Red Hat Enterprise Linux': list_centos
+    'Red Hat Enterprise Linux': list_centos,
+    'debian': list_debian
     }
 
 def main():
