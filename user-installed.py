@@ -17,6 +17,7 @@ import itertools
 import operator
 import os
 import platform
+import re
 import subprocess
 import sys
 import unittest.mock as mock
@@ -177,40 +178,74 @@ def takefind(f, g):
     if f(i):
       break
 
-# we basically approximate a package list similar to what would be
+# this basically approximate a package list similar to what would be
 # in /var/log/installer/initial-status.gz via looking at
 # the mtime of /var/lib/dpkg/info/*.list files - until a well-known
 # system package
-def get_initial_lst(dirname='/var/lib/dpkg/info', last_pkg='grub-common'):
-  l = set(takefind(lambda fn: fn == last_pkg,
-      map(lambda fn: fn.split(':')[0],
+# limitation: upgraded packages get new mtime/ctimes such that
+# the grub-common marker may miss some or catch too much (if grub-common
+# is upgraded)
+def get_initial_lst(selection, last_pkg='grub-common'):
+  l = takefind(lambda fn: fn == last_pkg, selection)
+  return l
+
+def get_all_lst(dirname='/var/lib/dpkg/info'):
+  l = map(lambda fn: fn.split(':')[0],
         map(lambda fn: fn[:-5],
           map(operator.itemgetter(0),
             sorted(
               map(lambda fn: (fn, os.path.getmtime(dirname+'/'+fn)),
                 filter(lambda fn: fn.endswith('.list'),
                   os.listdir(dirname))),
-              key=operator.itemgetter(1)))))))
+              key=operator.itemgetter(1)))))
   return l
 
+def dpkg_log_names(dirname='/var/log'):
+  expr = re.compile('dpkg\.log(\.[0-9]+)?(\.gz)?')
+  l = sorted(filter(expr.match, os.listdir('/var/log')),
+        key=LooseVersion, reverse=True)
+  return l
+
+def dpkg_log_lines(dirname='/var/log'):
+  fns = dpkg_log_names(dirname)
+  for fn in fns:
+    ofn = gzip.open if fn.endswith('.gz') else open;
+    with ofn(dirname+'/'+fn, 'r') as f:
+      for line in f:
+        yield line
+
+# kind of complement to /var/log/installer/initial-status.gz
+# note that dpkg.log* is rotated, by default
+# (montly, 12 times), thus this is not sufficient after 1 year
+#
+# i.e. /var/log/dpkg.log* - grepping for 'install|remove' there
+# yields all packages that are installed after sys-creation (i.e.
+# inner join with apt-mark showmanual)
+def get_dpkg_installed(dirname='/var/log'):
+  ps = set()
+  expr = re.compile('^[^ ]+ [^ ]+ (install|remove) ')
+  for line in filter(expr.match, dpkg_log_lines(dirname)):
+    (action, p) = line.split(' ')[2:4]
+    p = p.split(':')[0]
+    if action == 'install':
+      ps.add(p)
+    else:
+      ps.discard(p)
+  return ps
 
 # - in contrast to termux: debian has `apt-mark showmanual`, i.e.
 # we don't need to parse extended_states ourselves
 # - similar to termux: there are installations without
-# /var/log/installer/initial-status.gz
-# - there is /var/log/dpkg.log - grepping for 'install ' there
-# yields all packages that are installed after sys-creation (i.e. inner join
-# with apt-mark showmanual), but
-# this file gets rotated away after 12 months
-# - /var/log/apt/history.log gets also rotated away and takes more
-# effort to parse because uninstalls have to be taken into account
+# /var/log/installer/initial-status.gz (debian/ubuntu)
+# - /var/log/apt/history.log gets also rotated away and takes a
+# bit more effort to parse
 def list_debian():
-  ms = subprocess.check_output(['apt-mark', 'showmanual']).decode() \
-      .splitlines()
-  ts = get_initial_lst('/var/lib/dpkg/info', 'grub-common')
-  for m in ms:
-    if m not in ts:
-      print(m)
+  ms = set(subprocess.check_output(['apt-mark', 'showmanual']).decode() \
+      .splitlines())
+  ds = get_dpkg_installed()
+  for p in ms:
+    if p in ds:
+      print(p)
 
 def test_list_debian():
   f_linux_distribution = lambda : ('debian', '', '')
@@ -221,17 +256,24 @@ grub-common
 curl
 vim
 '''
-  f_listdir = lambda x : [ 'acl:amd64.list', 'apt.list', 'e',
-      'grub-common.list', 'curl.list', 'd' ]
+  #f_listdir = lambda x : [ 'acl:amd64.list', 'apt.list', 'e',
+  #    'grub-common.list', 'curl.list', 'd' ]
+  f_listdir = lambda x : [ 'dpkg.log' ]
+  # mock.patch('os.path.getmtime', F_Getmtime()),
   class F_Getmtime:
     def __init__(self):
       self.l = range(10).__iter__()
     def __call__(self, fn):
       return next(self.l)
+  f_open = mock_open(read_data='''2017-01-22 17:44:14 install make:amd64 <none> 3.81-8.2ubuntu3
+2017-01-22 17:44:31 remove make:amd64 3.81-8.2ubuntu3 <none>
+2017-01-22 17:48:06 install curl foo bar
+2017-01-22 17:48:06 install vim foo bar
+''')
   with mock.patch('platform.linux_distribution', f_linux_distribution), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('os.listdir', f_listdir), \
-       mock.patch('os.path.getmtime', F_Getmtime()), \
+       mock.patch('{}.open'.format(__name__), f_open), \
        mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
     main() # calls list_debian()
     assert fake_out.getvalue() == 'curl\nvim\n'
@@ -278,10 +320,11 @@ Auto-Installed: 1
 
 
 list_fn = {
-    'Fedora': list_fedora,
-    'CentOS Linux': list_centos,
-    'Red Hat Enterprise Linux': list_centos,
-    'debian': list_debian
+     'Fedora': list_fedora
+    ,'CentOS Linux': list_centos
+    ,'Red Hat Enterprise Linux': list_centos
+    ,'debian': list_debian
+    ,'Ubuntu': list_debian
     }
 
 def main():
