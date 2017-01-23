@@ -240,15 +240,15 @@ def get_dpkg_installed(dirname='/var/log'):
 # - /var/log/apt/history.log gets also rotated away and takes a
 # bit more effort to parse
 def list_debian():
-  ms = set(subprocess.check_output(['apt-mark', 'showmanual']).decode() \
-      .splitlines())
+  ms = subprocess.check_output(['apt-mark', 'showmanual']).decode() \
+      .splitlines()
   ds = get_dpkg_installed()
   for p in ms:
     if p in ds:
       print(p)
 
-def test_list_debian():
-  f_linux_distribution = lambda : ('debian', '', '')
+def test_list_debian(dname='debian'):
+  f_linux_distribution = lambda : (dname, '', '')
   def f_check_output(*args, **kargs):
     return b'''acl
 apt
@@ -277,6 +277,9 @@ vim
        mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
     main() # calls list_debian()
     assert fake_out.getvalue() == 'curl\nvim\n'
+
+def test_list_ubuntu():
+  test_list_debian('Ubuntu')
 
 # work-around bug:
 # http://bugs.python.org/issue21258
