@@ -258,7 +258,8 @@ package database because a user explicitly installed them. That
 means packages that were installed by the system installer or as
 automatic dependencies aren't listed.
 
-It supports different distributions (Fedora/CentOS/Termux).
+It supports different distributions:
+Fedora, CentOS, RHEL, Termux, Debian and Ubuntu
 
 Such a package list can be used for:
 

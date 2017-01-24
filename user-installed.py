@@ -7,6 +7,8 @@
 # - Fedora
 # - CentOS/RHEL
 # - Termux
+# - Debian
+# - Ubuntu
 #
 # 2017, Georg Sauthoff <mail@gms.tf>, GPLv3+
 
