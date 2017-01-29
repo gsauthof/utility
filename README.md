@@ -8,6 +8,8 @@ This repository contains a collection of command line utilities.
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
 - latest-kernel-running - is the latest installed kernel actually running?
 - lockf        - protect command execution with a lock
+- macgen       - randomly generate a private/internal MAC address
+- macgen.py    - Python implementation of macgen
 - pwhatch      - generate secure and easy to communicate passwords
 - silence      - silence stdout/stderr unless command fails
 - silencce     - C++ implementation of silence
@@ -211,6 +213,26 @@ Similar utilties:
 See also:
 
 - [Correct locking in shell scripts?][1]
+
+## Macgen
+
+When creating network interfaces (dummy, bridge, tap, macvlan,
+macvtap, veth, ...) on usually can omit a MAC address because the
+Linux kernel automatically generates and assigns one. Those MAC
+addresses come from the private/internal unicast namespace which
+is described by the following regular expression:
+
+    .[26ae]:..:..:..:..:..
+
+(cf. [locally administered
+addresses](https://en.wikipedia.org/wiki/MAC_address#Universal_vs._local)
+
+The macgen scripts also randomly generate MAC addresses from
+this namespace. Those can be used for explicitly specifying
+MAC addresses in network setup scripts. For example, to get
+reproducible results or to avoid having to query MAC addresses
+of just newly created virtual interfaces.
+
 
 ## Silence
 
