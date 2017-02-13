@@ -8,4 +8,4 @@ from random import randrange, choice
 
 print(hex(randrange(0, 16))[-1]
     + hex(choice(list(i for i in range(16) if i & 0b11 == 0b10)))[-1] + ':'
-    + ':'.join(hex(randrange(0, 256))[-2:] for i in range(5)))
+    + ':'.join('{:02x}'.format(randrange(0, 256))[-2:] for i in range(5)))
