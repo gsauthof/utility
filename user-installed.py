@@ -338,6 +338,8 @@ def main():
     fn = list_fn[dname]
     if fn == list_centos and LooseVersion(version) >= LooseVersion('8.0'):
       list_fedora()
+    elif fn == list_fedora and LooseVersion(version) < LooseVersion('23'):
+      list_centos()
     else:
       fn()
   except KeyError:
