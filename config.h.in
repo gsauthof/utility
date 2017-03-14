@@ -1,0 +1,6 @@
+#ifndef UTILITY_CONFIG_H
+#define UTILITY_CONFIG_H
+
+#cmakedefine HAVE_RENAMEAT2 1
+
+#endif
