@@ -43,7 +43,7 @@ def list_fedora():
   print("\n".join(l))
 
 def test_list_fedora():
-  f_linux_distribution = lambda : ('Fedora', '', '')
+  f_linux_distribution = lambda : ('Fedora', '23', '')
   import collections
   Rec = collections.namedtuple('Rec', ['name'])
   f_dnf = mock.Mock()
