@@ -13,6 +13,7 @@ This repository contains a collection of command line utilities.
 - pwhatch      - generate secure and easy to communicate passwords
 - silence      - silence stdout/stderr unless command fails
 - silencce     - C++ implementation of silence
+- swap         - atomically exchange names of two files on Linux
 - train-spam   - feed spam maildir messages into bogofilter and remove them
 - user-installed.py - list manually installed packages on major distributions
 
@@ -271,6 +272,49 @@ cases (cf.  `test/chronic.py`).
 
 `silencce` is a C++ implementation of `silence`. The main difference
 is the usage of exceptions, thus simplifying the error reporting.
+
+## Swap
+
+[Since 2014 or so](https://lwn.net/Articles/569134/) Linux
+implements the `RENAME_EXCHANGE` flag with the `renameat2(2)`
+system call for atomically exchanging the filenames of two files.
+The `swap` utility exposes this functionality on the command
+line.
+
+Example:
+
+    $ echo bar > bar; echo foo > foo
+    $ ls -i bar foo
+    1193977 bar  1193978 foo
+    $ cat bar foo
+    bar
+    foo
+    $ ./swap bar foo
+    $ ls -i bar foo
+    1193978 bar  1193977 foo
+    $ cat bar foo
+    foo
+    bar
+    $ ./swap bar foo
+    $ ls -i bar foo
+    1193977 bar  1193978 foo
+    $ cat bar foo
+    bar
+    foo
+
+Beside the use cases mentioned in the [`renameat(2)` man
+page](http://man7.org/linux/man-pages/man2/rename.2.html),
+atomically filename swapping can be handy for e.g. log file
+rotation. There, any time window where the log filename is
+missing is eliminated.
+
+The `swap.c` source code also functions as example of how a
+system call can be called when glibc doesn't provide a wrapper for
+it.
+
+Not every filesystem necessarily supports `RENAME_EXCHANGE`, e.g.
+Btrfs supports it [since 2016 (Linux
+4.7)](https://kernelnewbies.org/Linux_4.7#head-0b57342c7fb5702b7741afbd6cd55410f84c4b34).
 
 ## User-Installed
 
