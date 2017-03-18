@@ -1,0 +1,26 @@
+sudo: required
+
+# default is ruby, we set python in case we need to do some
+# advanced scripting in our setup of the C++ tests
+language: python
+
+matrix:
+  include:
+    - os: linux
+      services: docker
+      env: docker_img=gsauthof/fedora-cxx-devel:25 CMAKE_BUILD_TYPE=Debug
+      python: 3.5
+
+before_install:
+  - ./ci/travis/"$TRAVIS_OS_NAME$tag"/before_install.sh
+
+install:
+  - ./ci/travis/"$TRAVIS_OS_NAME$tag"/install.sh
+
+before_script:
+  - ./ci/travis/"$TRAVIS_OS_NAME$tag"/before_script.sh
+
+script:
+  - ./ci/travis/"$TRAVIS_OS_NAME$tag"/script.sh
+
+

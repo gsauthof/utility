@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/gsauthof/utility.svg?branch=master)](https://travis-ci.org/gsauthof/utility)
+
 This repository contains a collection of command line utilities.
 
 - arsort       - topologically sort static libraries
