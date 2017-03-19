@@ -277,7 +277,10 @@ is the usage of exceptions, thus simplifying the error reporting.
 
 ## Swap
 
-[Since 2014 or so](https://lwn.net/Articles/569134/) Linux
+[Since](https://github.com/torvalds/linux/commit/bd42998a6bcb9b1708dac9ca9876e3d304c16f3d)
+[2014
+(3.15)](https://github.com/torvalds/linux/commit/da1ce0670c14d8380e423a3239e562a1dc15fa9e)
+([cf. the development](https://lwn.net/Articles/569134/)) Linux
 implements the `RENAME_EXCHANGE` flag with the `renameat2(2)`
 system call for atomically exchanging the filenames of two files.
 The `swap` utility exposes this functionality on the command
@@ -314,9 +317,21 @@ The `swap.c` source code also functions as example of how a
 system call can be called when glibc doesn't provide a wrapper for
 it.
 
-Not every filesystem necessarily supports `RENAME_EXCHANGE`, e.g.
-Btrfs supports it [since 2016 (Linux
-4.7)](https://kernelnewbies.org/Linux_4.7#head-0b57342c7fb5702b7741afbd6cd55410f84c4b34).
+Not every filesystem necessarily supports `RENAME_EXCHANGE`.
+First supported by EXT4 in 2014, e.g. Btrfs supports it [since 2016
+(Linux 4.7)](https://kernelnewbies.org/Linux_4.7#head-0b57342c7fb5702b7741afbd6cd55410f84c4b34).
+AUFS (a union FS) doesn't support `RENAME_EXCHANGE`, but Overlay
+FS does. AUFS isn't part of the Linux kernel (in contrast to
+Overlay FS) but [used by some Docker
+versions](https://docs.docker.com/engine/userguide/storagedriver/aufs-driver/#configure-docker-with-aufs),
+by default. Docker supports several storage backends and there is
+also a [backend that uses Overlay
+FS](https://docs.docker.com/engine/userguide/storagedriver/overlayfs-driver/#overlayfs-and-docker-performance).
+Some versions use that by default. On Linux, one can verify the
+type of the filesystem a file or directory is part of via:
+
+    $ stat -f -c %T somefile
+
 
 ## User-Installed
 
