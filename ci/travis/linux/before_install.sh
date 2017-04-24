@@ -20,7 +20,7 @@ function configure_overlayfs
   pwd; id; uname -a
 
   sudo service docker stop
-  ls -l /etc/default
+  ls -l /etc/default/docker
   sudo cat /etc/default/docker
   sudo bash -c 'echo "DOCKER_OPTS=\"--storage-driver=overlay\"" \
     >> /etc/default/docker'
