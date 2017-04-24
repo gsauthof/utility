@@ -3,6 +3,7 @@
 This repository contains a collection of command line utilities.
 
 - arsort       - topologically sort static libraries
+- ascsii.py    - pretty print the ASCII table
 - benchmark.sh - run a command multiple times and report stats
 - benchmark.py - run a command multiple times and report stats (more features)
 - check-cert   - check approaching expiration/validate certs of remote servers
@@ -26,6 +27,73 @@ For example:
 
 
 2016, Georg Sauthoff <mail@georg.so>
+
+## ASCII
+
+This utility pretty-prints the [ASCII][ascii] table. By default, the table
+has 4 columns. With 4 columns the table is still compact and some
+properties are easy to spot. For example how upper and lower case
+conversion is just a matter of toggling one bit. Or the
+relationship between control characters and pressing Ctrl and a
+printable character on the same row (think: ESC vs. `Ctrl+[`,
+`TAB` vs. `Ctrl+I`, `CR` vs. `Ctrl+M` etc.)
+
+The number of columns can be changed with the `-c` option. For
+example `-c8` yields a 8 column table, which is how the ASCII
+table is usually printed in (old) manuals. Such a table
+highlights other properties. For example how ASCII somewhat
+simplifies the conversion of [Binary Coded Decimals (BCD)][bcd]
+(think: bitwise-or the BCD nibble with `0b011` to get the ASCI
+decimal character  and bitwise-and with `0b1111` for the other
+direction).
+
+The `-x` option is useful for looking up lesser used control
+character abbreviations, e.g.:
+
+    $ /ascii.py -x EOT
+    EOT = End of Transmission (4)
+
+Example 32x4 table:
+
+       00   01   10   11
+      NUL  SPC    @    `  00000
+      SOH    !    A    a  00001
+      STX    "    B    b  00010
+      ETX    #    C    c  00011
+      EOT    $    D    d  00100
+      ENQ    %    E    e  00101
+      ACK    &    F    f  00110
+      BEL    '    G    g  00111
+       BS    (    H    h  01000
+       HT    )    I    i  01001
+       LF    *    J    j  01010
+       VT    +    K    k  01011
+       FF    ,    L    l  01100
+       CR    -    M    m  01101
+       SO    .    N    n  01110
+       SI    /    O    o  01111
+      DLE    0    P    p  10000
+      DC1    1    Q    q  10001
+      DC2    2    R    r  10010
+      DC3    3    S    s  10011
+      DC4    4    T    t  10100
+      NAK    5    U    u  10101
+      SYN    6    V    v  10110
+      ETB    7    W    w  10111
+      CAN    8    X    x  11000
+       EM    9    Y    y  11001
+       SS    :    Z    z  11010
+      ESC    ;    [    {  11011
+       FS    <    \    |  11100
+       GS    =    ]    }  11101
+       RS    >    ^    ~  11110
+       US    ?    _  DEL  11111
+
+Placing the column headers on top and the row headers at the
+right makes it clear how the resulting code is constructed for a
+character, i.e. the column header is the prefix and the row
+header is the suffix. Example: the R character has the binary
+value `0b1010010`.
 
 ## Check-Cert
 
@@ -422,4 +490,6 @@ or
 [jenkins]: https://jenkins.io/
 [junit]: https://wiki.jenkins-ci.org/display/JENKINS/JUnit+Plugin
 [libcheck]: https://libcheck.github.io/check/
+[ascii]: https://en.wikipedia.org/wiki/ASCII
+[bcd]: https://en.wikipedia.org/wiki/Binary-coded_decimal
 
