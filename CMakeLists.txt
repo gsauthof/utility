@@ -46,7 +46,9 @@ add_custom_target(check-old
   )
 
 add_custom_target(check-new
-  COMMAND py.test-3 ${CMAKE_CURRENT_SOURCE_DIR}/user-installed.py
+  COMMAND py.test-3
+    ${CMAKE_CURRENT_SOURCE_DIR}/user-installed.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/ascii.py
   COMMENT "run pytests"
   )
 
