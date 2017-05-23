@@ -11,6 +11,7 @@ This repository contains a collection of command line utilities.
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
 - latest-kernel-running - is the latest installed kernel actually running?
 - lockf        - protect command execution with a lock
+- lsata.sh     - map ataX kernel log ids to /dev/sdY devices
 - macgen       - randomly generate a private/internal MAC address
 - macgen.py    - Python implementation of macgen
 - pwhatch      - generate secure and easy to communicate passwords
