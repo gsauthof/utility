@@ -9,6 +9,7 @@ This repository contains a collection of command line utilities.
 - check-cert   - check approaching expiration/validate certs of remote servers
 - check-dnsbl  - check if mailservers are DNS blacklisted/have rDNS records
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
+- firefox-addons - lists the installed Firefox addons
 - latest-kernel-running - is the latest installed kernel actually running?
 - lockf        - protect command execution with a lock
 - lsata.sh     - map ataX kernel log ids to /dev/sdY devices
@@ -211,6 +212,27 @@ to `junit.xml`).
   integration of coverage reports into Jenkins. A good solution
   for this is to use the Jenkins [Cobertura plugin](https://wiki.jenkins-ci.org/display/JENKINS/Cobertura+Plugin), generate the coverage report with lcov and convert it with the [lcov-to-cobertura-xml](https://github.com/eriwen/lcov-to-cobertura-xml.git) script. The lcov HTML reports can also be included with the Jenkins [HTML publisher plugin](https://wiki.jenkins-ci.org/display/JENKINS/HTML+Publisher+Plugin)
 - Easiest to integrate with C/C++ builds is the Jenkins [Warnings plugin](https://wiki.jenkins-ci.org/display/JENKINS/Warnings+Plugin) as it natively suports GCC warnings.
+
+
+## Firefox Addons
+
+It lists the installed Firefox addons. Useful for disaster
+recovery purposes. It also solves this problem: you have a bunch of
+Firefox addons installed that you want to replicate to another
+user account.
+
+Example:
+
+As user X on computer A:
+
+    $ ./firefox-addons.py -o addons.csv
+
+Transfer the file to user Y on computer B and execute:
+
+    $ cut -f1 -d, addon.csv | tail -n +2 | xargs firefox
+
+After that, you 'just' have to click a bunch of 'Add to Firefox'
+buttons and close some tabs.
 
 
 ## Latest Kernel
