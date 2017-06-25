@@ -76,7 +76,7 @@ def run(args):
   session = requests.Session()
   addons, exts = args_exts(args.profile)
   with open(args.output, 'w', newline='') as f:
-    w = csv.writer(f)
+    w = csv.writer(f, lineterminator=os.linesep)
     w.writerow(['mozilla_url', 'slug', 'guid', 'name',
         'compatible_android', 'compatible_57', 'url' ])
     for a in addons:
