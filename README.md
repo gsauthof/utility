@@ -9,7 +9,8 @@ This repository contains a collection of command line utilities.
 - check-cert   - check approaching expiration/validate certs of remote servers
 - check-dnsbl  - check if mailservers are DNS blacklisted/have rDNS records
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
-- firefox-addons - lists the installed Firefox addons
+- chromium-addons - list installed Chromium extensions
+- firefox-addons  - list installed Firefox addons
 - latest-kernel-running - is the latest installed kernel actually running?
 - lockf        - protect command execution with a lock
 - lsata.sh     - map ataX kernel log ids to /dev/sdY devices
