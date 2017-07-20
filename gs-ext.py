@@ -39,6 +39,8 @@ def parse_args(*a):
   return args
 
 def pp_row(filename):
+  if not os.path.exists(filename):
+    return
   with open(filename) as f:
     d = json.load(f)
     sys_wide = 'true' if filename.startswith('/usr/share') else 'false'
