@@ -15,6 +15,8 @@ def mk_arg_parser():
         epilog='...')
   p.add_argument('--disabled', '-d', action='store_true',
       help='list installed but disabled extensions')
+  p.add_argument('--enable', metavar='UUID', help='enable an extension')
+  p.add_argument('--disable', metavar='UUID', help='disable an extension')
   return p
 
 def parse_args(*a):
@@ -30,14 +32,14 @@ def pp_row(filename):
 
 def get_enabled():
   s = subprocess.check_output(['gsettings', 'get', 'org.gnome.shell', 'enabled-extensions'], universal_newlines=True)
-  ls = s[2:-2].split("', '")
-  return set(ls)
+  ls = s[2:-3].split("', '")
+  return ls
 
 def list_ext(args):
   home = os.environ['HOME']
   ss = [ home + '/.local/share/gnome-shell/extensions',
       '/usr/share/gnome-shell/extensions' ]
-  enabled = get_enabled()
+  enabled = set(get_enabled())
   print('uuid,name,url,system')
   for base in ss:
     ls = os.listdir(base)
@@ -45,9 +47,25 @@ def list_ext(args):
       if ( args.disabled and l not in enabled ) or (not args.disabled and l in enabled):
         pp_row('{}/{}/metadata.json'.format(base, l))
 
+def toggle_extension(uuid, on):
+  ls = get_enabled()
+  if on:
+    if uuid not in ls:
+      ls.append(uuid)
+  else:
+    if uuid in ls:
+      ls.remove(uuid)
+  a = '[{}]'.format(', '.join("'{}'".format(x) for x in ls))
+  s = subprocess.check_output(['gsettings', 'set', 'org.gnome.shell', 'enabled-extensions', a], universal_newlines=True)
+
 def main(*a):
   args = parse_args(*a)
-  list_ext(args)
+  if args.enable:
+    toggle_extension(args.enable, True)
+  elif args.disable:
+    toggle_extension(args.disable, False)
+  else:
+    list_ext(args)
   return 0
 
 if __name__ == '__main__':
