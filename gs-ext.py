@@ -12,7 +12,21 @@ def mk_arg_parser():
   p = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Manage Gnome-Shell Extensions',
-        epilog='...')
+        epilog='''
+
+Get even more extensions: https://extensions.gnome.org/
+
+Map extensions.gnome.org extension web ID to UUID:
+
+    $ curl -s "https://extensions.gnome.org/extension-info/?pk=$eid&shell_version=$gsv" | jq -r .uuid
+
+(e.g. for eid=7 and gsv=3.24
+
+Given a UUID trigger the install:
+
+    $ qdbus org.gnome.Shell /org/gnome/Shell org.gnome.Shell.Extensions.InstallRemoteExtension $someuuid
+
+''')
   p.add_argument('--disabled', '-d', action='store_true',
       help='list installed but disabled extensions')
   p.add_argument('--enable', metavar='UUID', help='enable an extension')
