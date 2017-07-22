@@ -72,11 +72,11 @@ def list_ext(args):
       '/usr/share/gnome-shell/extensions' ]
   enabled = set(get_enabled())
   print('uuid,name,url,system')
-  for base in ss:
-    ls = os.listdir(base)
-    for l in sorted(ls):
-      if ( args.disabled and l not in enabled ) or (not args.disabled and l in enabled):
-        pp_row('{}/{}/metadata.json'.format(base, l))
+  ls = ( (base, x) for base in ss for x in os.listdir(base) )
+  for base, l in sorted(ls, key=lambda x:x[1]):
+    if ( args.disabled and l not in enabled ) \
+        or (not args.disabled and l in enabled):
+      pp_row('{}/{}/metadata.json'.format(base, l))
 
 def toggle_extension(uuids, on):
   ls = get_enabled()
