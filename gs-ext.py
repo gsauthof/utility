@@ -43,6 +43,8 @@ Given a UUID trigger the install:
   p.add_argument('--dest', help='install destination (default: ~/.local/share/gnome-shell/extensions)')
   p.add_argument('--version', '-v', action='store_true',
       help='Display GNOME shell version')
+  p.add_argument('--version-db', action='store_true',
+      help='Display GNOME shell version')
   p.add_argument('--uuid', metavar='URL/ID', help='translate an extensions.gnome.org URL/ID to a UUID')
   return p
 
@@ -94,10 +96,18 @@ def show_preferences(uuid):
   subprocess.check_output(['qdbus', 'org.gnome.Shell', '/org/gnome/Shell',
       'org.gnome.Shell.Extensions.LaunchExtensionPrefs', uuid])
 
-def gnome_shell_version():
+def gnome_shell_version_dbus():
   o = subprocess.check_output(['qdbus', 'org.gnome.Shell',
       '/org/gnome/Shell', 'org.gnome.Shell.Extensions.ShellVersion'],
       universal_newlines=True)
+  o = o.strip()
+  if o.find('.') != o.rfind('.'):
+    o = o[0:o.rfind('.')]
+  return o
+
+def gnome_shell_version():
+  o = subprocess.check_output(['rpm', '-q', '--qf', '%{version}',
+      'gnome-shell'], universal_newlines=True)
   o = o.strip()
   if o.find('.') != o.rfind('.'):
     o = o[0:o.rfind('.')]
@@ -165,6 +175,8 @@ def main(*a):
     install(args.install, args.dest)
   elif args.version:
     print(gnome_shell_version())
+  elif args.version_db:
+    print(gnome_shell_version_dbus())
   elif args.uuid:
     print(get_uuid(args.uuid))
   else:
