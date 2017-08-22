@@ -186,6 +186,9 @@ def check_dnsbl(addr, bl):
         r = dns.resolver.query(domain, 'a')
     except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
         return 0
+    except dns.exception.Timeout as e:
+        log.warn("Resolving {} timed out: {}".format(domain, e))
+        return 0
     address = list(r)[0].address
     try:
         r = dns.resolver.query(domain, 'txt')
