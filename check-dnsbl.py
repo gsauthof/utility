@@ -15,6 +15,7 @@ import dns.reversename
 import logging
 import re
 import sys
+import time
 
 
 # In[ ]:
@@ -182,13 +183,19 @@ def get_addrs(dest, mx=True):
 def check_dnsbl(addr, bl):
     rev = dns.reversename.from_address(addr)
     domain = str(rev.split(3)[0]) + '.' + bl
-    try:
-        r = dns.resolver.query(domain, 'a')
-    except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
-        return 0
-    except dns.exception.Timeout as e:
-        log.warn("Resolving {} timed out: {}".format(domain, e))
-        return 0
+    retries = 3
+    for i in range(retries):
+      try:
+          r = dns.resolver.query(domain, 'a')
+      except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
+          return 0
+      except dns.exception.Timeout as e:
+          if i + 1 == retries:
+            log.warn("Resolving {} timed out: {}".format(domain, e))
+            return 0
+          time.sleep(23)
+          continue
+      break
     address = list(r)[0].address
     try:
         r = dns.resolver.query(domain, 'txt')
