@@ -63,7 +63,7 @@ default_blacklists = [
 
 # In[ ]:
 
-log_format      = '%(asctime)s - %(levelname)-8s - %(message)s'
+log_format      = '%(asctime)s - %(levelname)-8s - %(message)s [%(name)s]'
 log_date_format = '%Y-%m-%d %H:%M:%S'
 
 ## Simple Setup
