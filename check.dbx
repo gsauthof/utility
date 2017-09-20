@@ -1,0 +1,33 @@
+# See also dcheck.sh for wrapper helper.
+#
+# This function is similar to the runtime-check autocontinue setting
+# of DBX, except that the below function prints a stacktrace for
+# each read and write issue.
+#
+# Build for the DBX that is bundled with Solaris Studio 12.
+#
+# 2017, Georg Sauthoff <mail@gms.tf>, WTFPL
+
+rcheck() {
+  if [ 0 -eq 1 ]; then
+    # skip issues before main() is entered, e.g. caused by constructor
+    # functions in 3rd party shared lbraries.
+    # fails when there are multiple definitions of main
+    stop in main
+    dbxenv rtc_auto_continue on
+    run
+    delete 2
+    dbxenv rtc_auto_continue off
+    cont
+  else
+    run
+  fi
+  while [ -z "$exitcode" ]; do
+    where
+    cont
+  done
+  # At least with Solaris Studio 12.3, exitcode is just a boolean,
+  # meaning that exit-status != 0 are converted to 1.
+  exit $exitcode
+}
+

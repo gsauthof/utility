@@ -10,6 +10,7 @@ This repository contains a collection of command line utilities.
 - check-dnsbl  - check if mailservers are DNS blacklisted/have rDNS records
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
 - chromium-addons - list installed Chromium extensions
+- dcheck       - run a program under DBX's memory check mode
 - firefox-addons  - list installed Firefox addons
 - gs-ext       - list and manage installed Gnome Shell Extensions
 - latest-kernel-running - is the latest installed kernel actually running?
@@ -215,6 +216,35 @@ to `junit.xml`).
   for this is to use the Jenkins [Cobertura plugin](https://wiki.jenkins-ci.org/display/JENKINS/Cobertura+Plugin), generate the coverage report with lcov and convert it with the [lcov-to-cobertura-xml](https://github.com/eriwen/lcov-to-cobertura-xml.git) script. The lcov HTML reports can also be included with the Jenkins [HTML publisher plugin](https://wiki.jenkins-ci.org/display/JENKINS/HTML+Publisher+Plugin)
 - Easiest to integrate with C/C++ builds is the Jenkins [Warnings plugin](https://wiki.jenkins-ci.org/display/JENKINS/Warnings+Plugin) as it natively suports GCC warnings.
 
+
+## DCheck
+
+The dcheck.sh utility runs a program with the supplied arguments
+inside the [DBX debugger][dbx] with [memory checking mode][dbxcheck] enabled.
+
+Example:
+
+    $ dcheck someprog arg1 arg2
+
+For each memory access issue the problem details and a stacktrace
+are printed and the execution is resumed. After the leak report
+is printed the DBX is automatically exited. The main work does
+[Ksh][ksh] function that is called by the wrapper (cf.
+check.dbx). Yes, DBX embeds a Ksh 88 compatible interpreter (in
+contrast to GDB which supports Guile and Python scripting).
+
+The memory check feature of [Solaris Studio's DBX][ssdbx] detects reads of
+uninitialized memory and heap based memory issues like buffer
+overflowing reads and writes (i.e. out-of-bounds writes). It also
+tracks allocations for detecting memory leaks. The DBX
+dynamically install hardware watch points for the access
+checking.
+
+On [Solaris][solaris]/[SPARC][sparc] it is a good and relatively
+widely available alternative to a subset of the functionality of
+excellent open source tools like [Valgrind (memcheck)][valgrind]
+or the [Address/Leak Sanitizers][asan] (which aren't available on
+Solaris/SPARC).
 
 ## Firefox Addons
 
@@ -517,4 +547,11 @@ or
 [libcheck]: https://libcheck.github.io/check/
 [ascii]: https://en.wikipedia.org/wiki/ASCII
 [bcd]: https://en.wikipedia.org/wiki/Binary-coded_decimal
-
+[dbx]: https://en.wikipedia.org/wiki/Dbx_(debugger)
+[dbxcheck]: https://docs.oracle.com/cd/E19205-01/819-5257/blahg/index.html
+[ksh]: https://en.wikipedia.org/wiki/KornShell
+[ssdbx]: https://docs.oracle.com/cd/E24457_01/html/E21993/index.html
+[valgrind]: http://valgrind.org/
+[asan]: https://github.com/google/sanitizers/wiki/AddressSanitizer
+[solaris]: https://en.wikipedia.org/wiki/Solaris_(operating_system)
+[sparc]: https://en.wikipedia.org/wiki/SPARC
