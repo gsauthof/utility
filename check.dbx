@@ -1,14 +1,19 @@
 # See also dcheck.sh for wrapper helper.
 #
-# This function is similar to the runtime-check autocontinue setting
-# of DBX, except that the below function prints a stacktrace for
-# each read and write issue.
+#
+# In comparison with `check -all` plus auto-continue setting enabled, this
+# function additionally:
+#
+# - prints the offending for each issue
+# - prints some context
+# - doesn't redirect the output to a file
 #
 # Build for the DBX that is bundled with Solaris Studio 12.
 #
 # 2017, Georg Sauthoff <mail@gms.tf>, WTFPL
 
 rcheck() {
+  check -all
   if [ 0 -eq 1 ]; then
     # skip issues before main() is entered, e.g. caused by constructor
     # functions in 3rd party shared lbraries.
@@ -24,6 +29,7 @@ rcheck() {
   fi
   while [ -z "$exitcode" ]; do
     where
+    list -w
     cont
   done
   # At least with Solaris Studio 12.3, exitcode is just a boolean,
