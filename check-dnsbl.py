@@ -87,23 +87,30 @@ mechanics and policies of the different lists.
 2016, Georg Sauthoff <mail@georg.so>, GPLv3+''')
   p.add_argument('dests', metavar='DESTINATION', nargs='+',
                  help = 'servers, a MX lookup is done if it is a domain')
-  p.add_argument('--bl', action='append', default=[], help='add another blacklist')
+  p.add_argument('--bl', action='append', default=[],
+      help='add another blacklist')
   p.add_argument('--bl-file', help='read more DNSBL from a CSV file')
-  p.add_argument('--clear', action='store_true', help='clear default list of DNSBL')
+  p.add_argument('--clear', action='store_true',
+      help='clear default list of DNSBL')
   p.add_argument('--debug', action='store_true', help='print debug log messages')
   # cf. https://en.wikipedia.org/wiki/Google_Public_DNS
-  p.add_argument('--google', action='store_true', help="use Google's public DNS nameservers")
+  p.add_argument('--google', action='store_true',
+      help="use Google's public DNS nameservers")
   p.add_argument('--rev', action='store_true', default=True,
-                 help='check reverse DNS record for each domain (default: on)')
+      help='check reverse DNS record for each domain (default: on)')
   p.add_argument('--mx', action='store_true', default=True,
-                 help='try to folow MX entries')
-  p.add_argument('--no-mx', dest='mx', action='store_false', help='ignore any MX records')
+      help='try to folow MX entries')
+  p.add_argument('--no-mx', dest='mx', action='store_false',
+      help='ignore any MX records')
   p.add_argument('--no-rev', action='store_false', dest='rev',
-                 help='disable reverse DNS checking')
+      help='disable reverse DNS checking')
   p.add_argument('--ns', action='append', default=[],
-                 help='use one or more alternate nameserverse')
+      help='use one or more alternate nameserverse')
   # cf. https://en.wikipedia.org/wiki/OpenDNS
-  p.add_argument('--opendns', action='store_true', help="use Cisco's public DNS nameservers")
+  p.add_argument('--opendns', action='store_true',
+      help="use Cisco's public DNS nameservers")
+  p.add_argument('--retries', type=int, default=5,
+      help='Number of retries if request times out (default: 5)')
   return p
 
 
@@ -183,26 +190,18 @@ def get_addrs(dest, mx=True):
 def check_dnsbl(addr, bl):
     rev = dns.reversename.from_address(addr)
     domain = str(rev.split(3)[0]) + '.' + bl
-    retries = 3
-    for i in range(retries):
-      try:
-          r = dns.resolver.query(domain, 'a')
-      except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
-          return 0
-      except dns.exception.Timeout as e:
-          if i + 1 == retries:
-            log.warn("Resolving {} timed out: {}".format(domain, e))
-            return 0
-          time.sleep(23)
-          continue
-      break
+    try:
+        r = dns.resolver.query(domain, 'a')
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
+        return 0
     address = list(r)[0].address
     try:
         r = dns.resolver.query(domain, 'txt')
         txt = list(r)[0].to_text()
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
         txt = ''
-    log.error('OMG, {} is listed in DNSBL {}: {} ({})'.format(addr, bl, address, txt))
+    log.error('OMG, {} is listed in DNSBL {}: {} ({})'.format(
+        addr, bl, address, txt))
     return 1
 
 
@@ -240,11 +239,29 @@ def run(args):
         if args.rev:
             errs = errs + check_rdns(addrs)
         old_errs = errs
-        for (addr, domain) in addrs:
-            for bl in args.bls:
+        ls = [ ( (x[0], x[1], y) for x in addrs for y in args.bls) ]
+        i = 0
+        while ls:
+            ms = []
+            for addr, domain, bl in ls[0]:
                 log.debug('Checking if address {} (via {}) is listed in {} ({})'
                           .format(addr, dest, bl[0], bl[1]))
-                errs = errs + check_dnsbl(addr, bl[0])
+                try:
+                    errs = errs + check_dnsbl(addr, bl[0])
+                except dns.exception.Timeout as e:
+                    m = 'Resolving  {}/{} in {} timed out: {}'.format(
+                        addr, domain, bl[0], e)
+                    if i >= args.retries:
+                        log.warn(m)
+                    else:
+                        log.debug(m)
+                        ms.append( (addr, domain, bl) )
+            ls.pop(0)
+            if ms and i + 1 < args.retries:
+                ls.append(ms)
+                log.debug('({}) Retrying {} timed-out entries'.format(i, len(ms)))
+                time.sleep(23+i*23)
+            i = i + 1
         if old_errs < errs:
             log.error('{} is listed in {} blacklists'.format(dest, errs - old_errs))
     return 0 if errs == 0 else 1
