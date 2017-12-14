@@ -61,7 +61,7 @@ def args_exts(profile):
   a = a['addons']
   e = json.load(open(profile + '/extensions.json'))
   e = e['addons']
-  e = dict((a['id'], a) for a in e)
+  e = dict((x['id'], x) for x in e)
   return (a, e)
 
 # cf. http://addons-server.readthedocs.io/en/latest/topics/api/addons.html#detail
@@ -80,7 +80,7 @@ def run(args):
     w.writerow(['mozilla_url', 'slug', 'guid', 'name',
         'compatible_android', 'compatible_57', 'url' ])
     for a in addons:
-      if not exts[a['id']]['active']:
+      if a['id'] not in exts or not exts[a['id']]['active']:
         continue
       mozilla_url = a['learnmoreURL']
       mozilla_url = mozilla_url.replace('?src=api', '')
