@@ -18,6 +18,7 @@ This repository contains a collection of command line utilities.
 - lsata.sh     - map ataX kernel log ids to /dev/sdY devices
 - macgen       - randomly generate a private/internal MAC address
 - macgen.py    - Python implementation of macgen
+- pargs        - display argv and other vectors of PIDs/core files
 - pwhatch      - generate secure and easy to communicate passwords
 - silence      - silence stdout/stderr unless command fails
 - silencce     - C++ implementation of silence
@@ -358,6 +359,55 @@ this namespace. Those can be used for explicitly specifying
 MAC addresses in network setup scripts. For example, to get
 reproducible results or to avoid having to query MAC addresses
 of just newly created virtual interfaces.
+
+## Pargs
+
+Pargs displays the argument vector (argv) of a running process or
+the one that is included in the core file of a process, under
+Linux.  In addition, it supports printing the environment vector
+(envp) and the auxiliary vector (auxv) including some pretty
+printing and dereferencing some interesting addresses (e.g. the
+executable filename or the platform string).
+
+Examples:
+
+    $ pargs $pid
+    $ pargs -l $pid
+    $ pargs -aex $pid
+    $ pargs -aexv some_core
+
+It is inspired by Solaris' pargs command. Similar to Linux,
+Solaris also has a `/proc` filesystem that provides much
+information about each process. In contrast to Linux, the pseudo
+files all contain binary data, i.e. following some struct
+definitions. Thus, it's natural that Solaris has a whole p-family
+of commands to deal with processes. Some like `pgrep` and `pkill`
+are also available on Linux, for a long time, but to the authors
+knowledge, this `pargs` in this repository is the first Linux pargs.
+
+The default mode, displaying the argument vector of running
+process (`pargs $pid`) can be approximated under Linux like this:
+
+    $ tr '\0' '\n' < /proc/$pid/cmdline
+
+Displaying the environment vector works analogously, but the
+auxiliary vector (`/proc/$pid/auxv`) is more complicated because
+it's just an array of integers (64 or 32 bit depending on the
+architecture/process) that also references addresses in the
+processes address space.
+
+The complexity grows when we want to obtain the same information
+from a core file. Some can be displayed from gdb, but this
+requires the availability of the executable file, as well.
+`pargs` just requires the core file.
+
+In comparison to Solaris, some parts arguably can be obtained
+more easily (e.g.  `/proc/$pid/{cmdline,environ}`) while others
+require more effort, on Linux. On Solaris, the core file contains
+some structs that include copies of the argument and environment
+vectors, thus, it's straight forward to access that information.
+This is not the case on Linux, where on has to search for the
+vectors in the right memory section.
 
 
 ## Silence

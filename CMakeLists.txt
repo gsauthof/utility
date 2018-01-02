@@ -38,6 +38,25 @@ add_executable(lockf lockf.c)
 add_executable(swap swap.c)
 set_property(TARGET swap PROPERTY INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR})
 
+add_executable(pargs pargs.c)
+set_property(TARGET pargs PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
+
+# NOTE: when compiling with sanitizers (address etc.) it's important
+# that these test programs are compiled without those flags because
+# we need to create some core files of them.
+# Apparently, the sanitizing might blow up the core files, i.e. yielding:
+# warning: Failed to write corefile contents (No space left on device).
+add_executable(snooze test/snooze.c)
+set_target_properties(snooze
+  PROPERTIES COMPILE_FLAGS "-fno-sanitize=all" LINK_FLAGS "-fno-sanitize=all")
+add_executable(snooze32 test/snooze.c)
+set_target_properties(snooze32
+  PROPERTIES COMPILE_FLAGS "-m32 -fno-sanitize=all"
+  LINK_FLAGS "-m32 -fno-sanitize=all")
+add_executable(busy_snooze test/busy_snooze.c)
+set_target_properties(busy_snooze
+  PROPERTIES COMPILE_FLAGS "-fno-sanitize=all" LINK_FLAGS "-fno-sanitize=all")
+
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
@@ -49,6 +68,8 @@ add_custom_target(check-new
   COMMAND py.test-3
     ${CMAKE_CURRENT_SOURCE_DIR}/user-installed.py
     ${CMAKE_CURRENT_SOURCE_DIR}/ascii.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/pargs.py
+  DEPENDS pargs snooze32 snooze busy_snooze
   COMMENT "run pytests"
   )
 
