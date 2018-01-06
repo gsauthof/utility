@@ -4,6 +4,8 @@ set -eux
 
 . "${BASH_SOURCE%/*}"/config.sh
 
+: ${docker_flags:=}
+
 function setup_dirs
 {
   mkdir -p "$build"
@@ -32,6 +34,7 @@ function start_docker
   docker create --name devel \
     -v "$src":/srv/src:ro,Z \
     -v "$build":/srv/build:Z \
+    $docker_flags \
     $docker_img
 
   docker start devel
