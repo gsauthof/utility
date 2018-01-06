@@ -8,7 +8,7 @@ matrix:
   include:
     - os: linux
       services: docker
-      env: docker_img=gsauthof/fedora-cxx-devel:25 CMAKE_BUILD_TYPE=Debug
+      env: docker_img=gsauthof/fedora-cxx-devel:27 CMAKE_BUILD_TYPE=Debug
       python: 3.5
 
 before_install:
