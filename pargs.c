@@ -334,7 +334,7 @@ static int read_mem_str(char **line, size_t *n, FILE *m, uint64_t off)
 {
   int p = fseek(m, off, SEEK_SET);
   if (p == -1) {
-    perror(0);
+    perror("fseek /proc/$pid/mem failed");
     return -1;
   }
   ssize_t r = getdelim(line, n, 0, m);
@@ -349,7 +349,7 @@ static int read_mem_rand(char **line, size_t *n, FILE *m, uint64_t off)
 {
   int p = fseek(m, off, SEEK_SET);
   if (p == -1) {
-    perror(0);
+    perror("fseek /proc/$pid/mem failed");
     return -1;
   }
   unsigned char v[16];
@@ -391,8 +391,9 @@ static int pp_aux_ref(uint64_t key, uint64_t val, char **line, size_t *n,
     const Args *args)
 {
   switch (key) {
-    case AT_PLATFORM:
+    case AT_BASE_PLATFORM:
     case AT_EXECFN:
+    case AT_PLATFORM:
       if (read_mem_str(line, n, m, val))
         return -1;
       fprintf(o, " %s", *line);
