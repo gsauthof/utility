@@ -6,22 +6,23 @@
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <ctype.h> // isdigit()
+#include <ctype.h>      // isdigit()
 #include <errno.h>
-#include <elf.h> // for AT_* defines
-#include <fcntl.h> // open()
+#include <elf.h>        // for AT_* defines
+#include <fcntl.h>      // open()
 #include <inttypes.h>
-#include <sys/mman.h> // mmap(), munmap()
+#include <limits.h>     // LONG_MAX
+#include <sys/mman.h>   // mmap(), munmap()
 #include <sys/ptrace.h> // ptrace()
-#include <sys/stat.h> // stat(), open()
-#include <sys/types.h> // waitid(), open()
-#include <sys/wait.h> // waitid()
+#include <sys/stat.h>   // stat(), open()
+#include <sys/types.h>  // waitid(), open()
+#include <sys/wait.h>   // waitid()
 #include <stdbool.h>
-#include <stdio.h> // perror()
+#include <stdio.h>      // perror()
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> // close()
-#include <stdarg.h> // va_start(), va_end()
+#include <unistd.h>     // close()
+#include <stdarg.h>     // va_start(), va_end()
 
 static bool debug_enabled;
 
@@ -330,9 +331,47 @@ static void pp_hwcap(uint64_t val, FILE *o)
 #endif
 }
 
+
+// since long is signed and be as small as 32 bit directly using fseek
+// is not sufficient, e.g.:
+// - even when both pargs and the target process are ILP32 (e.g. x86), we can
+//   get into trouble when seeking beyond 2^31 - 1 (because long is signed).
+static int u64_fseek(FILE *f, uint64_t off)
+{
+  if (sizeof(long) >= 8) {
+    int r = fseek(f, off, SEEK_SET);
+    return r;
+  } else {
+    uint64_t m = LONG_MAX;
+    long ml = LONG_MAX;
+    if (off > m) {
+      int r = fseek(f, ml, SEEK_SET);
+      if (r)
+        return r;
+      uint64_t l = off - m;
+      for (;;) {
+        if (l > m) {
+          int r = fseek(f, ml, SEEK_CUR);
+          if (r)
+            return r;
+          l -= m;
+        } else {
+          int r = fseek(f, l, SEEK_CUR);
+          return r;
+        }
+      }
+    } else {
+      int r = fseek(f, off, SEEK_SET);
+      return r;
+    }
+  }
+  // unreachable
+  return 0;
+}
+
 static int read_mem_str(char **line, size_t *n, FILE *m, uint64_t off)
 {
-  int p = fseek(m, off, SEEK_SET);
+  int p = u64_fseek(m, off);
   if (p == -1) {
     perror("fseek /proc/$pid/mem failed");
     return -1;
@@ -347,7 +386,7 @@ static int read_mem_str(char **line, size_t *n, FILE *m, uint64_t off)
 
 static int read_mem_rand(char **line, size_t *n, FILE *m, uint64_t off)
 {
-  int p = fseek(m, off, SEEK_SET);
+  int p = u64_fseek(m, off);
   if (p == -1) {
     perror("fseek /proc/$pid/mem failed");
     return -1;
