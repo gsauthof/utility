@@ -10,7 +10,7 @@ matrix:
       services: docker
       env:
         docker_img=gsauthof/fedora-cxx-devel:27
-        docker_flags=--cap-add=SYS_PTRACE
+        docker_flags="--cap-add=SYS_PTRACE --security-opt apparmor:unconfined"
         CMAKE_BUILD_TYPE=Debug
       python: 3.5
 
