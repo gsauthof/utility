@@ -300,10 +300,12 @@ def decompress_core_file(request):
   core_xz = request.param
   yield from d_core_file(core_xz)
 
-@pytest.fixture(scope='module')
-def decompress_sectionless_core(request):
-  core_xz = test_dir + '/nosec.core.snooze.x86_64.coredumpctl.11677.xz'
-  yield from d_core_file(core_xz)
+# to test a specific core file instance
+#
+#@pytest.fixture(scope='module')
+#def decompress_xyz_core(request):
+#  core_xz = test_dir + '/xyz.core'
+#  yield from d_core_file(core_xz)
 
 def check_core(mk_core_file):
   exe, core_file = mk_core_file
@@ -325,14 +327,16 @@ def test_core(mk_core_file):
 def test_stored_core(decompress_core_file):
   check_core(decompress_core_file);
 
-def test_store_core_without_sections(decompress_sectionless_core):
-  exe, core_file = decompress_sectionless_core
-  pid = core_file[core_file.rfind('.')+1:]
-  p = subprocess.run([pargs, core_file], stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE, universal_newlines=True)
-  assert p.returncode == 1
-  assert not p.stdout
-  assert p.stderr == 'File {} has no sections.\n'.format(core_file)
+# to test a specific core file instance
+#
+#def test_store_core_xyz(decompress_xyz_core):
+#  exe, core_file = decompress_sectionless_core
+#  pid = core_file[core_file.rfind('.')+1:]
+#  p = subprocess.run([pargs, core_file], stdout=subprocess.PIPE,
+#      stderr=subprocess.PIPE, universal_newlines=True)
+#  assert p.returncode == 1
+#  assert not p.stdout
+#  assert p.stderr == 'some error'
 
 def test_core_envp(mk_core_file):
   exe, core_file = mk_core_file
