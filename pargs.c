@@ -452,7 +452,7 @@ static int fput_proc_auxv_file(FILE *f, bool is_64, FILE *m, FILE *o,
     if (i)
       fputc('\n', o);
     if (v[0] < sizeof auxv_type_map / sizeof auxv_type_map[0])
-      fprintf(o, "%-15s", auxv_type_map[v[0]].key);
+      fprintf(o, "%-16s", auxv_type_map[v[0]].key);
     else
       fprintf(o, "unk_%" PRIu64, v[0]);
     fprintf(o, " 0x%.16" PRIx64, v[1]);

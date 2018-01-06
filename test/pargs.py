@@ -128,7 +128,7 @@ def test_auxv():
   assert not p.stderr
   ls = p.stdout.splitlines()
   assert ls[0] == '''{}: {} 1 0'''.format(c.pid, snooze)
-  v = '\nAT_PAGESZ       0x{:016x} {} KiB\n'.format(os.sysconf('SC_PAGESIZE'),
+  v = '\nAT_PAGESZ        0x{:016x} {} KiB\n'.format(os.sysconf('SC_PAGESIZE'),
       int(os.sysconf('SC_PAGESIZE')/1024))
   assert v in p.stdout
   c.wait()
@@ -180,7 +180,7 @@ def test_auxv32():
   assert ls[0] == '''{}: {} 1 42'''.format(c.pid, snooze32)
   assert sum(not x for x in ls) == 0
   assert '\nAT_PLATFORM ' in p.stdout
-  v = '\nAT_UID          0x{0:016x} {0}\n'.format(os.getuid())
+  v = '\nAT_UID           0x{0:016x} {0}\n'.format(os.getuid())
   assert v in p.stdout
   c.wait()
 
@@ -215,7 +215,7 @@ def test_auxv_verbose():
   assert not p.stderr
   ls = p.stdout.splitlines()
   assert ls[0] == '''{}: {} 1 42'''.format(c.pid, snooze)
-  v = '\nAT_EUID         0x{0:016x} {0} (Effective uid)\n'.format(os.geteuid())
+  v = '\nAT_EUID          0x{0:016x} {0} (Effective uid)\n'.format(os.geteuid())
   assert v in p.stdout
   c.wait()
 
@@ -258,7 +258,7 @@ def test_proc_mem_rand():
   assert ls[0] == '''{}: {} 1 fo o'''.format(c.pid, busy_snooze)
   l = [x for x in ls if x.startswith('AT_RANDOM')][0]
   assert re.match(
-      'AT_RANDOM       0x[0-9a-f]{16} [0-9a-f]{2}( [0-9a-f]{2}){15}', l)
+      'AT_RANDOM        0x[0-9a-f]{16} [0-9a-f]{2}( [0-9a-f]{2}){15}', l)
   c.wait()
 
 def test_hwcap():
@@ -271,7 +271,7 @@ def test_hwcap():
   ls = p.stdout.splitlines()
   l = [x for x in ls if x.startswith('AT_HWCAP')][0]
   assert re.match(
-      'AT_HWCAP        0x[0-9a-f]{16} [0-9a-z]+( \| [0-9a-z]+)*', l)
+      'AT_HWCAP         0x[0-9a-f]{16} [0-9a-z]+( \| [0-9a-z]+)*', l)
   c.wait()
 
 @pytest.fixture(scope='module', params=[snooze, snooze32])
@@ -356,7 +356,7 @@ def check_core_auxv(mk_core_file):
   assert ls[0] == "core '{0:}' of {1:}: {2:} 10 hello world".format(
       core_file, pid, exe)
   l = [x for x in ls if x.startswith('AT_PAGESZ') ][0]
-  assert l == 'AT_PAGESZ       0x{:016x} {} KiB'.format(
+  assert l == 'AT_PAGESZ        0x{:016x} {} KiB'.format(
       os.sysconf('SC_PAGESIZE'), int(os.sysconf('SC_PAGESIZE')/1024))
   l = [x for x in ls if x.startswith('AT_EXECFN')][0]
   assert l[l.rfind(' ')+1:] == exe
@@ -377,7 +377,7 @@ def check_core_auxv_random(mk_core_file):
   ls = p.stdout.splitlines()
   l = [x for x in ls if x.startswith('AT_RANDOM')][0]
   assert re.match(
-      'AT_RANDOM       0x[0-9a-f]{16} [0-9a-f]{2}( [0-9a-f]{2}){15}', l)
+      'AT_RANDOM        0x[0-9a-f]{16} [0-9a-f]{2}( [0-9a-f]{2}){15}', l)
 
 def test_core_auxv_random(mk_core_file):
   check_core_auxv_random(mk_core_file)
