@@ -117,7 +117,7 @@ static void post_process_arguments(Arguments *a)
     int fd = mkstemp(s);
     check_exit(fd, "creating temp file");
     int r = close(fd);
-    check_exit(fd, "closing temp file");
+    check_exit(r, "closing temp file");
     a->unlink_source = true;
     a->source = s;
   }
@@ -239,7 +239,6 @@ static void supervise_child(pid_t pid, const Arguments *a)
     check_exit(r, "installing SIGTERM handler");
   }
 #endif
-  int status = 0;
   siginfo_t siginfo;
   r = waitid(P_PID, pid, &siginfo, WEXITED);
   check_exit(r, "waiting on child");
