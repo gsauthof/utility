@@ -13,6 +13,10 @@ matrix:
         CMAKE_BUILD_TYPE=Debug
       python: 3.5
     - os: linux
+      addons:
+        apt:
+          packages:
+            - libc6-dev-i386
       env:
         CMAKE_BUILD_TYPE=Release
         CC=clang
