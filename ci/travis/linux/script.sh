@@ -8,7 +8,7 @@ if [ "$docker_img" ]; then
   docker exec devel \
     /srv/src/ci/docker/run.sh
 else
-  # PWD -> build
+  cd build
   pwd
   ninja -v check
 fi
