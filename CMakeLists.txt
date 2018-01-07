@@ -74,7 +74,8 @@ add_custom_target(check-old
   )
 
 add_custom_target(check-new
-  COMMAND py.test-3
+  # work around py.test-3 pytest etc. system differences
+  COMMAND python3 -m pytest -v
     ${CMAKE_CURRENT_SOURCE_DIR}/user-installed.py
     ${CMAKE_CURRENT_SOURCE_DIR}/ascii.py
     ${CMAKE_CURRENT_SOURCE_DIR}/test/pargs.py

@@ -50,7 +50,7 @@ if [ "$docker_img" ]; then
   setup_dirs
   start_docker
 else
-  pip3 install psutil
+  pip3 install psutil pytest
   exit 0
 fi
 
