@@ -44,6 +44,11 @@ bool help_requested(int argc, char **argv)
         flags);
     return r;
   }
+
+  // e.g. necessary on Ubuntu 14.04 (Trusty)
+  #ifndef RENAME_EXCHANGEj
+    #define RENAME_EXCHANGE         (1 << 1)
+  #endif
 #endif
 
 int main(int argc, char **argv)
