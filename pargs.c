@@ -529,7 +529,7 @@ static FILE *fopen_mem(const char *pid, bool stop_process)
     // XXX for root, we just need to stop the process?
     long r = ptrace(PTRACE_ATTACH, p, 0, 0);
     if (r == -1) {
-      perror(0);
+      perror("ptrace attach failed");
       return 0;
     }
     siginfo_t info;
@@ -543,7 +543,7 @@ static FILE *fopen_mem(const char *pid, bool stop_process)
   sprintf(filename, "/proc/%s/mem", pid);
   FILE *f = fopen(filename, "rb");
   if (!f) {
-    perror(0);
+    perror("open /proc/$pid/mem failed");
   }
   return f;
 }
