@@ -17,6 +17,7 @@ matrix:
         apt:
           packages:
             - libc6-dev-i386
+            - gcc-multilib
       env:
         CMAKE_BUILD_TYPE=Release
         CC=clang
