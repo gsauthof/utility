@@ -45,6 +45,15 @@ function start_docker
   docker ps
 }
 
+function enable_ptrace
+{
+  # for e.g. gcore
+  cat /proc/sys/kernel/yama/ptrace_scope
+  sudo sysctl kernel.yama.ptrace_scope=0
+  cat /proc/sys/kernel/yama/ptrace_scope
+}
+
+enable_ptrace
 if [ "$docker_img" ]; then
   configure_overlayfs
   setup_dirs
