@@ -26,7 +26,8 @@ simple_env = dict(x for x in os.environ.items()
                     if '\n' not in x[1] and '\r' not in x[1])
 
 def runs_inside_docker():
-  # since ptrace is now enabled at various places ...
+  # since ptrace is now enabled at various places we don't
+  # need to check anymore ...
   # .travis.yml (docker_flags)
   # ci/travis/linux/before_install.sh (enable_ptrace())
   return False
@@ -38,6 +39,14 @@ def runs_inside_docker():
   return False
 
 skip_in_container = pytest.mark.skipif(runs_inside_docker(),
+    reason='non-docker environment required')
+
+def root_proc_count():
+  p = subprocess.run(['pgrep', '-c', '-u', 'root'], stdout=subprocess.PIPE,
+      universal_newlines=True)
+  return int(p.stdout)
+
+skip_if_isolated = pytest.mark.skipif(root_proc_count() == 0,
     reason='non-docker environment required')
 
 def test_noargs():
@@ -215,7 +224,7 @@ def test_no_such_pid():
   assert p.stdout == '{}: '.format(c.pid)
   assert p.stderr == 'No such file or directory\n'
 
-@skip_in_container
+@skip_if_isolated
 @pytest.mark.parametrize("opts", [ [ '-e'], ['-x'] ])
 def test_no_perm(opts):
   q = subprocess.run(['pgrep', '-u', 'root', '^writeback$'],
