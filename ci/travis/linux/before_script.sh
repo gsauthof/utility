@@ -20,4 +20,16 @@ function switch_container
   fi
 }
 
-switch_container
+function compile
+{
+  mkdir build
+  cd build
+  cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ..
+  make
+}
+
+if [ "$docker_img" ]; then
+  switch_container
+else
+  compile
+fi

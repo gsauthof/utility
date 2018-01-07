@@ -5,6 +5,7 @@ set -eux
 . "${BASH_SOURCE%/*}"/config.sh
 
 : ${docker_flags:=}
+: ${docker_img:=}
 
 function setup_dirs
 {
@@ -43,6 +44,10 @@ function start_docker
 
   docker ps
 }
+
+if [ -z "$docker_img" ]; then
+  exit 0
+fi
 
 configure_overlayfs
 setup_dirs
