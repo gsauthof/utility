@@ -45,12 +45,14 @@ function start_docker
   docker ps
 }
 
-if [ -z "$docker_img" ]; then
+if [ "$docker_img" ]; then
+  configure_overlayfs
+  setup_dirs
+  start_docker
+else
+  pip3 install psutil
   exit 0
 fi
 
-configure_overlayfs
-setup_dirs
-start_docker
 
 
