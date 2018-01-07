@@ -19,6 +19,7 @@ matrix:
             - libc6-dev-i386
             - gcc-multilib
             - ninja-build
+            - gdb
       env:
         CMAKE_BUILD_TYPE=Release
         CC=clang
