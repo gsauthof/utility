@@ -26,6 +26,10 @@ simple_env = dict(x for x in os.environ.items()
                     if '\n' not in x[1] and '\r' not in x[1])
 
 def runs_inside_docker():
+  # since ptrace is now enabled at various places ...
+  # .travis.yml (docker_flags)
+  # ci/travis/linux/before_install.sh (enable_ptrace())
+  return False
   with open('/proc/1/cgroup') as f:
     e = re.compile('[0-9]+:pids:/docker/')
     for line in f:
