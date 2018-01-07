@@ -4,7 +4,6 @@ set -ex
 
 . "${BASH_SOURCE%/*}"/config.sh
 
-
 function switch_container
 {
   if [ "$docker_img" -a "$docker_img_b" ] ; then
