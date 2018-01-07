@@ -22,6 +22,18 @@ snooze32 = os.getenv('snooze32', './snooze32')
 snooze = os.getenv('snooze', './snooze')
 busy_snooze = os.getenv('busy_snooze', './busy_snooze')
 
+
+def runs_inside_docker():
+  with open('/proc/1/cgroup') as f:
+    e = re.compile('[0-9]+:pids:/docker/')
+    for line in f:
+      if e.match(line):
+        return True
+  return False
+
+skip_in_container = pytest.mark.skipif(runs_inside_docker(),
+    reason='non-docker environment required')
+
 def test_noargs():
   p = subprocess.run([pargs], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
       universal_newlines=True)
@@ -119,6 +131,7 @@ def test_cmdline():
   c.wait()
 
 
+@skip_in_container
 def test_auxv():
   c = subprocess.Popen([snooze, '1', '0'])
   assert c.pid
@@ -133,6 +146,7 @@ def test_auxv():
   assert v in p.stdout
   c.wait()
 
+@skip_in_container
 @pytest.mark.parametrize("opts", [ ['-eax'], ['-xea'], ['-a', '-x', '-e' ] ])
 def test_eax(opts):
   c = subprocess.Popen([snooze, '1', '0'])
@@ -169,6 +183,7 @@ def test_multiple():
   c.wait()
   d.wait()
 
+@skip_in_container
 def test_auxv32():
   c = subprocess.Popen([snooze32, '1', '42'])
   assert c.pid
@@ -194,6 +209,7 @@ def test_no_such_pid():
   assert p.stdout == '{}: '.format(c.pid)
   assert p.stderr == 'No such file or directory\n'
 
+@skip_in_container
 @pytest.mark.parametrize("opts", [ [ '-e'], ['-x'] ])
 def test_no_perm(opts):
   q = subprocess.run(['pgrep', '-u', 'root', '^writeback$'],
@@ -206,6 +222,7 @@ def test_no_perm(opts):
   assert p.stdout == '{}: \n'.format(pid)
   assert p.stderr == 'Permission denied\n'
 
+@skip_in_container
 def test_auxv_verbose():
   c = subprocess.Popen([snooze, '1', '42'])
   assert c.pid
@@ -233,6 +250,7 @@ def test_long_enough():
   assert p.stdout == '12345678901234567890: '
   assert p.stderr == 'No such file or directory\n'
 
+@skip_in_container
 @pytest.mark.parametrize("opts", [ [], ['-s'] ])
 def test_proc_mem(opts):
   c = subprocess.Popen([busy_snooze, '1', 'fo o'], stdout=subprocess.DEVNULL)
@@ -247,6 +265,7 @@ def test_proc_mem(opts):
   assert l.endswith(busy_snooze)
   c.wait()
 
+@skip_in_container
 def test_proc_mem_rand():
   c = subprocess.Popen([busy_snooze, '1', 'fo o'], stdout=subprocess.DEVNULL)
   assert c.pid
@@ -261,6 +280,7 @@ def test_proc_mem_rand():
       'AT_RANDOM        0x[0-9a-f]{16} [0-9a-f]{2}( [0-9a-f]{2}){15}', l)
   c.wait()
 
+@skip_in_container
 def test_hwcap():
   c = subprocess.Popen([busy_snooze, '1', 'fo o'], stdout=subprocess.DEVNULL)
   assert c.pid
@@ -321,6 +341,7 @@ argv[2]: hello
 argv[3]: world
 '''.format(core_file, pid, exe)
 
+@skip_in_container
 def test_core(mk_core_file):
   check_core(mk_core_file);
 
@@ -338,6 +359,7 @@ def test_stored_core(decompress_core_file):
 #  assert not p.stdout
 #  assert p.stderr == 'some error'
 
+@skip_in_container
 def test_core_envp(mk_core_file):
   exe, core_file = mk_core_file
   p = subprocess.run([pargs, '-e', core_file], stdout=subprocess.PIPE,
@@ -365,6 +387,7 @@ def check_core_auxv(mk_core_file):
   l = [x for x in ls if x.startswith('AT_EXECFN')][0]
   assert l[l.rfind(' ')+1:] == exe
 
+@skip_in_container
 def test_core_auxv(mk_core_file):
   check_core_auxv(mk_core_file)
 
@@ -383,6 +406,7 @@ def check_core_auxv_random(mk_core_file):
   assert re.match(
       'AT_RANDOM        0x[0-9a-f]{16} [0-9a-f]{2}( [0-9a-f]{2}){15}', l)
 
+@skip_in_container
 def test_core_auxv_random(mk_core_file):
   check_core_auxv_random(mk_core_file)
 
@@ -406,6 +430,7 @@ def check_core_all(mk_core_file):
   l = [x for x in ls if x.startswith('AT_EGID')][0]
   assert l.endswith('(Effective gid)')
 
+@skip_in_container
 def test_core_all(mk_core_file):
   check_core_all(mk_core_file)
 
