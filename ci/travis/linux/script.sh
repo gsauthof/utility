@@ -9,5 +9,6 @@ if [ "$docker_img" ]; then
     /srv/src/ci/docker/run.sh
 else
   # PWD -> build
-  make check
+  pwd
+  ninja -v check
 fi

@@ -23,8 +23,9 @@ function compile
 {
   mkdir build
   cd build
+  pwd
   cmake -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE ..
-  make
+  ninja -v
 }
 
 if [ "$docker_img" ]; then
