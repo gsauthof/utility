@@ -22,6 +22,8 @@ snooze32 = os.getenv('snooze32', './snooze32')
 snooze = os.getenv('snooze', './snooze')
 busy_snooze = os.getenv('busy_snooze', './busy_snooze')
 
+simple_env = dict(x for x in os.environ.items()
+                    if '\n' not in x[1] and '\r' not in x[1])
 
 def runs_inside_docker():
   with open('/proc/1/cgroup') as f:
@@ -89,7 +91,7 @@ argv[2]: 0
   c.wait()
 
 def test_envp():
-  c = subprocess.Popen([snooze, '1', '0'])
+  c = subprocess.Popen([snooze, '1', '0'], env=simple_env)
   assert c.pid
   p = subprocess.run([pargs, '-e', str(c.pid)], stdout=subprocess.PIPE,
       stderr=subprocess.PIPE, universal_newlines=True)
@@ -106,8 +108,8 @@ def test_envp():
 def test_argv_envp(opts):
   c = subprocess.Popen([snooze, '1', '0'])
   assert c.pid
-  p = subprocess.run([pargs] + opts + [  str(c.pid)], stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE, universal_newlines=True)
+  p = subprocess.run([pargs] + opts + [  str(c.pid)], env=simple_env,
+      stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
   assert p.returncode == 0
   assert not p.stderr
   ls = p.stdout.splitlines()
@@ -149,7 +151,7 @@ def test_auxv():
 @skip_in_container
 @pytest.mark.parametrize("opts", [ ['-eax'], ['-xea'], ['-a', '-x', '-e' ] ])
 def test_eax(opts):
-  c = subprocess.Popen([snooze, '1', '0'])
+  c = subprocess.Popen([snooze, '1', '0'], env=simple_env)
   assert c.pid
   p = subprocess.run([pargs] + opts + [ str(c.pid)], stdout=subprocess.PIPE,
       stderr=subprocess.PIPE, universal_newlines=True)
@@ -298,7 +300,7 @@ def test_hwcap():
 def mk_core_file(request):
   exe = request.param
   with tempfile.TemporaryDirectory() as d:
-    c = subprocess.Popen([exe, '10', 'hello', 'world'])
+    c = subprocess.Popen([exe, '10', 'hello', 'world'], env=simple_env)
     core = '{}/core'.format(d)
     subprocess.check_output(['gcore', '-o', core, str(c.pid)])
     c.terminate()
