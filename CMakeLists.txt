@@ -15,10 +15,19 @@ IF(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   string(REPLACE "-Wall" "" CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-missing-braces")
 
   add_subdirectory(libixxx)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU"
+    AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5")
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(NO_SANITIZE "-fno-sanitize=address")
+  endif()
+else()
+  set(NO_SANITIZE "-fno-sanitize=all")
 endif()
 
 add_executable(silence silence.c)
@@ -48,14 +57,14 @@ set_property(TARGET pargs PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
 # warning: Failed to write corefile contents (No space left on device).
 add_executable(snooze test/snooze.c)
 set_target_properties(snooze
-  PROPERTIES COMPILE_FLAGS "-fno-sanitize=all" LINK_FLAGS "-fno-sanitize=all")
+  PROPERTIES COMPILE_FLAGS "${NO_SANITIZE}" LINK_FLAGS "${NO_SANITIZE}")
 add_executable(snooze32 test/snooze.c)
 set_target_properties(snooze32
-  PROPERTIES COMPILE_FLAGS "-m32 -fno-sanitize=all"
-  LINK_FLAGS "-m32 -fno-sanitize=all")
+  PROPERTIES COMPILE_FLAGS "-m32 ${NO_SANITIZE}"
+  LINK_FLAGS "-m32 ${NO_SANITIZE}")
 add_executable(busy_snooze test/busy_snooze.c)
 set_target_properties(busy_snooze
-  PROPERTIES COMPILE_FLAGS "-fno-sanitize=all" LINK_FLAGS "-fno-sanitize=all")
+  PROPERTIES COMPILE_FLAGS "${NO_SANITIZE}" LINK_FLAGS "${NO_SANITIZE}")
 
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
