@@ -199,10 +199,11 @@ def test_multiple():
   d.wait()
 
 @skip_in_container
-def test_auxv32():
+@pytest.mark.parametrize('width', ['', '32'])
+def test_auxv32(width):
   c = subprocess.Popen([snooze32, '1', '42'])
   assert c.pid
-  p = subprocess.run([pargs, '-x', str(c.pid)], stdout=subprocess.PIPE,
+  p = subprocess.run([pargs + width, '-x', str(c.pid)], stdout=subprocess.PIPE,
       stderr=subprocess.PIPE, universal_newlines=True)
   assert p.returncode == 0
   assert not p.stderr
