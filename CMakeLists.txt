@@ -62,6 +62,12 @@ set_property(TARGET swap PROPERTY INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR})
 add_executable(pargs pargs.c)
 set_property(TARGET pargs PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
 
+add_executable(pargs32 pargs.c)
+set_property(TARGET pargs32 PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
+set_target_properties(pargs32
+  PROPERTIES COMPILE_FLAGS "-m32 ${NO_SANITIZE}"
+  LINK_FLAGS "-m32 ${NO_SANITIZE}")
+
 # NOTE: when compiling with sanitizers (address etc.) it's important
 # that these test programs are compiled without those flags because
 # we need to create some core files of them.
@@ -92,7 +98,7 @@ add_custom_target(check-new
     ${CMAKE_CURRENT_SOURCE_DIR}/user-installed.py
     ${CMAKE_CURRENT_SOURCE_DIR}/ascii.py
     ${CMAKE_CURRENT_SOURCE_DIR}/test/pargs.py
-  DEPENDS pargs snooze32 snooze busy_snooze
+  DEPENDS pargs pargs32 snooze32 snooze busy_snooze
   COMMENT "run pytests"
   )
 

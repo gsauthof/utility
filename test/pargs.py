@@ -386,10 +386,10 @@ def test_core_envp(mk_core_file):
       continue
     assert ': {}={}\n'.format(key, val) in p.stdout
 
-def check_core_auxv(mk_core_file):
+def check_core_auxv(cmd, mk_core_file):
   exe, core_file = mk_core_file
   pid = core_file[core_file.rfind('.')+1:]
-  p = subprocess.run([pargs, '-x', core_file], stdout=subprocess.PIPE,
+  p = subprocess.run([cmd, '-x', core_file], stdout=subprocess.PIPE,
       stderr=subprocess.PIPE, universal_newlines=True)
   assert p.returncode == 0
   assert not p.stderr
@@ -404,10 +404,11 @@ def check_core_auxv(mk_core_file):
 
 @skip_in_container
 def test_core_auxv(mk_core_file):
-  check_core_auxv(mk_core_file)
+  check_core_auxv(pargs, mk_core_file)
 
-def test_stored_core_auxv(decompress_core_file):
-  check_core_auxv(decompress_core_file)
+@pytest.mark.parametrize('width', ['', '32'])
+def test_stored_core_auxv(width, decompress_core_file):
+  check_core_auxv(pargs + width, decompress_core_file)
 
 def check_core_auxv_random(mk_core_file):
   exe, core_file = mk_core_file
@@ -452,4 +453,6 @@ def test_core_all(mk_core_file):
 def test_stored_core_all(decompress_core_file):
   check_core_all(decompress_core_file)
 
-# XXX test: PPC big-endian core, add the core file
+# XXX test: PPC big-endian core, add the core files
+
+
