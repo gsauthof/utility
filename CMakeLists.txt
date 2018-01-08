@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(utility C CXX)
 
 include(CheckFunctionExists)
+include(CheckLibraryExists)
 
 check_function_exists(renameat2 HAVE_RENAMEAT2)
 configure_file(config.h.in config.h)
@@ -21,13 +22,24 @@ IF(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   add_subdirectory(libixxx)
 endif()
 
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU"
-    AND CMAKE_C_COMPILER_VERSION VERSION_LESS "5")
+if((CMAKE_C_COMPILER_ID STREQUAL "GNU"
+        AND CMAKE_C_COMPILER_VERSION VERSION_LESS "5")
+   OR
+   (CMAKE_C_COMPILER_ID STREQUAL "Clang"
+        AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4")
+  )
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(NO_SANITIZE "-fno-sanitize=address")
   endif()
 else()
   set(NO_SANITIZE "-fno-sanitize=all")
+endif()
+
+check_library_exists(c clock_gettime "" CLOCK_GETTIME_IN_C)
+if (CLOCK_GETTIME_IN_C)
+  set(RT_LIB "")
+else()
+  set(RT_LIB "-lrt")
 endif()
 
 add_executable(silence silence.c)
@@ -65,6 +77,7 @@ set_target_properties(snooze32
 add_executable(busy_snooze test/busy_snooze.c)
 set_target_properties(busy_snooze
   PROPERTIES COMPILE_FLAGS "${NO_SANITIZE}" LINK_FLAGS "${NO_SANITIZE}")
+target_link_libraries(busy_snooze ${RT_LIB})
 
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}

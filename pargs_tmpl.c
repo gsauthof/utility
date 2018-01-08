@@ -25,7 +25,10 @@
 #include <stddef.h> // offsetof()
 #include <sys/procfs.h> // prpsinfo_t
 
-
+// necessary e.g. when compiling with clang 3.4 under CentOS/RHEL 6
+#ifndef static_assert
+#define static_assert _Static_assert
+#endif
 
 // expands to parse_auxv_32() or parse_auxv_64()
 //
