@@ -50,7 +50,13 @@ static const char help_str[] =
 
 #ifndef USE_TMPFILE
   #if defined(__linux__)
-    #define USE_TMPFILE 1
+    #if defined(O_TMPFILE)
+      #define USE_TMPFILE 1
+    #else
+      // not available e.g. on CentOS/RHEL 7
+      #define USE_TMPFILE 0
+      #warning "this Linux is so old it doesn't even have O_TMPFILE ..."
+    #endif
   #else
     #define USE_TMPFILE 0
   #endif

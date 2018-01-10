@@ -17,9 +17,10 @@ import tempfile
 import shutil
 
 # cf. test/main.py for the global defaults
+src_dir = os.getenv('src_dir', os.getcwd()+'/..')
 silence = os.getenv('silence', './silence')
 fail = os.getenv('fail', './fail')
-echo = os.getenv('echo', './echo.sh')
+echo = os.getenv('echo', src_dir + '/test/echo.sh')
 
 
 
