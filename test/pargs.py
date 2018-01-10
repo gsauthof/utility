@@ -119,9 +119,9 @@ def test_envp():
 
 @pytest.mark.parametrize("opts", [ ['-ea'], ['-a', '-e'] ])
 def test_argv_envp(opts):
-  c = subprocess.Popen([snooze, '1', '0'])
+  c = subprocess.Popen([snooze, '1', '0'], env=simple_env)
   assert c.pid
-  p = subprocess.run([pargs] + opts + [  str(c.pid)], env=simple_env,
+  p = subprocess.run([pargs] + opts + [  str(c.pid)],
       stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
   assert p.returncode == 0
   assert not p.stderr
@@ -379,7 +379,7 @@ def test_stored_core(decompress_core_file):
 def test_core_envp(mk_core_file):
   exe, core_file = mk_core_file
   p = subprocess.run([pargs, '-e', core_file], stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE, universal_newlines=True)
+      env=simple_env, stderr=subprocess.PIPE, universal_newlines=True)
   assert p.returncode == 0
   assert not p.stderr
   for key, val in os.environ.items():
