@@ -39,6 +39,7 @@
 static int CAT(parse_auxv_, WIDTH) (const char *filename, Landmarks *lm,
     const unsigned char *begin, const unsigned char *end)
 {
+  debug("aux note size: %zd", end-begin);
   lm->auxv_note.begin = begin;
   lm->auxv_note.end   = end;
   lm->execfn_addr = 0;
@@ -90,8 +91,14 @@ static int CAT(parse_prpsinfo_, WIDTH) (const char *filename, Landmarks *lm,
   // pr_uid + pr_gid use 8 bytes instead of 4
   if (__WORDSIZE < WIDTH)
     extra_off = 12;
-  if (__WORDSIZE > WIDTH)
+  else if (__WORDSIZE > WIDTH) {
     extra_off = -12;
+  }
+  // true e.g when reading a Debian 8 ppc64 -m32 core on Fedora 26 x86-64
+  // (both with pargs and pargs32)
+  // because pr_uid/pr_gid are unconditionally 4 bytes big on Debian 8 ppc64
+  if (sizeof(prpsinfo_t) + extra_off + 4 == (end - begin))
+    extra_off += 4;
   if (sizeof(prpsinfo_t) + extra_off > end - begin) {
     fprintf(stderr, "prpsinfo section overflows in %s\n", filename);
     return -1;

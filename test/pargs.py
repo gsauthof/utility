@@ -387,6 +387,16 @@ def test_core_envp(mk_core_file):
       continue
     assert ': {}={}\n'.format(key, val) in p.stdout
 
+def get_page_size(core_file):
+  l = core_file.split('.')
+  if len(l) < 3:
+    return os.sysconf('SC_PAGESIZE')
+  else:
+    if l[2] == 'ppc64':
+      return 64*1024
+    else:
+      return 4*1024
+
 def check_core_auxv(cmd, mk_core_file):
   exe, core_file = mk_core_file
   pid = core_file[core_file.rfind('.')+1:]
@@ -398,8 +408,9 @@ def check_core_auxv(cmd, mk_core_file):
   assert ls[0] == "core '{0:}' of {1:}: {2:} 10 hello world".format(
       core_file, pid, exe)
   l = [x for x in ls if x.startswith('AT_PAGESZ') ][0]
+  page_size = get_page_size(core_file)
   assert l == 'AT_PAGESZ        0x{:016x} {} KiB'.format(
-      os.sysconf('SC_PAGESIZE'), int(os.sysconf('SC_PAGESIZE')/1024))
+      page_size, int(page_size/1024))
   l = [x for x in ls if x.startswith('AT_EXECFN')][0]
   assert l[l.rfind(' ')+1:] == exe
 

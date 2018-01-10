@@ -7,6 +7,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import os
+import resource
 import subprocess
 import sys
 import time
@@ -23,13 +24,22 @@ std_env = {
 args = [ '10', 'hello', 'world' ]
 arch = os.uname().machine
 
+have_cdctl = os.path.exists('/usr/bin/coredumpctl')
+if not have_cdctl:
+  resource.setrlimit(resource.RLIMIT_CORE, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
+  if os.path.exists('core'):
+    os.unlink('core')
+
 p = subprocess.Popen(['./snooze'] + args, env=std_env)
 time.sleep(1)
 p.send_signal(6)
 p.wait()
 time.sleep(2)
-filename = 'nosec.core.snooze.{}.coredumpctl.{}'.format(arch, p.pid)
-subprocess.check_output(['coredumpctl', 'dump', str(p.pid), '-o', filename])
+filename = 'core.snooze.{}.abrt.{}'.format(arch, p.pid)
+if have_cdctl:
+  subprocess.check_output(['coredumpctl', 'dump', str(p.pid), '-o', filename])
+else:
+  os.rename('core', filename)
 subprocess.check_output(['xz', '--compress', filename])
 
 for exe in [ 'snooze', 'snooze32' ]:
