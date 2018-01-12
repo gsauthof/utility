@@ -385,6 +385,8 @@ def test_core_envp(mk_core_file):
   for key, val in os.environ.items():
     if 'PYTEST' in key:
       continue
+    if '\n' in val or '\r' in val:
+      continue
     assert ': {}={}\n'.format(key, val) in p.stdout
 
 def get_page_size(core_file):
