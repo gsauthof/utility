@@ -28,28 +28,6 @@ static const char help_str[] =
 "cf. https://github.com/gsauthof/utility\n"
 "\n";
 
-#ifndef USE_TMPFILE
-  #if defined(__linux__)
-    #if defined(O_TMPFILE)
-      #define USE_TMPFILE 1
-    #else
-      // not available e.g. on CentOS/RHEL 7
-      #define USE_TMPFILE 0
-      #warning "this Linux is so old it doesn't even have O_TMPFILE ..."
-    #endif
-  #else
-    #define USE_TMPFILE 0
-  #endif
-#endif
-
-#ifndef USE_PRCTL
-  #if defined(__linux__)
-    #define USE_PRCTL 1
-  #else
-    #define USE_PRCTL 0
-  #endif
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,6 +46,29 @@ static const char help_str[] =
 #include <ixxx/ixxx.hh>
 #include <vector>
 #include <algorithm>
+
+#ifndef USE_PRCTL
+  #if defined(__linux__)
+    #define USE_PRCTL 1
+  #else
+    #define USE_PRCTL 0
+  #endif
+#endif
+
+#ifndef USE_TMPFILE
+  #if defined(__linux__)
+    #if defined(O_TMPFILE)
+      #define USE_TMPFILE 1
+    #else
+      // not available e.g. on CentOS/RHEL 7
+      #define USE_TMPFILE 0
+      #warning "this Linux is so old it doesn't even have O_TMPFILE ..."
+    #endif
+  #else
+    #define USE_TMPFILE 0
+  #endif
+#endif
+
 using namespace ixxx;
 using namespace std;
 

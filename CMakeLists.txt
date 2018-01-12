@@ -49,6 +49,8 @@ add_executable(fail test/fail.c)
 
 
 add_executable(silencce silence.cc)
+# not necessary, e.g. on Fedora 26
+#set_property(TARGET silencce PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
 set_property(TARGET silencce PROPERTY INCLUDE_DIRECTORIES
   ${CMAKE_SOURCE_DIR}/libixxx)
 target_link_libraries(silencce
@@ -88,7 +90,7 @@ target_link_libraries(busy_snooze ${RT_LIB})
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
-  DEPENDS silence fail lockf
+  DEPENDS silence silencce fail lockf
   COMMENT "run unittests"
   )
 
