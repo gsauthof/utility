@@ -30,6 +30,14 @@
 #define static_assert _Static_assert
 #endif
 
+
+#define DECL_U_CP(W, NAME, SRC) \
+  CAT3(uint, W, _t) NAME; \
+  memcpy(&NAME, (SRC), sizeof NAME); \
+  if (lm->need_to_swap) \
+    NAME = CAT(__builtin_bswap, W) (NAME)
+
+
 // expands to parse_auxv_32() or parse_auxv_64()
 //
 // We look for the AT_EXECFN value because it's an address that points
@@ -44,15 +52,9 @@ static int CAT(parse_auxv_, WIDTH) (const char *filename, Landmarks *lm,
   lm->auxv_note.end   = end;
   lm->execfn_addr = 0;
   for (const unsigned char *p = begin; p < end; p += (WIDTH/8) * 2) {
-    CAT3(uint, WIDTH, _t) key;
-    memcpy(&key, p, sizeof key);
-    if (lm->need_to_swap)
-      key = CAT(__builtin_bswap, WIDTH) (key);
+    DECL_U_CP(WIDTH, key, p);
     if (!key || key == AT_EXECFN) {
-      CAT3(uint, WIDTH, _t) value;
-      memcpy(&value, p + WIDTH/8, sizeof value);
-      if (lm->need_to_swap)
-        value = CAT(__builtin_bswap, WIDTH) (value);
+      DECL_U_CP(WIDTH, value, p + WIDTH/8);
       switch (key) {
         case 0:
           if (value) {
@@ -162,18 +164,10 @@ static int CAT(parse_notes_, WIDTH) (
   const unsigned char *y = section_range->end;
   size_t i = 0;
   for (const unsigned char *p = x; p < y; ++i) {
-    uint32_t name_size;
-    memcpy(&name_size, p, sizeof name_size);
-    if (lm->need_to_swap)
-      name_size = __builtin_bswap32(name_size);
+    DECL_U_CP(32, name_size, p);
     uint32_t aligned_name_size = align32_up_4(name_size);
 
-    uint32_t desc_size;
-    // Actually, the Nhdr has the same layout for 32/64 bit
-    memcpy(&desc_size, p + offsetof(CAT3(Elf, WIDTH,_Nhdr), n_descsz),
-        sizeof desc_size);
-    if (lm->need_to_swap)
-      desc_size = __builtin_bswap32(desc_size);
+    DECL_U_CP(32, desc_size, p + offsetof(CAT3(Elf, WIDTH,_Nhdr), n_descsz));
     uint32_t aligned_desc_size = align32_up_4(desc_size);
 
     static_assert(sizeof(CAT3(Elf, WIDTH, _Nhdr)) == 3*4,
@@ -185,11 +179,7 @@ static int CAT(parse_notes_, WIDTH) (
       return -1;
     }
 
-    uint32_t note_type;
-    memcpy(&note_type, p + offsetof(CAT3(Elf, WIDTH, _Nhdr), n_type),
-        sizeof note_type);
-    if (lm->need_to_swap)
-      note_type = __builtin_bswap32(note_type);
+    DECL_U_CP(32, note_type, p + offsetof(CAT3(Elf, WIDTH, _Nhdr), n_type));
 
     p += sizeof(CAT3(Elf, WIDTH, _Nhdr));
     int r = CAT(parse_note_, WIDTH) (filename, lm, note_type,
@@ -422,40 +412,28 @@ static int CAT(parse_landmarks_, PARGS_ELF_CLASS) (
     fprintf(stderr, "file too small for ELF%d header\n", WIDTH);
     return -1;
   }
-  uint16_t type;
   // under strict-aliasing rules a Elf(32|64_Ehdr) pointer can't alias
   // a unsigned char pointer
   // the compiler should be able to optimize the memcpy() away
   // we could also copy the complete struct, but we just need a few fields
   // also, we need to byte-swap some integer fields when core file was
   // generated a machine with a different byte order ...
-  memcpy(&type, b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_type), sizeof type);
-  if (lm->need_to_swap)
-    type = __builtin_bswap16(type);
+  DECL_U_CP(16, type, b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_type));
   if (type != ET_CORE) {
     fprintf(stderr, "%s is not a core file.\n", filename);
     return -1;
   }
-  uint16_t first_segment_count;
-  memcpy(&first_segment_count, b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_phnum),
-      sizeof first_segment_count);
-  if (lm->need_to_swap)
-    first_segment_count = __builtin_bswap16(first_segment_count);
+  DECL_U_CP(16, first_segment_count,
+      b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_phnum));
   debug("%" PRIu16 " segments", first_segment_count);
   if (!first_segment_count) {
     fprintf(stderr, "File %s has no segments.\n", filename);
     return -1;
   }
-  CAT3(uint, WIDTH, _t) program_header_off;
-  memcpy(&program_header_off, b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_phoff),
-      sizeof program_header_off);
-  if (lm->need_to_swap)
-    program_header_off = CAT(__builtin_bswap, WIDTH) (program_header_off);
-  uint16_t program_header_size;
-  memcpy(&program_header_size, b + offsetof(CAT3(Elf, WIDTH, _Ehdr),
-        e_phentsize), sizeof program_header_size);
-  if (lm->need_to_swap)
-    program_header_size = __builtin_bswap16(program_header_size);
+  DECL_U_CP(WIDTH, program_header_off,
+      b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_phoff));
+  DECL_U_CP(16, program_header_size,
+      b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_phentsize));
   if (program_header_off + program_header_size > e - b) {
     fprintf(stderr, "%s: program header table overflows\n", filename);
     return -1;
@@ -465,10 +443,9 @@ static int CAT(parse_landmarks_, PARGS_ELF_CLASS) (
   if (segment_count >= PN_XNUM) {
     debug("file has more than 2**16-1 segments");
     const unsigned char *p = b + program_header_off;
-    memcpy(&segment_count, p + offsetof(CAT3(Elf, WIDTH, _Shdr), sh_size),
-        sizeof segment_count);
-    if (lm->need_to_swap)
-      segment_count = CAT(__builtin_bswap, WIDTH) (segment_count);
+    DECL_U_CP(WIDTH, new_segment_count,
+        p + offsetof(CAT3(Elf, WIDTH, _Shdr), sh_size));
+    segment_count = new_segment_count;
     debug("new segment count: %" CAT(PRIu, WIDTH), segment_count);
   }
   if (program_header_off + segment_count * program_header_size > e - b) {
@@ -481,32 +458,18 @@ static int CAT(parse_landmarks_, PARGS_ELF_CLASS) (
       p < b + program_header_off + segment_count * program_header_size;
       p += program_header_size, ++i) {
     debug("Reading %" CAT(PRIu, WIDTH) "th segment", i+1);
-    CAT3(uint, WIDTH, _t) segment_off;
-    memcpy(&segment_off, p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_offset),
-        sizeof segment_off);
-    if (lm->need_to_swap)
-      segment_off = CAT(__builtin_bswap, WIDTH) (segment_off);
-    CAT3(uint, WIDTH, _t) segment_size;
-    memcpy(&segment_size, p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_filesz),
-        sizeof segment_size);
-    if (lm->need_to_swap)
-      segment_size = CAT(__builtin_bswap, WIDTH) (segment_size);
+    DECL_U_CP(WIDTH, segment_off,
+        p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_offset));
+    DECL_U_CP(WIDTH, segment_size,
+        p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_filesz));
     if (segment_off + segment_size > e - b) {
       fprintf(stderr, "segment %" CAT(PRIu, WIDTH) " overflows %s.\n",
           i, filename);
       return -1;
     }
-    uint32_t segment_type;
-    memcpy(&segment_type, p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_type),
-        sizeof segment_type);
-    if (lm->need_to_swap)
-      segment_type = __builtin_bswap32(segment_type);
-
-    CAT3(uint, WIDTH, _t) segment_virt_addr;
-    memcpy(&segment_virt_addr, p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_vaddr),
-        sizeof segment_virt_addr);
-    if (lm->need_to_swap)
-      segment_virt_addr = CAT(__builtin_bswap, WIDTH) (segment_virt_addr);
+    DECL_U_CP(32, segment_type, p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_type));
+    DECL_U_CP(WIDTH, segment_virt_addr,
+        p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_vaddr));
 
     Range segment_range = { b + segment_off, b + segment_off + segment_size };
     int r = CAT(parse_segment_, WIDTH) (range, filename, lm,
@@ -530,10 +493,7 @@ static int CAT(fput_core_vector_, WIDTH) (const Landmarks *lm,
   const unsigned char *e = lm->vector_section.end;
   size_t i = 0;
   for (const unsigned char *p = vec->begin; p < vec->end; p += WIDTH/8, ++i) {
-    CAT3(uint, WIDTH, _t) addr;
-    memcpy(&addr, p, sizeof addr);
-    if (lm->need_to_swap)
-      addr = CAT(__builtin_bswap, WIDTH) (addr);
+    DECL_U_CP(WIDTH, addr, p);
     if (addr < lm->vector_base_addr) {
       fprintf(stderr, "Pointer underflows section.\n");
       return -1;
@@ -636,30 +596,25 @@ static int CAT(fput_core_auxv_, WIDTH) (const Landmarks *lm, FILE *o,
   size_t i = 0;
   for (const unsigned char *p = lm->auxv_note.begin; ;
       p += 2 * (WIDTH/8), ++i) {
-    CAT3(uint, WIDTH, _t) v[2] = {0};
-    memcpy(&v[0], p, sizeof v[0]);
-    if (lm->need_to_swap)
-      v[0] = CAT(__builtin_bswap, WIDTH) (v[0]);
-    memcpy(&v[1], p + sizeof v[0], sizeof v[1]);
-    if (lm->need_to_swap)
-      v[1] = CAT(__builtin_bswap, WIDTH) (v[1]);
-    if (!v[0])
+    DECL_U_CP(WIDTH, key, p);
+    DECL_U_CP(WIDTH, value, p + WIDTH/8);
+    if (!key)
       return 0;
     if (i)
       fputc('\n', o);
-    if (v[0] < sizeof auxv_type_map / sizeof auxv_type_map[0])
-      fprintf(o, "%-16s", auxv_type_map[v[0]].key);
+    if (key < sizeof auxv_type_map / sizeof auxv_type_map[0])
+      fprintf(o, "%-16s", auxv_type_map[key].key);
     else
-      fprintf(o, "unk_%" CAT(PRIu, WIDTH), v[0]);
-    fprintf(o, " 0x%.16" CAT(PRIx, WIDTH), v[1]);
+      fprintf(o, "unk_%" CAT(PRIu, WIDTH), key);
+    fprintf(o, " 0x%.16" CAT(PRIx, WIDTH), value);
 
-    int r = pp_aux(v[0], v[1], o, args);
+    int r = pp_aux(key, value, o, args);
     if (r)
       return r;
-    r = CAT(pp_core_aux_ref_, WIDTH) (v[0], v[1], lm, o);
+    r = CAT(pp_core_aux_ref_, WIDTH) (key, value, lm, o);
     if (r)
       return r;
-    r = pp_aux_v(v[0], v[1], o, args);
+    r = pp_aux_v(key, value, o, args);
     if (r)
       return r;
   }
