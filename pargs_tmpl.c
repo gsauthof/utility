@@ -113,23 +113,11 @@ static int CAT(parse_prpsinfo_, WIDTH) (const char *filename, Landmarks *lm,
     pid = __builtin_bswap32(pid);
   debug("found PID: %ju", (intmax_t)pid);
   lm->pid = pid;
-  // we assume that it is always zero terminated
-  lm->fname = (const char*)
-    (begin + offsetof(prpsinfo_t, pr_fname) + extra_off);
-  const unsigned char *t = memchr(lm->fname, 0, 16);
-  if (!t) {
-    fprintf(stderr, "prpsinfo::pr_fname is not zero terminated in %s.",
-        filename);
-  }
-  // we assume that it is always zero terminated
-  lm->args = (const char*)
-    (begin + offsetof(prpsinfo_t, pr_psargs) + extra_off);
-  t = memchr(lm->args, 0, ELF_PRARGSZ);
-  if (!t) {
-    fprintf(stderr, "prpsinfo::pr_psargs is not zero terminated in %s.",
-        filename);
-  }
-  debug("found call: %s %s", lm->fname, lm->args);
+  // other possibly interesting fields:
+  // pr_fname  - just 16 bytes, though.
+  //             Thus, may truncate (without zero-terminating!).
+  // pr_psargs - also relatively small, args are concatenated,
+  //             expected arguments aren't necessarily included
   return 0;
 }
 

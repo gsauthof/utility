@@ -677,8 +677,6 @@ int mmap_core(const char *filename, Range *range)
 struct Landmarks {
   bool need_to_swap;
   uint32_t pid;
-  const char *fname;
-  const char *args;
   uint64_t execfn_addr; // substract vector_base_addr to get offset into vector_section
   uint8_t word_size;
   Range auxv_note; // read pairs of word_size until {0,0}
