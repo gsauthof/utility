@@ -376,7 +376,7 @@ Examples:
     $ pargs -aex $pid
     $ pargs -aexv some_core
 
-It is inspired by Solaris' pargs command. Similar to Linux,
+It is inspired by [Solaris' pargs][solpargs] command. Similar to Linux,
 Solaris also has a `/proc` filesystem that provides much
 information about each process. In contrast to Linux, the pseudo
 files all contain binary data, i.e. following some struct
@@ -406,9 +406,23 @@ more easily (e.g.  `/proc/$pid/{cmdline,environ}`) while others
 require more effort, on Linux. On Solaris, the core file contains
 some structs that include copies of the argument and environment
 vectors, thus, it's straight forward to access that information.
-This is not the case on Linux, where on has to search for the
+This is not the case on Linux, where one has to search for the
 vectors in the right memory section.
 
+Tested on:
+
+- Fedora 26 x86-64, both with 32/64 bit executables/core files,
+  and with core files from different byte-order architectures
+- RHEL 6 (needs `-s` there)
+- Debian 8 ppc64 (PowerPC), both with 32/64 bit executables/core files,
+  and with core files from different byte-order architectures
+
+In general, the code is portable, e.g. when reading core files,
+pargs supports word sizes and [byte orders][endian] (i.e. little
+vs. big endian) different from the native one. For example, pargs
+running on x86-64 Linux is able to print the argument vector,
+auxiliary vector etc. of a core file that was generated on a
+big-endian PowerPC Linux system.
 
 ## Silence
 
@@ -605,3 +619,5 @@ or
 [asan]: https://github.com/google/sanitizers/wiki/AddressSanitizer
 [solaris]: https://en.wikipedia.org/wiki/Solaris_(operating_system)
 [sparc]: https://en.wikipedia.org/wiki/SPARC
+[endian]: https://en.wikipedia.org/wiki/Endianness
+[solpargs]: https://www.freebsd.org/cgi/man.cgi?query=pargs&apropos=0&sektion=0&manpath=SunOS+5.10&arch=default&format=html
