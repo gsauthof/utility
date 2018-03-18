@@ -16,9 +16,15 @@ def mk_arg_parser():
   p = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='Manage Gnome-Shell Extensions',
-        epilog='''
+        epilog='''Without any options this tool prints a list of
+installed extensions.
 
 Get even more extensions: https://extensions.gnome.org/
+
+See also https://github.com/gsauthof/playbook/gnome-shell/ for
+a curated list of essentiell extensions and some good default settings.
+
+## The `--uuid URL/ID` switch basically automates
 
 Map extensions.gnome.org extension web ID to UUID:
 
@@ -26,20 +32,24 @@ Map extensions.gnome.org extension web ID to UUID:
 
 (e.g. for eid=7 and gsv=3.24
 
+## A more interactive alternative variant to `--install`
+
 Given a UUID trigger the install:
 
     $ qdbus org.gnome.Shell /org/gnome/Shell org.gnome.Shell.Extensions.InstallRemoteExtension $someuuid
 
+In contrast to `--install`, this doesn't require a GNOME shell restart.
+
 ''')
   p.add_argument('--disabled', '-d', action='store_true',
-      help='list installed but disabled extensions')
+      help='List installed but disabled extensions')
   p.add_argument('--enable', metavar='UUIDs', nargs='+',
-      help='enable an extension')
+      help='Enable an extension')
   p.add_argument('--disable', metavar='UUIDs', nargs='+',
-      help='disable an extension')
+      help='Disable an extension')
   p.add_argument('--pref', metavar='UUID', help='call preferences dialog')
   p.add_argument('--install', metavar='UUIDs', nargs='+',
-      help='install one or many extensions. They are downloaded from the official repository and unzipped. See --dest for the destination.')
+      help='Install one or many extensions. They are downloaded from the official repository and unzipped. See --dest for the destination. GNOME shells sees those extensions after a session restart.')
   p.add_argument('--dest', help='install destination (default: ~/.local/share/gnome-shell/extensions)')
   p.add_argument('--version', '-v', action='store_true',
       help='Display GNOME shell version')
