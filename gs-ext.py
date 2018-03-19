@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 # 2017, Georg Sauthoff <mail@gms.tf>
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 import argparse
 import json
 import os
-import requests
 import shutil
 import subprocess
 import sys
@@ -40,6 +40,17 @@ Given a UUID trigger the install:
 
 In contrast to `--install`, this doesn't require a GNOME shell restart.
 
+## Dependencies
+
+Under Fedora:
+
+    dnf -y install python3-pydbus python3-requests
+
+Optional (only for manual inspection):
+
+    dnf -y install qt5-qttools
+
+2018, Georg Sauthoff <mail@gms.tf>
 ''')
   p.add_argument('--disabled', '-d', action='store_true',
       help='List installed but disabled extensions')
@@ -54,7 +65,7 @@ In contrast to `--install`, this doesn't require a GNOME shell restart.
   p.add_argument('--version', '-v', action='store_true',
       help='Display GNOME shell version')
   p.add_argument('--version-db', action='store_true',
-      help='Display GNOME shell version')
+      help='Display GNOME shell version (obtained via DBus)')
   p.add_argument('--uuid', metavar='URL/ID', help='translate an extensions.gnome.org URL/ID to a UUID')
   return p
 
@@ -64,6 +75,15 @@ def parse_args(*a):
   if not args.dest:
     args.dest = os.environ['HOME'] + '/.local/share/gnome-shell/extensions'
   return args
+
+
+def get_dbus(dbus=[None], gshell=[None], gext=[None]):
+  import pydbus
+  if not dbus[0]:
+    dbus[0] = pydbus.SessionBus()
+    gshell[0] = dbus[0].get('org.gnome.Shell', '/org/gnome/Shell')
+    gext[0] = gshell[0]['org.gnome.Shell.Extensions']
+  return (gshell[0], gext[0])
 
 def pp_row(filename):
   if not os.path.exists(filename):
@@ -104,13 +124,17 @@ def toggle_extension(uuids, on):
   s = subprocess.check_output(['gsettings', 'set', 'org.gnome.shell', 'enabled-extensions', a], universal_newlines=True)
 
 def show_preferences(uuid):
-  subprocess.check_output(['qdbus', 'org.gnome.Shell', '/org/gnome/Shell',
-      'org.gnome.Shell.Extensions.LaunchExtensionPrefs', uuid])
+  _, ext = get_dbus()
+  ext.LaunchExtensionPrefs(uuid)
+  # subprocess.check_output(['qdbus', 'org.gnome.Shell', '/org/gnome/Shell',
+  #    'org.gnome.Shell.Extensions.LaunchExtensionPrefs', uuid])
 
 def gnome_shell_version_dbus():
-  o = subprocess.check_output(['qdbus', 'org.gnome.Shell',
-      '/org/gnome/Shell', 'org.gnome.Shell.Extensions.ShellVersion'],
-      universal_newlines=True)
+  _, ext = get_dbus()
+  o = ext.ShellVersion
+  #o = subprocess.check_output(['qdbus', 'org.gnome.Shell',
+  #    '/org/gnome/Shell', 'org.gnome.Shell.Extensions.ShellVersion'],
+  #    universal_newlines=True)
   o = o.strip()
   if o.find('.') != o.rfind('.'):
     o = o[0:o.rfind('.')]
@@ -137,6 +161,7 @@ def verify_zip(z):
       raise RuntimeError('Weird filename: ' + i.filename)
 
 def install(uuids, dest):
+  import requests
   v = gnome_shell_version()
   s = requests.Session()
   for uuid in uuids:
@@ -167,6 +192,7 @@ def test_parse_id():
   assert parse_id('23') == '23'
 
 def get_uuid(url_or_id):
+  import requests
   i = parse_id(url_or_id)
   v = gnome_shell_version()
   r = requests.get(f'https://extensions.gnome.org/extension-info/?pk={i}&shell_version={v}')
