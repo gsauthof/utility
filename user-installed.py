@@ -30,6 +30,10 @@ import unittest.mock as mock
 # call e.g.: py.test-3 user-installed.py
 
 
+# For Fedora >= 26 this functionality is also available via the dnf command:
+# dnf repoquery --qf '%{name}' --userinstalled \
+#    | grep -v -- '-debuginfo$' \
+#    | grep -v '^\(kernel-modules\|kernel\|kernel-core\|kernel-devel\)$'
 # Fedora >= 23
 # cf. http://unix.stackexchange.com/questions/82880/how-to-replicate-installed-package-selection-from-one-fedora-instance-to-another/82882#82882
 def list_fedora():
