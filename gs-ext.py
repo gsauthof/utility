@@ -61,6 +61,8 @@ Optional (only for manual inspection):
   p.add_argument('--pref', metavar='UUID', help='call preferences dialog')
   p.add_argument('--install', metavar='UUIDs', nargs='+',
       help='Install one or many extensions. They are downloaded from the official repository and unzipped. See --dest for the destination. GNOME shells sees those extensions after a session restart.')
+  p.add_argument('--remove', metavar='UUIDs', nargs='+',
+      help='Remove one or many locally install extensions.')
   p.add_argument('--dest', help='install destination (default: ~/.local/share/gnome-shell/extensions)')
   p.add_argument('--version', '-v', action='store_true',
       help='Display GNOME shell version')
@@ -175,6 +177,17 @@ def install(uuids, dest):
         os.makedirs(d)
         z.extractall(d)
 
+def remove(uuids, dest):
+  rc = 0
+  for uuid in uuids:
+    d = f'{dest}/{uuid}'
+    if not os.path.exists(d):
+      rc = 1
+      print(f'Extension {uuid} is not installed, locally.', file=sys.stderr)
+      continue
+    shutil.rmtree(d)
+  return rc
+
 def parse_id(url_or_id):
   if '/' in url_or_id:
     url = url_or_id
@@ -210,6 +223,8 @@ def main(*a):
     show_preferences(args.pref)
   elif args.install:
     install(args.install, args.dest)
+  elif args.remove:
+    return remove(args.remove, args.dest)
   elif args.version:
     print(gnome_shell_version())
   elif args.version_db:
