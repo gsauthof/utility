@@ -20,6 +20,7 @@ This repository contains a collection of command line utilities.
 - macgen.py    - Python implementation of macgen
 - pargs        - display argv and other vectors of PIDs/core files
 - pwhatch      - generate secure and easy to communicate passwords
+- searchb      - search a binary file in another
 - silence      - silence stdout/stderr unless command fails
 - silencce     - C++ implementation of silence
 - swap         - atomically exchange names of two files on Linux
@@ -423,6 +424,99 @@ vs. big endian) different from the native one. For example, pargs
 running on x86-64 Linux is able to print the argument vector,
 auxiliary vector etc. of a core file that was generated on a
 big-endian PowerPC Linux system.
+
+## Searchb
+
+The purpose of `searchb` is quite simple: search if a file is
+included in another file and if it is report its offset. See also
+[this Unix SE question][searchse] about this use case.
+
+Example:
+
+    $ searchb queryfile targetfile
+    1337
+    $ searchb queryfile0 targetfile
+    $ echo $?
+    1
+
+The obvious implementation choice is to map both files into
+memory and use a text-book text search algorithm such as
+[Two-Way][twoway], [BMH][bmh] or [KMP][kmp] on it. Simple and at
+the same time efficient. A tiny complication is that POSIX
+`mmap()` doesn't allow mapping zero length files, thus, one has
+to add a special case for this (as - say - searching for a
+pattern in an empty file shouldn't be considered an error).
+
+As a small case study, this repository contains several
+equivalent implementations of this small utility written in
+different languages: C, C++, Python, Go and Rust
+
+Even with such a small example one can see the advantages,
+disadvantages and trade-offs associated with the different
+languages when it comes to system programming.
+
+Observations:
+
+- C: as always, some boilerplate error checking code necessary,
+  otherwise straight forward. Unfortunately, POSIX doesn't
+  specify the range equivalent to `strstr()`, but modern
+  Unix-like operating systems like Linux provide `memmem()`. The
+  Linux version of `memmem()` is highly optimized.
+- C++: the C++ STL doesn't include a convenient API for memory
+  mapping a file, thus one either has to use the low-level C API
+  or another library. Boost has 2 mmap APIs (in iostreams and
+  interprocess) but both don't allow empty mappings. Libixxxutil
+  does allow them thus it's used. The STL includes a generic
+  search algorithm, although it doesn't have to better than
+  a naive implementation. Boost also includes BMH and KMP
+  implementations.
+- Python: just a few lines necessary to get the job done. Very
+  elegant and the standard Python library contains all the needed
+  pieces. Perhaps a tiny downer is that the search algorithm isn't
+  available as orthogonal function, instead it's `mmap.find()`,
+  `bytes.find()` etc. Likely, one implementation is shared,
+  internally and the standard library is usually mature enough to
+  expose all the obvious helper functions (like in this case).
+- Go: Similar to C and C++, Go also allows for an orthogonal
+  implementation of memory mapping and searching. The standard
+  library comes with `bytes.Index()` that implements KMP and
+  works on any byte slices, while the `Mmap()` syscall also
+  returns a zero copy byte slice. Still, one cannot call this
+  implementation extremely elegant: Since Go doesn't have exceptions
+  one has to invest in some repetitive error checking, there is
+  nothing similar to [RAII][raii] and the standard library
+  doesn't include a high-level mmap API (heck, even the syscalls
+  aren't part of the standard library). As a consequence, the Go
+  version isn't much shorter than the C version
+- Rust: the view-like slice syntax, move-semantics etc. are
+  well suited for this job, e.g. to allow for an orthogonal
+  combination of memory mapping and search. Unfortunately, Rust's
+  standard library neither contains a search algorithm for `u8`
+  byte slices (just for UTF strings) nor an mmap API. However,
+  external [crates][crate] are available for both tasks. Using
+  those, the implementation is very short and elegant, as well.
+  Although Rust also doesn't have exceptions, at least it has
+  some syntactic sugar to avoid some error checking boilerplate
+  code (e.g. the `?` operator).
+- In general, most of the mid- to high-level memory map APIs in
+  the different languages don't improve upon the POSIX limitation
+  to fail on zero length mappings. Just returning an empty range
+  simplifies its use (cf. the `mmap()` helper in the C and go
+  versions and libixxxutil) as some special error handling can be
+  omitted.
+- Performance: the C/C++/Python/Go/Rust versions are basically equally
+  fast. The `memmem()` likely contains some SIMD code and the
+  Rust search library has optional SIMD support, although it
+  requires support for inline assembly, which isn't available in
+  the current Rust stable (e.g. version 1.25).
+
+
+[searchse]: https://unix.stackexchange.com/q/39728/1131
+[twoway]: http://www-igm.univ-mlv.fr/~lecroq/string/node26.html
+[bmh]: https://en.wikipedia.org/wiki/Boyer%E2%80%93Moore%E2%80%93Horspool_algorithm
+[kmp]: https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
+[raii]: https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization
+[crate]: https://doc.rust-lang.org/book/first-edition/crates-and-modules.html
 
 ## Silence
 

@@ -1,0 +1,12 @@
+[package]
+name = "searchb-rs"
+version = "0.1.0"
+authors = ["Georg Sauthoff <mail@georg.so>"]
+
+[dependencies]
+memmap = "0.6.2"
+
+[dependencies.twoway]
+version = "0.1.8"
+# this depends on feature "asm" which isn't available in Rust 1.25
+# features = ["pcmp" ]

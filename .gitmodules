@@ -1,3 +1,6 @@
 [submodule "libixxx"]
 	path = libixxx
 	url = https://github.com/gsauthof/libixxx.git
+[submodule "libixxxutil"]
+	path = libixxxutil
+	url = https://github.com/gsauthof/libixxxutil.git

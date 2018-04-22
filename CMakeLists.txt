@@ -20,6 +20,7 @@ IF(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-missing-braces")
 
   add_subdirectory(libixxx)
+  add_subdirectory(libixxxutil)
 endif()
 
 if((CMAKE_C_COMPILER_ID STREQUAL "GNU"
@@ -86,6 +87,18 @@ add_executable(busy_snooze test/busy_snooze.c)
 set_target_properties(busy_snooze
   PROPERTIES COMPILE_FLAGS "${NO_SANITIZE}" LINK_FLAGS "${NO_SANITIZE}")
 target_link_libraries(busy_snooze ${RT_LIB})
+
+add_executable(searchb searchb.c)
+
+add_executable(searchbxx searchb.cc)
+set_property(TARGET searchbxx PROPERTY INCLUDE_DIRECTORIES
+  ${CMAKE_SOURCE_DIR}/libixxx
+  ${CMAKE_SOURCE_DIR}/libixxxutil
+  )
+target_link_libraries(searchbxx
+  ixxxutil_static
+  ixxx_static
+  )
 
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
