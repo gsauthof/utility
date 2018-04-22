@@ -479,7 +479,9 @@ Observations:
   expose all the obvious helper functions (like in this case).
 - Go: Similar to C and C++, Go also allows for an orthogonal
   implementation of memory mapping and searching. The standard
-  library comes with `bytes.Index()` that implements KMP and
+  library comes with `bytes.Index()` that implements some
+  special cases for different pattern lengths (including
+  [Rabin-Karp][rabink]) and
   works on any byte slices, while the `Mmap()` syscall also
   returns a zero copy byte slice. Still, one cannot call this
   implementation extremely elegant: Since Go doesn't have exceptions
@@ -517,6 +519,7 @@ Observations:
 [kmp]: https://en.wikipedia.org/wiki/Knuth%E2%80%93Morris%E2%80%93Pratt_algorithm
 [raii]: https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization
 [crate]: https://doc.rust-lang.org/book/first-edition/crates-and-modules.html
+[rabink]: https://en.wikipedia.org/wiki/Rabin%E2%80%93Karp_algorithm
 
 ## Silence
 
