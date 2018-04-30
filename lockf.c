@@ -44,19 +44,20 @@ static const char help_str[] =
 "cf. https://github.com/gsauthof/utility\n"
 "\n";
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include <fcntl.h>
+#include <signal.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/file.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <fcntl.h>
+
 
 #if defined(__linux__)
   #include <sys/prctl.h>
@@ -285,8 +286,13 @@ static void aquire_lock(const Arguments *a)
       check_exit(r, "lockf locking");
       break;
     case FLOCK:
+#ifdef __sun
+      fprintf(stderr, "Solaris doesn't support flock(), anymore\n");
+      exit(1);
+#else
       r = flock(a->fd, LOCK_EX | (a->block ? 0 : LOCK_NB ));
       check_exit(r, "flock locking");
+#endif
       break;
     case FCNTL:
       {
