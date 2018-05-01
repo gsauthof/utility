@@ -19,6 +19,7 @@ This repository contains a collection of command line utilities.
 - macgen       - randomly generate a private/internal MAC address
 - macgen.py    - Python implementation of macgen
 - pargs        - display argv and other vectors of PIDs/core files
+- pdfmerge.py  - vertically merge two PDF files (i.e. as two layers)
 - pwhatch      - generate secure and easy to communicate passwords
 - searchb      - search a binary file in another
 - silence      - silence stdout/stderr unless command fails
@@ -424,6 +425,44 @@ vs. big endian) different from the native one. For example, pargs
 running on x86-64 Linux is able to print the argument vector,
 auxiliary vector etc. of a core file that was generated on a
 big-endian PowerPC Linux system.
+
+## PDFmerge
+
+The `pdfmerge` utility merges two PDF files such that the pages
+of the second PDF overlay the ones of the first one. In that
+sense it's a vertical merge. Example:
+
+    $ ./pdfmerge text-only.pdf image-only.pdf doc.pdf
+
+Main use case for this is to merge a text-only (transparent) PDF
+file (OCR result) with an image-only PDF file (scan result). See
+also [`adf2pdf.py`][adf2pdf] for a complete workflow.
+
+It supports both the [PyPDF2][pypdf2] and [pdfrw][pdfrw] packages
+(cf. the `--pdfrw` option), thus, it's also a small case study of
+the different PDF manipulation APIs. Fedora packages these
+dependencies as `python3-PyPDF2` and `python3-pdfrw`.
+
+Related PDF tools:
+
+- PDFtk - supports vertical merging, as well (`pdftk
+  text-only.pdf multibackground image-only.pdf output doc.pdf`),
+  but it isn't widely available anymore. At least [Fedora has
+  removed][pdftkfed] it from its main repository. Since parts of it are
+  written Java it's arguably harder to install than this tiny
+  Python utility.
+- pdf-stapler - supports a small subset of pdftk functionality,
+  but, currently, [doesn't support][staplernot] such a merge
+  operation
+- mutool - from the makers of mupdf, doesn't support such a merge
+- poppler-utils - derived from the xpdf utils, doesn't support
+  vertical merging (just horizontal merging with `pdfunite`)
+
+[pypdf2]: https://pythonhosted.org/PyPDF2/
+[pdfrw]: https://github.com/pmaupin/pdfrw
+[adf2pdf]: https://github.com/gsauthof/adf2pdf
+[pdftkfed]: https://ask.fedoraproject.org/en/question/65261/pdftk-not-in-f21/
+[staplernot]: https://github.com/hellerbarde/stapler/issues/35
 
 ## Searchb
 
