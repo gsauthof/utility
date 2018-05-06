@@ -59,6 +59,7 @@ def parse_args(*a):
 def args_exts(profile):
   a = json.load(open(profile + '/addons.json'))
   a = a['addons']
+  a.sort(key=lambda x:x['learnmoreURL'])
   e = json.load(open(profile + '/extensions.json'))
   e = e['addons']
   e = dict((x['id'], x) for x in e)
