@@ -11,6 +11,7 @@ This repository contains a collection of command line utilities.
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
 - chromium-addons - list installed Chromium extensions
 - dcheck       - run a program under DBX's memory check mode
+- isempty      - detect empty images (e.g. in batch scan results)
 - firefox-addons  - list installed Firefox addons
 - gs-ext       - list and manage installed Gnome Shell Extensions
 - latest-kernel-running - is the latest installed kernel actually running?
