@@ -21,6 +21,7 @@ This repository contains a collection of command line utilities.
 - pargs        - display argv and other vectors of PIDs/core files
 - pdfmerge.py  - vertically merge two PDF files (i.e. as two layers)
 - pwhatch      - generate secure and easy to communicate passwords
+- remove       - sync USB drive cache, power down and remove device
 - searchb      - search a binary file in another
 - silence      - silence stdout/stderr unless command fails
 - silencce     - C++ implementation of silence
@@ -463,6 +464,36 @@ Related PDF tools:
 [adf2pdf]: https://github.com/gsauthof/adf2pdf
 [pdftkfed]: https://ask.fedoraproject.org/en/question/65261/pdftk-not-in-f21/
 [staplernot]: https://github.com/hellerbarde/stapler/issues/35
+
+## Remove
+
+Synchronize the write cache of an external USB disk, power it
+down and remove its device. Example:
+
+    $ ./remove.py /dev/sdb
+
+The main use cases for this is to power down an external disk
+gracefully instead of suddenly removing the power (i.e. when it's
+still running as it's unplugged) which should reduce mechanical
+stress.  Also, the explicit flushing of the drive's cache
+shouldn't hurt.  It should help after writing data directly to
+the disk (e.g. with `dd`) or with low-quality USB enclosures that
+don't flush the write cache on other synchronisation commands.
+
+Related commands:
+
+- `udisksctl power-off --block-device /dev/sdb` - similar
+  effect, only available on systems where the `udisks2` service
+  is available and running
+- `eject /dev/sdb` - may work for some hardware, unclear what
+  features it supports for USB disks and doesn't really support
+  error reporting. Doesn't work for the author under Fedora 27,
+  i.e. it doesn't flush and it doesn't power-down.
+
+See also [Gracefully shutting down USB disk drives before
+disconnect][remove-se] on Unix-SE.
+
+[remove-se]: https://unix.stackexchange.com/q/444611/1131
 
 ## Searchb
 
