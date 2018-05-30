@@ -44,8 +44,11 @@ default_blacklists = [
     ('all.s5h.net',               'traps'),
     ('rbl.realtimeblacklist.com', 'lists ip ranges'),
     ('b.barracudacentral.org',    'traps'),
-    ('virbl.dnsbl.bit.nl',        'Viruse senders'),
     ('dnsbl.spfbl.net',           'Reputation Database'),
+    ('hostkarma.junkemailfilter.com', 'Autotected Virus Senders'),
+    ('rbl.megarbl.net',           'Curated Spamtraps'),
+    ('ubl.unsubscore.com',        'Collected Opt-Out Addresses'),
+    ('0spam.fusionzero.com',      'Spam Trap'),
     ]
 
 
@@ -57,9 +60,7 @@ default_blacklists = [
 # https://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists
 
 # some lists provide detailed stats, i.e. the actual listed addresses
-# useful for testing, e.g.:
-# http://virbl.bit.nl/download/virbl.dnsbl.bit.nl.txt
-
+# useful for testing
 
 # In[ ]:
 
