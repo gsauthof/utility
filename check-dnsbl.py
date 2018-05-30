@@ -38,14 +38,14 @@ default_blacklists = [
     ('dyna.spamrats.com',         'Dynamic IP addresses'),
     ('spam.spamrats.com',         'Manual submissions'),
     ('auth.spamrats.com',         'Suspicious authentications'),
-    ('bl.spamcannibal.org',       'Including netblocks'),
     ('dnsbl.inps.de',             'automated and reported'),
     ('bl.blocklist.de',           'fail2ban reports etc.'),
     ('srnblack.surgate.net',      'feeders'),
     ('all.s5h.net',               'traps'),
     ('rbl.realtimeblacklist.com', 'lists ip ranges'),
     ('b.barracudacentral.org',    'traps'),
-    ('virbl.dnsbl.bit.nl',        'Viruse senders')
+    ('virbl.dnsbl.bit.nl',        'Viruse senders'),
+    ('dnsbl.spfbl.net',           'Reputation Database'),
     ]
 
 
