@@ -14,6 +14,7 @@
 
 
 from distutils.version import LooseVersion
+import gzip
 import io
 import itertools
 import operator
@@ -208,7 +209,7 @@ def get_all_lst(dirname='/var/lib/dpkg/info'):
 
 def dpkg_log_names(dirname='/var/log'):
   expr = re.compile('dpkg\.log(\.[0-9]+)?(\.gz)?')
-  l = sorted(filter(expr.match, os.listdir('/var/log')),
+  l = sorted(filter(expr.match, os.listdir(dirname)),
         key=LooseVersion, reverse=True)
   return l
 
@@ -216,7 +217,7 @@ def dpkg_log_lines(dirname='/var/log'):
   fns = dpkg_log_names(dirname)
   for fn in fns:
     ofn = gzip.open if fn.endswith('.gz') else open;
-    with ofn(dirname+'/'+fn, 'r') as f:
+    with ofn(dirname+'/'+fn, 'rt') as f:
       for line in f:
         yield line
 
