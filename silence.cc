@@ -44,6 +44,7 @@ static const char help_str[] =
 #endif
 
 #include <ixxx/ixxx.hh>
+#include <ixxx/util.hh>
 #include <vector>
 #include <algorithm>
 
@@ -142,57 +143,15 @@ static int create_unlinked_temp_file(const char *tmpdir)
 #endif
 }
 
-static ssize_t write_auto_resume(int fd, const void *buffer, size_t n)
-{
-  ssize_t m = 0;
-  for (;;) {
-    try {
-      m = write(fd, buffer, n);
-    } catch (const ixxx::errno_error &e) {
-      if (e.code() == EINTR)
-        continue;
-      throw;
-    }
-    break;
-  }
-  return m;
-}
-static ssize_t read_auto_resume(int fd, void *buffer, size_t n)
-{
-  ssize_t m = 0;
-  for (;;) {
-    try {
-      m = read(fd, buffer, n);
-    } catch (const ixxx::errno_error &e) {
-      if (e.code() == EINTR)
-        continue;
-      throw;
-    }
-    break;
-  }
-  return m;
-}
-static ssize_t write_all(int fd, const void *buffer_, size_t n_)
-{
-  ssize_t n = n_;
-  const char *buffer = static_cast<const char*>(buffer_);
-  do {
-    ssize_t m = write_auto_resume(fd, buffer, n);
-    buffer += m;
-    n -= m;
-  } while (n);
-  return n_;
-}
-
 static void dump(int fd, int d)
 {
   posix::lseek(fd, 0, SEEK_SET);
   char buffer[128 * 1024];
   for (;;) {
-    ssize_t n = read_auto_resume(fd, buffer, sizeof(buffer));
+    ssize_t n = ixxx::util::read_retry(fd, buffer, sizeof(buffer));
     if (!n)
       break;
-    write_all(d, buffer, n);
+    ixxx::util::write_all(d, buffer, n);
   }
 }
 
@@ -292,7 +251,7 @@ int main(int argc, char **argv)
 #endif
       exec_child(fd_o, fd_e, childs_argv);
     }
-  } catch (const ixxx::errno_error &e) {
+  } catch (const ixxx::sys_error &e) {
     fprintf(stderr, "%s\n", e.what());
     return 1;
   }

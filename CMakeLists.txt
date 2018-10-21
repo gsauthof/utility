@@ -53,9 +53,14 @@ add_executable(silencce silence.cc)
 # not necessary, e.g. on Fedora 26
 #set_property(TARGET silencce PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
 set_property(TARGET silencce PROPERTY INCLUDE_DIRECTORIES
-  ${CMAKE_SOURCE_DIR}/libixxx)
+  ${CMAKE_SOURCE_DIR}/libixxx
+  ${CMAKE_SOURCE_DIR}/libixxxutil
+  )
 target_link_libraries(silencce
-  ixxx_static)
+    ixxxutil_static
+    ixxx_static
+    )
+
 
 add_executable(lockf lockf.c)
 
@@ -113,7 +118,7 @@ add_custom_target(check-new
     ${CMAKE_CURRENT_SOURCE_DIR}/user-installed.py
     ${CMAKE_CURRENT_SOURCE_DIR}/ascii.py
     ${CMAKE_CURRENT_SOURCE_DIR}/test/pargs.py
-  DEPENDS pargs pargs32 snooze32 snooze busy_snooze
+  DEPENDS pargs pargs32 snooze32 snooze busy_snooze swap
   COMMENT "run pytests"
   )
 
