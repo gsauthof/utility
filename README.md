@@ -21,6 +21,7 @@ This repository contains a collection of command line utilities.
 - macgen.py    - Python implementation of macgen
 - pargs        - display argv and other vectors of PIDs/core files
 - pdfmerge.py  - vertically merge two PDF files (i.e. as two layers)
+- pldd         - list shared libraries linked into a running process
 - pwhatch      - generate secure and easy to communicate passwords
 - remove       - sync USB drive cache, power down and remove device
 - searchb      - search a binary file in another
@@ -465,6 +466,44 @@ Related PDF tools:
 [adf2pdf]: https://github.com/gsauthof/adf2pdf
 [pdftkfed]: https://ask.fedoraproject.org/en/question/65261/pdftk-not-in-f21/
 [staplernot]: https://github.com/hellerbarde/stapler/issues/35
+
+## PLDD
+
+The `pldd` command lists all shared libraries loaded into a
+running process. Often, the result is similar to what `ldd`
+prints for the executable. But the running process may actually
+end up with a different set of loaded shared libraries, e.g. due
+to a modified environment (e.g. `LD_LIBRARY_PATH`) or some
+dynamic logic (e.g. when the process calls `dlopen()`).
+
+Example:
+
+    $ ./pldd.py $$
+    /usr/lib64/ld-2.26.so
+    /usr/lib64/libc-2.26.so
+    /usr/lib64/libdl-2.26.so
+    /usr/lib64/libgdbm.so.4.0.0
+    [..]
+
+Both implementations `pldd.sh` and `pldd.py` basically yield the
+same results. The difference is just that `pldd.sh` prints the
+current in-process-memory shared object table as created and
+maintained by the `ld.so` dynamic linker. Whereas `pldd.py`
+prints the linked shared libraries from the kernel's point of
+view. The main difference is then that the kernel resolves all
+symbolic links, e.g. `pldd.sh` may report `/lib64/libc.so.6`
+while `pldd.py` reports `/usr/lib64/libc-2.26.so` on systems
+where `/lib64` symlinks to `/usr/lib64`.
+
+Related tools: [Solaris 10 has `pldd`][pldd-sol] which works like
+`pldd.sh` - but also supports reading the in-memory linker table
+from a single core file. Glibc comes with a `pldd` command
+(doesn't support core files) but [it's seriously broken for
+years][pldd-glibc] (since glibc 2.19) - i.e. it goes into an
+endless loop instead of printing any results.
+
+[pldd-sol]: https://www.freebsd.org/cgi/man.cgi?query=pldd&apropos=0&sektion=0&manpath=SunOS+5.10&arch=default&format=html
+[pldd-glibc]: https://manpages.debian.org/stretch/manpages/pldd.1.en.html#BUGS
 
 ## Remove
 
