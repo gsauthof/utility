@@ -10,6 +10,7 @@ This repository contains a collection of command line utilities.
 - check-dnsbl  - check if mailservers are DNS blacklisted/have rDNS records
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
 - chromium-addons - list installed Chromium extensions
+- dcat         - decompressing cat (autodetects gzip/zstd/bz2/...)
 - dcheck       - run a program under DBX's memory check mode
 - isempty      - detect empty images (e.g. in batch scan results)
 - firefox-addons  - list installed Firefox addons
@@ -222,6 +223,26 @@ to `junit.xml`).
   for this is to use the Jenkins [Cobertura plugin](https://wiki.jenkins-ci.org/display/JENKINS/Cobertura+Plugin), generate the coverage report with lcov and convert it with the [lcov-to-cobertura-xml](https://github.com/eriwen/lcov-to-cobertura-xml.git) script. The lcov HTML reports can also be included with the Jenkins [HTML publisher plugin](https://wiki.jenkins-ci.org/display/JENKINS/HTML+Publisher+Plugin)
 - Easiest to integrate with C/C++ builds is the Jenkins [Warnings plugin](https://wiki.jenkins-ci.org/display/JENKINS/Warnings+Plugin) as it natively suports GCC warnings.
 
+## dcat
+
+The `dcat` utility automatically decompresses files with the
+right algorithm, on-the-fly. Thus, it's a decompressing cat. It
+detects the compression file format by looking at the first
+[magic bytes][magic] and thus ignores any file extension.
+Uncompressed files or files it doesn't recognize the `dcat`
+concatenates as is.
+
+Examples:
+
+    $ echo 'Hello World' | zstd -c | ./dcat
+    Hello World
+    $ ./dcat foo.txt.gz bar.txt.zst baz.txt
+
+For the actual decompressing, `dcat` execs a helper like `zcat`
+or `bzcat`. Currently, it autodetects gzip, Zstandard, LZ4, bzip2
+and XZ.
+
+[magic]: https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_numbers_in_files
 
 ## DCheck
 

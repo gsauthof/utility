@@ -64,6 +64,17 @@ target_link_libraries(silencce
 
 add_executable(lockf lockf.c)
 
+
+add_executable(dcat dcat.cc)
+set_property(TARGET dcat PROPERTY INCLUDE_DIRECTORIES
+  ${CMAKE_SOURCE_DIR}/libixxx
+  ${CMAKE_SOURCE_DIR}/libixxxutil
+  )
+target_link_libraries(dcat
+    ixxxutil_static
+    ixxx_static
+    )
+
 add_executable(swap swap.c)
 set_property(TARGET swap PROPERTY INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR})
 
@@ -118,7 +129,8 @@ add_custom_target(check-new
     ${CMAKE_CURRENT_SOURCE_DIR}/user-installed.py
     ${CMAKE_CURRENT_SOURCE_DIR}/ascii.py
     ${CMAKE_CURRENT_SOURCE_DIR}/test/pargs.py
-  DEPENDS pargs pargs32 snooze32 snooze busy_snooze swap
+    ${CMAKE_CURRENT_SOURCE_DIR}/test/dcat.py
+  DEPENDS dcat pargs pargs32 snooze32 snooze busy_snooze swap
   COMMENT "run pytests"
   )
 
