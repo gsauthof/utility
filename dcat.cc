@@ -107,7 +107,7 @@ static Magic detect_cat(const unsigned char *begin,
     size_t n = end-begin;
     for (auto &x : bytes2magic) {
         if (x.first.size() <= n
-                && equal(x.first.begin(), x.first.end(), begin, begin+x.first.size())) {
+                && equal(x.first.begin(), x.first.end(), begin)) {
             return x.second;
         }
     }
