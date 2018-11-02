@@ -21,7 +21,7 @@ dcat    = os.getenv('dcat', './dcat')
 
 @pytest.mark.parametrize('c', ( 'gzip', 'bzip2', 'xz', 'lz4', 'zstd' ))
 def test_basic(c):
-    if c == 'zstd' and not shutil.which(c):
+    if c in ('zstd', 'lz4') and not shutil.which(c):
         pytest.skip('Command {} not found in PATH'.format(c))
     cmd = 'echo Hello World | {} -c | {}'.format(c, dcat)
     o = subprocess.check_output(cmd, shell=True, universal_newlines=True)
@@ -43,9 +43,11 @@ def test_help(hstr):
     assert 'help' in  p.stdout
 
 def test_multiple():
-    cs = [ 'gzip', 'bzip2', 'xz', 'lz4', 'zstd' ]
-    if shutil.which('zstd'):
-        cs.append('zstd')
+    cs = [ 'gzip', 'bzip2', 'xz' ]
+    es = [ 'lz4', 'zstd' ]
+    for e in es:
+        if shutil.which(e):
+            cs.append(e)
     with tempfile.TemporaryDirectory() as d:
         for c in cs:
             with open('{}/txt.{}'.format(d, c), 'wt') as f:

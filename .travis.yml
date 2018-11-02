@@ -20,7 +20,6 @@ matrix:
             - gcc-multilib
             - gdb
             - libc6-dev-i386
-            - liblz4-tool
             - ninja-build
       env:
         CMAKE_BUILD_TYPE=Release
