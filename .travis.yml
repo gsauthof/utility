@@ -17,10 +17,12 @@ matrix:
       addons:
         apt:
           packages:
-            - libc6-dev-i386
             - gcc-multilib
-            - ninja-build
             - gdb
+            - libc6-dev-i386
+            - liblz4-tool
+            - ninja-build
+            - zstd
       env:
         CMAKE_BUILD_TYPE=Release
         CC=clang
