@@ -16,15 +16,12 @@ matrix:
     - os: linux
       addons:
         apt:
-          sources:
-            - sourceline: 'deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe'
           packages:
             - gcc-multilib
             - gdb
             - libc6-dev-i386
             - liblz4-tool
             - ninja-build
-            - zstd
       env:
         CMAKE_BUILD_TYPE=Release
         CC=clang

@@ -21,6 +21,8 @@ dcat    = os.getenv('dcat', './dcat')
 
 @pytest.mark.parametrize('c', ( 'gzip', 'bzip2', 'xz', 'lz4', 'zstd' ))
 def test_basic(c):
+    if c == 'zstd' and not shutil.which(c):
+        pytest.skip('Command {} not found in PATH'.format(c))
     cmd = 'echo Hello World | {} -c | {}'.format(c, dcat)
     o = subprocess.check_output(cmd, shell=True, universal_newlines=True)
     assert o == 'Hello World\n'
@@ -41,8 +43,11 @@ def test_help(hstr):
     assert 'help' in  p.stdout
 
 def test_multiple():
+    cs = [ 'gzip', 'bzip2', 'xz', 'lz4', 'zstd' ]
+    if shutil.which('zstd'):
+        cs.append('zstd')
     with tempfile.TemporaryDirectory() as d:
-        for c in ( 'gzip', 'bzip2', 'xz', 'lz4', 'zstd' ):
+        for c in cs:
             with open('{}/txt.{}'.format(d, c), 'wt') as f:
                 subprocess.run([c, '-c'], input='blah ', universal_newlines=True,
                         stdout=f, check=True)
@@ -51,6 +56,6 @@ def test_multiple():
         p = subprocess.run([dcat] + glob.glob(d+'/txt*'), universal_newlines=True,
                 stdout=subprocess.PIPE)
         assert p.returncode == 0
-        p.stdout = 'blah\n'*6
+        p.stdout = 'blah\n'*(1+len(cs))
 
 
