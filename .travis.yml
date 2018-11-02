@@ -17,7 +17,7 @@ matrix:
       addons:
         apt:
           sources:
-            - 'deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe'
+            - sourceline: 'deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe'
           packages:
             - gcc-multilib
             - gdb
