@@ -1,6 +1,6 @@
 // dcat - a decompressing cat
 //
-// 2017, Georg Sauthoff <mail@gms.tf>
+// 2018, Georg Sauthoff <mail@gms.tf>
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 

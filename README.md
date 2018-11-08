@@ -20,6 +20,8 @@ This repository contains a collection of command line utilities.
 - lsata.sh     - map ataX kernel log ids to /dev/sdY devices
 - macgen       - randomly generate a private/internal MAC address
 - macgen.py    - Python implementation of macgen
+- oldprocs     - list running (and possibly restart) old processes/services
+                 whose object files were updated
 - pargs        - display argv and other vectors of PIDs/core files
 - pdfmerge.py  - vertically merge two PDF files (i.e. as two layers)
 - pldd         - list shared libraries linked into a running process
@@ -385,6 +387,117 @@ this namespace. Those can be used for explicitly specifying
 MAC addresses in network setup scripts. For example, to get
 reproducible results or to avoid having to query MAC addresses
 of just newly created virtual interfaces.
+
+## Oldprocs
+
+The oldprocs utility lists processes and services that need to be
+restarted because their executable or one of its libraries has
+changed, e.g. after a `dnf update` and before the next system
+reboot.
+
+It detects if a process belongs to a systemd service and prints
+the matching `systemctl` command line to restart it.
+Optionally, with `--restart` the utility automatically restarts
+the detected services.
+
+Thus, it's well suited for automatic system updates. Think:
+something like `dnf -y update` runs from a cron-job followed by
+`oldprocs --restart`. This makes sense for systems where it's more
+important to get a required security update as fast as possible
+than avoiding a potential service breakage due to the new update.
+Arguably, depending on you distribution and package selection
+this risk is rather small, anyways.
+
+Another use case is to verify that all processes run current
+binaries and thus nobody forgot to restart some services or
+reboot the system, when necessary.
+
+Cases where a service can't be restarted (i.e. dbus), a restart
+wasn't sufficient (e.g. old processes are still around), a
+restart would eject a user from a graphical session or there are
+other non-service processes are signaled via an exit status
+unequal zero and diagnostic messages.
+
+Example output when running with root privileges:
+
+    # ./oldprocs
+    You have to restart the following system services:
+
+    systemctl restart libvirtd.service
+
+    You have to restart the following user services:
+
+    sudo -u '#1000' systemctl --user restart evolution-addressbook-factory.service
+    sudo -u '#1000' systemctl --user restart evolution-calendar-factory.service
+    sudo -u '#1000' systemctl --user restart evolution-source-registry.service
+    sudo -u '#1000' systemctl --user restart gnome-terminal-server.service
+
+    The following user processes must be restarted manually
+    (or a session logoff/login might take care of them):
+
+    /usr/bin/clementine (deleted) (uid 1000) - pids: 20826
+    /usr/bin/clementine-tagreader (deleted) (uid 1000) - pids: 20831 20832 20833 20834
+    /usr/lib64/firefox/firefox (deleted) (uid 1000) - pids: 2601 2696 2981 7154 21053
+    /usr/libexec/gnome-shell-calendar-server (uid 1000) - pids: 2142
+    /usr/libexec/goa-daemon (uid 1000) - pids: 2163
+    # echo $?
+    11
+
+To automatically restart all old system processes:
+
+    # ./oldprocs --restart
+
+The auto-restart just includes processes belonging to systemd
+services that belong to the systemd instance the user has direct
+access to.
+
+Example output when user with id 1000 executes it:
+
+   $ ./oldprocs
+    You have to restart the following user services:
+
+    systemctl --user restart evolution-addressbook-factory.service
+    systemctl --user restart evolution-calendar-factory.service
+    systemctl --user restart evolution-source-registry.service
+    systemctl --user restart gnome-terminal-server.service
+
+    The following user processes must be restarted manually
+    (or a session logoff/login might take care of them):
+
+    /usr/bin/clementine (deleted) (uid 1000) - pids: 20826
+    /usr/bin/clementine-tagreader (deleted) (uid 1000) - pids: 20831 20832 20833 20834
+    /usr/lib64/firefox/firefox (deleted) (uid 1000) - pids: 2601 2696 2981 7154 21053
+    /usr/libexec/gnome-shell-calendar-server (uid 1000) - pids: 2142
+    /usr/libexec/goa-daemon (uid 1000) - pids: 2163 
+
+The difference is that the restart commands for the systemd
+user services are generated from the user's perspective - and the
+old system processes are not included as permissions are lacking
+to access the relevant directories and files under `/proc`.
+
+How does it work: oldprocs scans through `/proc` to find out
+which processes are running, which executables they were started
+with, whether those were replaced, changed dates, which shared
+objects are linked into the process, whether those were changed,
+which systemd service the process is part of, if any, etc.
+
+Related tools: There is
+[tracer](https://github.com/FrostyX/tracer) which also lists
+outdated processes and provides restart commands for some
+services. It is written in Python and in my experience, it
+sometimes runs very slow and the output sometimes contains
+inaccuracies (e.g. wrong restart commands, false negatives, wrong
+diagnostics such as a required system reboot which isn't really
+necessary).  As of 2018, tracer doesn't support the automatic
+restarting of outdated services.
+
+In contrast to that, oldprocs is written in C++, runs very fast,
+supports the automatic restarting of outdated services and
+provides some fresh diagnostics.
+
+The utility `latest-kernel-running.sh` complements `oldprocs` as
+it checks whether a system reboot is necessary due to a previous
+kernel update.
 
 ## Pargs
 

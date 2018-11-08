@@ -62,6 +62,16 @@ target_link_libraries(silencce
     )
 
 
+add_executable(oldprocs oldprocs.cc)
+set_property(TARGET oldprocs PROPERTY INCLUDE_DIRECTORIES
+  ${CMAKE_SOURCE_DIR}/libixxx
+  ${CMAKE_SOURCE_DIR}/libixxxutil
+  )
+target_link_libraries(oldprocs
+    ixxxutil_static
+    ixxx_static
+    )
+
 add_executable(lockf lockf.c)
 
 
