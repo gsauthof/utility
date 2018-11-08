@@ -186,7 +186,7 @@ class Proc_Reader {
         const char *exe() const;
         uid_t uid() const;
     private:
-        State state_ {OK};
+        //State state_ {OK};
         ixxx::util::Directory proc;
         const struct dirent *d{nullptr};
         array<char, 4096> a;
@@ -308,7 +308,7 @@ static bool starts_with(const char *begin, const char *end,
     size_t m = e-b;
     if (m > n)
         return false;
-    return equal(begin, begin+m, b, e);
+    return equal(begin, begin+m, b);
 }
 static bool ends_with(const char *begin, const char *end,
         const char *b, const char *e)
@@ -317,7 +317,7 @@ static bool ends_with(const char *begin, const char *end,
     size_t m = e-b;
     if (m > n)
         return false;
-    return equal(end - m, end, b, e);
+    return equal(end - m, end, b);
 }
 
 static pair<Service, string> get_service(const char *pid_str)
