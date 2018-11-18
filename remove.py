@@ -5,6 +5,8 @@
 
 import argparse
 import os
+import time
+import subprocess
 import sys
 
 # cf. https://unix.stackexchange.com/q/444611/1131
@@ -13,9 +15,18 @@ def remove(dev):
     with open(filename, 'wb', buffering=0) as f:
         f.write(b'1\n')
 
+# probably also tirggered by the remove, just being paranoid here
+# the flushbufs generally makes sense when there were some raw writes
+# to the device
+def flush(dev):
+    subprocess.check_output(['blockdev', '--flushbufs', dev])
+
 def main(filename):
     devname = os.path.realpath(filename)
     dev = os.path.basename(devname)
+    flush(devname)
+    # in case the remove isn't properly implemented/paranoia
+    time.sleep(13)
     remove(dev)
     try:
         os.stat(devname)
@@ -23,6 +34,7 @@ def main(filename):
                 'Device {} still present after removal'.format(devname))
     except FileNotFoundError:
         pass
+    time.sleep(3)
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(
