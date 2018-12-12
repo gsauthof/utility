@@ -19,7 +19,7 @@ import io
 import itertools
 import operator
 import os
-import platform
+import distro
 import re
 import subprocess
 import sys
@@ -57,7 +57,7 @@ def test_list_fedora():
   f_Base.iter_userinstalled.return_value = iter([Rec('kernel-modules'), Rec('foo-debuginfo'), Rec('zsh'), Rec('vim')])
   f_dnf.Base.return_value = f_Base
   # yes, we are mocking the local import of dnf
-  with mock.patch('platform.linux_distribution', f_linux_distribution), \
+  with mock.patch('distro.linux_distribution', f_linux_distribution), \
        mock.patch.dict('sys.modules', {'dnf': f_dnf}), \
        mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
     main() # calls list_fedora()
@@ -85,7 +85,7 @@ yum-cron,user,0
 yum-cron,user,0
 yum-utils,dep,0
 zsh,user,1000''')
-  with mock.patch('platform.linux_distribution', f_linux_distribution), \
+  with mock.patch('distro.linux_distribution', f_linux_distribution), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
     main() # calls list_centos
@@ -277,7 +277,7 @@ vim
 2017-01-22 17:48:06 install curl foo bar
 2017-01-22 17:48:06 install vim foo bar
 ''')
-  with mock.patch('platform.linux_distribution', f_linux_distribution), \
+  with mock.patch('distro.linux_distribution', f_linux_distribution), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('os.listdir', f_listdir), \
        mock.patch('{}.open'.format(__name__), f_open), \
@@ -319,7 +319,7 @@ Architecture: aarch64
 Auto-Installed: 1
 
 ''')
-  with mock.patch('platform.linux_distribution', f_linux_distribution), \
+  with mock.patch('distro.linux_distribution', f_linux_distribution), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('os.path.exists', f_exists), \
        mock.patch('{}.open'.format(__name__), f_open), \
@@ -338,7 +338,7 @@ list_fn = {
     }
 
 def main():
-  (dname, version, _) = platform.linux_distribution()
+  (dname, version, _) = distro.linux_distribution()
   try:
     fn = list_fn[dname]
     if fn == list_centos and LooseVersion(version) >= LooseVersion('8.0'):
