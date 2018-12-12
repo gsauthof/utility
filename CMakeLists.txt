@@ -4,8 +4,12 @@ project(utility C CXX)
 
 include(CheckFunctionExists)
 include(CheckLibraryExists)
+include(CMakePushCheckState)
 
+CMAKE_PUSH_CHECK_STATE(RESET)
+set(CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
 check_function_exists(renameat2 HAVE_RENAMEAT2)
+cmake_pop_check_state()
 configure_file(config.h.in config.h)
 
 # guard from super-projects, i.e. when it is added as subdirectory
