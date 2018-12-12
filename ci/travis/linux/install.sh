@@ -13,6 +13,7 @@ fi
 # -> as of 2018-01, Travis Trusty (Ubuntu 12) is at
 # docker 17.09.0.ce
 
+docker exec --user root devel dnf -y install python3-distro
 docker exec devel env \
   CMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
   targets="$targets" \
