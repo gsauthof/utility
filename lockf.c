@@ -208,6 +208,7 @@ static pid_t child_pid_ = 0;
 
 static void kill_child(int sig)
 {
+  (void)sig;
   if (child_pid_)
     kill(child_pid_, SIGTERM);
   // we don't exit because we want to still wait on the

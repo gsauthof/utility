@@ -26,7 +26,7 @@ static void help(FILE *f, const char *argv0)
       "2017, Georg Sauthoff <mail@gms.tf>\n", argv0);
 }
 
-bool help_requested(int argc, char **argv)
+static bool help_requested(int argc, char **argv)
 {
   for (int i = 1; i < argc; ++i)
     if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))

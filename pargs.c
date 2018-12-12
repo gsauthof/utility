@@ -409,7 +409,7 @@ static int read_mem_rand(char **line, size_t *n, FILE *m, uint64_t off)
   return 0;
 }
 
-static int pp_aux(uint64_t key, uint64_t val, FILE *o, const Args *args)
+static int pp_aux(uint64_t key, uint64_t val, FILE *o)
 {
   switch (key) {
     case AT_HWCAP: pp_hwcap(val, o); break;
@@ -426,8 +426,7 @@ static int pp_aux(uint64_t key, uint64_t val, FILE *o, const Args *args)
 }
 
 static int pp_aux_ref(uint64_t key, uint64_t val, char **line, size_t *n,
-    FILE *m, FILE *o,
-    const Args *args)
+    FILE *m, FILE *o)
 {
   switch (key) {
     case AT_BASE_PLATFORM:
@@ -446,7 +445,7 @@ static int pp_aux_ref(uint64_t key, uint64_t val, char **line, size_t *n,
   return 0;
 }
 
-static int pp_aux_v(uint64_t key, uint64_t val, FILE *o, const Args *args)
+static int pp_aux_v(uint64_t key, FILE *o, const Args *args)
 {
   if (args->verbose && key < sizeof auxv_type_map / sizeof auxv_type_map[0]
       && *auxv_type_map[key].desc)
@@ -496,17 +495,17 @@ static int fput_proc_auxv_file(FILE *f, bool is_64, FILE *m, FILE *o,
       fprintf(o, "unk_%" PRIu64, v[0]);
     fprintf(o, " 0x%.16" PRIx64, v[1]);
 
-    int r = pp_aux(v[0], v[1], o, args);
+    int r = pp_aux(v[0], v[1], o);
     if (r) {
       free(line);
       return r;
     }
-    r = pp_aux_ref(v[0], v[1], &line, &n, m, o, args);
+    r = pp_aux_ref(v[0], v[1], &line, &n, m, o);
     if (r) {
       free(line);
       return r;
     }
-    r = pp_aux_v(v[0], v[1], o, args);
+    r = pp_aux_v(v[0], o, args);
     if (r) {
       free(line);
       return r;
@@ -650,7 +649,7 @@ struct Range {
 };
 typedef struct Range Range;
 
-int mmap_core(const char *filename, Range *range)
+static int mmap_core(const char *filename, Range *range)
 {
   int fd = open(filename, O_RDONLY);
   if (fd == -1) {
@@ -728,7 +727,7 @@ static int parse_landmarks(const Range *range, const char *filename,
 {
   const unsigned char *b = range->begin;
   const unsigned char *e = range->end;
-  if (e - b < sizeof(Elf32_Ehdr)) {
+  if ((size_t)(e - b) < sizeof(Elf32_Ehdr)) {
     fprintf(stderr, "File %s even too small for ELF32 header.\n", filename);
     return -1;
   }

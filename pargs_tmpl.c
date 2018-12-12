@@ -99,9 +99,9 @@ static int CAT(parse_prpsinfo_, WIDTH) (const char *filename, Landmarks *lm,
   // true e.g when reading a Debian 8 ppc64 -m32 core on Fedora 26 x86-64
   // (both with pargs and pargs32)
   // because pr_uid/pr_gid are unconditionally 4 bytes big on Debian 8 ppc64
-  if (sizeof(prpsinfo_t) + extra_off + 4 == (end - begin))
+  if (sizeof(prpsinfo_t) + extra_off + 4 == (size_t)(end - begin))
     extra_off += 4;
-  if (sizeof(prpsinfo_t) + extra_off > end - begin) {
+  if (sizeof(prpsinfo_t) + extra_off > (size_t)(end - begin)) {
     fprintf(stderr, "prpsinfo section overflows in %s\n", filename);
     return -1;
   }
@@ -127,6 +127,8 @@ static int CAT(parse_note_, WIDTH) (const char *filename,
     const unsigned char *name_begin, const unsigned char *name_end,
     const unsigned char *desc_begin, const unsigned char *desc_end)
 {
+  (void)name_begin;
+  (void)name_end;
   switch (note_type) {
     case NT_AUXV:
       debug("Reading auxv note");
@@ -148,6 +150,7 @@ static int CAT(parse_notes_, WIDTH) (
     const Range *range, const char *filename, Landmarks *lm,
     const Range *section_range)
 {
+  (void)range;
   const unsigned char *x = section_range->begin;
   const unsigned char *y = section_range->end;
   size_t i = 0;
@@ -396,7 +399,7 @@ static int CAT(parse_landmarks_, PARGS_ELF_CLASS) (
 {
   const unsigned char *b = range->begin;
   const unsigned char *e = range->end;
-  if (e - b < sizeof(CAT3(Elf, WIDTH, _Ehdr))) {
+  if ((size_t)(e - b) < sizeof(CAT3(Elf, WIDTH, _Ehdr))) {
     fprintf(stderr, "file too small for ELF%d header\n", WIDTH);
     return -1;
   }
@@ -422,7 +425,7 @@ static int CAT(parse_landmarks_, PARGS_ELF_CLASS) (
       b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_phoff));
   DECL_U_CP(16, program_header_size,
       b + offsetof(CAT3(Elf, WIDTH, _Ehdr), e_phentsize));
-  if (program_header_off + program_header_size > e - b) {
+  if (program_header_off + program_header_size > (size_t)(e - b)) {
     fprintf(stderr, "%s: program header table overflows\n", filename);
     return -1;
   }
@@ -436,7 +439,7 @@ static int CAT(parse_landmarks_, PARGS_ELF_CLASS) (
     segment_count = new_segment_count;
     debug("new segment count: %" CAT(PRIu, WIDTH), segment_count);
   }
-  if (program_header_off + segment_count * program_header_size > e - b) {
+  if (program_header_off + segment_count * program_header_size > (size_t)(e - b)) {
     fprintf(stderr, "%s: program header table overflows\n", filename);
     return -1;
   }
@@ -450,7 +453,7 @@ static int CAT(parse_landmarks_, PARGS_ELF_CLASS) (
         p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_offset));
     DECL_U_CP(WIDTH, segment_size,
         p + offsetof(CAT3(Elf, WIDTH, _Phdr), p_filesz));
-    if (segment_off + segment_size > e - b) {
+    if (segment_off + segment_size > (size_t)(e - b)) {
       fprintf(stderr, "segment %" CAT(PRIu, WIDTH) " overflows %s.\n",
           i, filename);
       return -1;
@@ -487,7 +490,7 @@ static int CAT(fput_core_vector_, WIDTH) (const Landmarks *lm,
       return -1;
     }
     CAT3(uint, WIDTH, _t) off = addr - lm->vector_base_addr;
-    if (off > e - b) {
+    if (off > (size_t)(e - b)) {
       fprintf(stderr, "Pointer points outside section.\n");
       return -1;
     }
@@ -516,7 +519,7 @@ static const char *CAT(get_core_str_, WIDTH) (CAT3(uint, WIDTH, _t) addr,
   CAT3(uint, WIDTH, _t) off = addr - lm->vector_base_addr;
   const unsigned char *b = lm->vector_section.begin;
   const unsigned char *e = lm->vector_section.end;
-  if (off > e - b) {
+  if (off > (size_t)(e - b)) {
     fprintf(stderr, "Start of string overflows.\n");
     return 0;
   }
@@ -539,11 +542,11 @@ static const unsigned char *CAT(
   CAT3(uint, WIDTH, _t) off = addr - lm->vector_base_addr;
   const unsigned char *b = lm->vector_section.begin;
   const unsigned char *e = lm->vector_section.end;
-  if (off > e - b) {
+  if (off > (size_t)(e - b)) {
     fprintf(stderr, "Start of string overflows.\n");
     return 0;
   }
-  if (off + n > e - b) {
+  if (off + n > (size_t)(e - b)) {
     fprintf(stderr, "End of string overflows.\n");
     return 0;
   }
@@ -596,13 +599,13 @@ static int CAT(fput_core_auxv_, WIDTH) (const Landmarks *lm, FILE *o,
       fprintf(o, "unk_%" CAT(PRIu, WIDTH), key);
     fprintf(o, " 0x%.16" CAT(PRIx, WIDTH), value);
 
-    int r = pp_aux(key, value, o, args);
+    int r = pp_aux(key, value, o);
     if (r)
       return r;
     r = CAT(pp_core_aux_ref_, WIDTH) (key, value, lm, o);
     if (r)
       return r;
-    r = pp_aux_v(key, value, o, args);
+    r = pp_aux_v(key, o, args);
     if (r)
       return r;
   }

@@ -100,7 +100,7 @@ static char **parse_arguments(int argc, char **argv, Arguments &a)
     switch (c) {
       case '?': help(stderr, argv[0]); exit(1); break;
       case 'h': help(stdout, argv[0]); exit(0); break;
-      case 'e': ++success_codes_size;
+      case 'e': ++success_codes_size; break;
       case 'k': a.suicide = true ; break;
       case 'K': a.suicide = false; break;
     }

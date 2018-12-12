@@ -102,7 +102,7 @@ static char **parse_arguments(int argc, char **argv, Arguments *a)
     switch (c) {
       case '?': help(stderr, argv[0]); exit(1); break;
       case 'h': help(stdout, argv[0]); exit(0); break;
-      case 'e': ++a->success_codes_size;
+      case 'e': ++a->success_codes_size; break;
       case 'k': a->suicide = true ; break;
       case 'K': a->suicide = false; break;
     }
@@ -176,7 +176,7 @@ static ssize_t read_auto_resume(int fd, void *buffer, size_t n)
   } while (m == -1 && errno == EINTR);
   return m;
 }
-static ssize_t write_all(int fd, const void *buffer, size_t n_)
+static ssize_t write_all(int fd, const char *buffer, size_t n_)
 {
   ssize_t n = n_;
   do {
