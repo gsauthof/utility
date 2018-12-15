@@ -290,16 +290,18 @@ enum class Service {
     YES,
     SESSION
 };
-ostream &operator<<(ostream &o, Service s)
+#if 0
+static ostream &operator<<(ostream &o, Service s)
 {
     switch (s) {
         case Service::UNKNOWN: o << "UNKNOWN"; break;
         case Service::SYSTEMD: o << "SYSTEMD"; break;
-        case Service::YES: o << "YES"; break;
+        case Service::YES:     o << "YES"; break;
         case Service::SESSION: o << "SESSION"; break;
     }
     return o;
 }
+#endif
 
 static bool starts_with(const char *begin, const char *end,
         const char *b, const char *e)
