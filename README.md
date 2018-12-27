@@ -12,6 +12,8 @@ This repository contains a collection of command line utilities.
 - chromium-addons - list installed Chromium extensions
 - dcat         - decompressing cat (autodetects gzip/zstd/bz2/...)
 - dcheck       - run a program under DBX's memory check mode
+- dtmemtime    - measure high-water memory usage of a process
+                 and its descendents under Solaris
 - isempty      - detect empty images (e.g. in batch scan results)
 - firefox-addons  - list installed Firefox addons
 - gs-ext       - list and manage installed Gnome Shell Extensions
@@ -274,6 +276,37 @@ widely available alternative to a subset of the functionality of
 excellent open source tools like [Valgrind (memcheck)][valgrind]
 or the [Address/Leak Sanitizers][asan] (which aren't available on
 Solaris/SPARC).
+
+## dtmemtime
+
+This utility measures the high-water memory usage of a process
+and all its descendants under [Solaris][solaris]. The main work
+does a [DTrace][dtrace] script that hooks into some syscalls
+(hence the name). It's designed to work under Solaris 10 (or
+later).
+
+Example:
+
+    $ dtmemtime mycmd.sh arg1 arg2 ... argn
+
+Say `mycmd.sh` executes some processes in parallel, e.g. with a
+[shell-pipe command][pipeline], then the high-water memory
+measurement takes the memory usages of all those processes into
+account.
+
+The [DTrace][dtrace] script installs some syscall and process
+probes, e.g. a probe into the [`brk` syscall][brk] and probes
+into syscalls used for managing anonymous memory mappings. Note
+that the Solaris 10 libc memory management exclusively uses
+`brk`. The easiest way to get a more modern memory allocator that
+also creates anonymous memory mappings (like under Linux) is to
+link against [`libumem`][umem] and set an environment variable.
+
+[dtrace]: https://en.wikipedia.org/wiki/DTrace
+[brk]: https://en.wikipedia.org/wiki/Sbrk
+[umem]: https://en.wikipedia.org/wiki/Libumem
+[pipeline]: https://en.wikipedia.org/wiki/Pipeline_(Unix)
+
 
 ## Firefox Addons
 

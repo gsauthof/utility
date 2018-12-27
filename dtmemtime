@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# 2018, Georg Sauthoff <mail@gms.tf>, GPLv3+
+
+dtrace=/usr/sbin/dtrace
+
+# cf. https://stackoverflow.com/q/59895/427158
+#
+origin="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+
+script=$origin/dtmemtime.d
+
+if [ "$1" = -h -o "$1" = --help ]; then
+    cat <<EOF
+$0 - measure high-water memory usage of a process and its descendants
+     using DTrace
+
+Call: $0 [-o OUT.LOG] cmd [arg1 .. argn]
+
+2018, Georg Sauthoff <mail@gms.tf>, GPLv3+
+EOF
+exit 0
+fi
+
+dflags=
+if [ "$1" = -o ]; then
+    dflags="$1 $2"
+    shift
+    shift
+fi
+
+exec "$dtrace" $dflags -C -s "$script" -c "$*"
+
