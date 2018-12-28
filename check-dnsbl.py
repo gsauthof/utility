@@ -9,7 +9,7 @@
 import argparse
 import csv
 # require dnspython >= 1.15
-# becaue of: https://github.com/rthalley/dnspython/issues/206
+# because of: https://github.com/rthalley/dnspython/issues/206
 import dns.resolver
 import dns.reversename
 import logging
@@ -44,13 +44,36 @@ default_blacklists = [
     ('all.s5h.net',               'traps'),
     ('rbl.realtimeblacklist.com', 'lists ip ranges'),
     ('b.barracudacentral.org',    'traps'),
-    ('dnsbl.spfbl.net',           'Reputation Database'),
     ('hostkarma.junkemailfilter.com', 'Autotected Virus Senders'),
     ('rbl.megarbl.net',           'Curated Spamtraps'),
     ('ubl.unsubscore.com',        'Collected Opt-Out Addresses'),
     ('0spam.fusionzero.com',      'Spam Trap'),
     ]
 
+# blacklists disabled by default because they return mostly garbage
+garbage_blacklists = [
+        # The spfbl.net operator doesn't publish clear criteria that lead to a
+        # blacklisting.
+        # When an IP address is blacklisted the operator can't name a specific
+        # reason for the blacklisting. The blacklisting details page just names
+        # overly generic reasons like:
+        # 'This IP was flagged due to misconfiguration of the e-mail service or
+        # the suspicion that there is no MTA at it.'
+        # When contacting the operator's support, they can't back up such
+        # claims.
+        # There are additions of IP addresses to the spfbl.net blacklist that
+        # have a properly configured MTA running and that aren't listed in any
+        # other blacklist. Likely, those additions are caused by a bug in the
+        # spfbl.net update process. But their support is uninterested in
+        # improving that process. Instead they want to externalize maintenance
+        # work by asking listed parties to waste some time on their manual
+        # delisting process.
+        # Suspiciously, you can even whitelist your listed address via
+        # transferring $ 1.50 via PayPal. Go figure.
+        # Thus, the value of querying this blacklist is utterly low as
+        # you get false-positive results, very likely.
+        ('dnsbl.spfbl.net',           'Reputation Database'),
+        ]
 
 # In[ ]:
 
@@ -112,6 +135,8 @@ mechanics and policies of the different lists.
       help="use Cisco's public DNS nameservers")
   p.add_argument('--retries', type=int, default=5,
       help='Number of retries if request times out (default: 5)')
+  p.add_argument('--with-garbage', action='store_true',
+          help='also include low-quality blacklists that are maintained by clueless operators and thus easily return false-positives')
   return p
 
 
@@ -127,6 +152,8 @@ def parse_args(*a):
         args.bls.append((bl, ''))
     if args.bl_file:
         args.bls = args.bls + read_csv_bl(args.bl_file)
+    if args.with_garbage:
+        args.bls.extend(garbage_blacklists)
     if args.google:
         args.ns = args.ns + ['8.8.8.8', '2001:4860:4860::8888', '8.8.4.4', '2001:4860:4860::8844']
     if args.opendns:
