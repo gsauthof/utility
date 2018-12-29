@@ -192,6 +192,18 @@ Everything is ok:
     $ echo $?
     0
 
+Note that your default resolving nameserver might reply
+incorrectly to some blacklist queries. It is thus advisable to
+test some well known listed/non-listed addresses. See also the
+`--ns` option. There are also some options for selecting some
+predefined public DNS resolvers (e.g.  Google Public DNS,
+Cloudflare, OpenDNS, Quad9). But again, some of those servers may
+filter out some blacklists. For example, as of 2019-12-29, only
+Cloudflare and OpenDNS return zen.spamhaus.org blacklisting
+records for `117.246.201.146` and `116.103.227.39` while Google
+and Quad9 don't. See also the [Spamhaus.org FAQ][spamhausfaq].
+
+[spamhausfaq]: https://www.spamhaus.org/faq/section/DNSBL%20Usage#261
 
 ## Check2junit
 

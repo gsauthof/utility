@@ -108,6 +108,9 @@ mechanics and policies of the different lists.
     p.add_argument('--bl-file', help='read more DNSBL from a CSV file')
     p.add_argument('--clear', action='store_true',
             help='clear default list of DNSBL')
+    # https://blog.cloudflare.com/dns-resolver-1-1-1-1/
+    p.add_argument('--cloudflare', action='store_true',
+            help="use Cloudflare's public DNS nameservers")
     p.add_argument('--debug', action='store_true',
             help='print debug log messages')
     # cf. https://en.wikipedia.org/wiki/Google_Public_DNS
@@ -126,6 +129,9 @@ mechanics and policies of the different lists.
     # cf. https://en.wikipedia.org/wiki/OpenDNS
     p.add_argument('--opendns', action='store_true',
             help="use Cisco's public DNS nameservers")
+    # cf. https://quad9.net/faq/
+    p.add_argument('--quad9', action='store_true',
+            help="use Quad9's public DNS nameservers (i.e. the filtering ones)")
     p.add_argument('--retries', type=int, default=5,
             help='Number of retries if request times out (default: 5)')
     p.add_argument('--with-garbage', action='store_true',
@@ -151,6 +157,10 @@ def parse_args(*a):
         args.ns = args.ns + ['8.8.8.8', '2001:4860:4860::8888', '8.8.4.4', '2001:4860:4860::8844']
     if args.opendns:
         args.ns = args.ns + ['208.67.222.222', '2620:0:ccc::2', '208.67.220.220', '2620:0:ccd::2']
+    if args.cloudflare:
+        args.ns += ['1.1.1.1', '2606:4700:4700::1111', '1.0.0.1', '2606:4700:4700::1001']
+    if args.quad9:
+        args.ns += ['9.9.9.9', '2620:fe::fe', '149.112.112.112', '2620:fe::9']
     if args.ns:
         dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
         dns.resolver.default_resolver.nameservers = args.ns
