@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# 2011-2018, Georg Sauthoff <mail@gms.tf>, GPLv3+
+#
+# ripdvd - copy each DVD track into a nicely named .vob file
+
+set -e
+
+#dev=/dev/dvd
+dev=/dev/cdrom
+
+titles=$(mplayer -identify -vo null  -frames 0 -dvd-device $dev dvd:// 2>&1 \
+    | awk '/There are [0-9]+ titles/ { print $3 }')
+
+vname=$(isoinfo -d dev=$dev  | grep '^Volume id:' | cut -d' ' -f3`)
+
+while [ -d "$vname" ] ; do
+    vname=${vname}1
+done
+
+mkdir "$vname"
+cd "$vname"
+
+echo "Ripping DVD $vname ($titles titles)"
+
+from=${1:-1}
+
+set +e
+
+for i in $(seq "$from" $titles); do
+    echo -n "  Track $i ... "
+    m=$(mplayer -dvd-device $dev dvd://$i -quiet -dumpstream -dumpfile \
+                t$(echo $i | sed 's/^\([0-9]\)$/0\1/').vob 2>&1 > /dev/null )
+    r=$?
+    g=$(echo $m | grep -v '^libdvdread:\|joystick\|socket\|LIRC\|^$\|^mplayer: No such file or directory$')
+    echo -n $g
+    if [ "$r" != "0" ]; then
+        echo failed
+        exit 1
+    else
+        echo OK
+    fi
+done
+
+eject $dev
