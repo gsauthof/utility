@@ -46,7 +46,7 @@ END
     /* in DTrace format strings, the length modifier is optional,
        and when omitted, DTrace automatically recognizes the
        right length of a variable for printing */
-    printf("Global runtime: %d ms, highwater memory: %d bytes\n",
+    printf("total runtime: %d ms, highwater memory: %d bytes\n",
             (timestamp-global_start)/1000000, global_highwater);
 }
 

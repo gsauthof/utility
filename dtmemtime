@@ -10,7 +10,7 @@ origin="$(cd "$( dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 script=$origin/dtmemtime.d
 
-if [ "$1" = -h -o "$1" = --help ]; then
+if [ $# = 0 -o "$1" = -h -o "$1" = --help ]; then
     cat <<EOF
 $0 - measure high-water memory usage of a process and its descendants
      using DTrace

@@ -300,7 +300,18 @@ later).
 
 Example:
 
-    $ dtmemtime mycmd.sh arg1 arg2 ... argn
+    $ cat foo.sh
+    #!/bin/bash
+    find "$1" | sed 's@/[^/]\+$@@' | sort | uniq -c | sort -n -k 1,1 -r | head
+    $ dtmemtime foo.sh /usr/share
+    pid 23066 (#1) (gsed) runtime: 691 ms, highwater memory: 116208 bytes
+    pid 23065 (#1) (gfind) runtime: 691 ms, highwater memory: 968176 bytes
+    pid 23069 (#1) (gsort) runtime: 1584 ms, highwater memory: 8619504 bytes
+    pid 23067 (#1) (gsort) runtime: 1560 ms, highwater memory: 8619504 bytes
+    pid 23063 (#1) (foo.sh) runtime: 1601 ms, highwater memory: 97208 bytes
+    pid 23070 (#1) (ghead) runtime: 1583 ms, highwater memory: 91632 bytes
+    pid 23068 (#1) (guniq) runtime: 1559 ms, highwater memory: 91632 bytes
+    total runtime: 1601 ms, highwater memory: 18571096 bytes
 
 Say `mycmd.sh` executes some processes in parallel, e.g. with a
 [shell-pipe command][pipeline], then the high-water memory
