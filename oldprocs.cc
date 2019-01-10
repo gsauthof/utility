@@ -687,7 +687,7 @@ static set<string> get_display_managers()
     const char *end = buf.data() + buf.size();
     const char *line_end = find(line, end, '\n');
     while (line_end < buf.data() + buf.size() ) {
-        const char *x = find_if(line, line_end, [](auto c) { return c != ' '; });
+        const char *x = find_if(line, line_end, [](char c) { return c != ' '; });
         const char *y = find(x, line_end, ' ');
         ids.emplace_back(x, y);
 
