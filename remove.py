@@ -21,7 +21,7 @@ def remove(dev):
 def flush(dev):
     subprocess.check_output(['blockdev', '--flushbufs', dev])
 
-def main(filename):
+def detach(filename):
     devname = os.path.realpath(filename)
     dev = os.path.basename(devname)
     flush(devname)
@@ -36,14 +36,18 @@ def main(filename):
         pass
     time.sleep(3)
 
-if __name__ == '__main__':
+def main():
     p = argparse.ArgumentParser(
             description='Sync USB drive cache, power-off and remove device ')
-    p.add_argument('filename', metavar='DEVICE_PATH', nargs=1,
+    p.add_argument('filenames', metavar='DEVICE_PATH', nargs='+',
             help='path to USB disk device (e.g. /dev/sdb)')
     args = p.parse_args()
     try:
-        main(args.filename[0])
+        for filename in args.filenames:
+            detach(filename)
     except Exception as e:
         print('error: {}'.format(e), file=sys.stderr)
-        sys.exit(1)
+        return 1
+
+if __name__ == '__main__':
+    sys.exit(main())
