@@ -35,6 +35,7 @@ This repository contains a collection of command line utilities.
 - silencce     - C++ implementation of silence
 - swap         - atomically exchange names of two files on Linux
 - train-spam   - feed spam maildir messages into bogofilter and remove them
+- unrpm        - extract an RPM file
 - user-installed.py - list manually installed packages on major distributions
 
 For example:
