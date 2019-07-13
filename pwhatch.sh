@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 function help
 {
@@ -34,13 +35,15 @@ printed to stderr.
 
 Options:
 
-   -c    don't use a dict, just random alphanumeric characters
-         (#WORDS is number of characters then)
-   -h    show this help (more times for more help)
-   -m N  specify minium #bits entropy (default: N=60)
-   -q    don't print entropy message to stderr
+   -c            don't use a dict, just random alphanumeric characters
+                 (#WORDS is number of characters then)
+   -f FILENAME   wordlist filename (default: ~/.cache/words.gz)
+   -h            show this help (more times for more help)
+   -m N          specify minium #bits entropy (default: N=60)
+   -q            don't print entropy message to stderr
+   -w N          number of words (default: 4; the -c default: 12)
 
-2016, Georg Sauthoff <mail@georg.so>, GPLv3+
+2016-2019, Georg Sauthoff <mail@gms.tf>, GPLv3+
 
 EOF
 if [ $1 -gt 1 ]; then
@@ -130,6 +133,7 @@ function check_entropy
     exit 1
   fi
 }
+
 function gen_nodict
 {
   entropy=$(echo "l((26*2+10)^$words)/l(2)" | bc -l | sed 's/\..*$//')
@@ -149,11 +153,14 @@ function parse_args
   use_dict=1
   use_help=0
   if command -v "$shuf" > /dev/null ; then : ; else shuf=""; fi
-  while getopts "hm:nc" arg; do
+  while getopts "cf:hm:nqw:" arg; do
     case $arg in
       c)
         words=12
         use_dict=0
+        ;;
+      f)
+        wfile=$OPTARG
         ;;
       h)
         use_help=$((use_help+1))
@@ -167,6 +174,9 @@ function parse_args
       q)
         quiet=1
         ;;
+      w)
+        words=$OPTARG
+        ;;
       ?)
         exit 1
         ;;
@@ -175,14 +185,55 @@ function parse_args
   if [ $OPTIND -eq $# -o $OPTIND -lt $# ]; then
     words=${!OPTIND}
   fi
-  if [ $use_dict -eq 0 ]; then
-    gen_nodict
-    exit 0
-  fi
   if [ $use_help -gt 0 ]; then
     help $use_help
     exit 0
   fi
+}
+
+function init_wordlist
+{
+    if [ -f "$wfile" ]; then
+        return
+    fi
+    if command -v "$aspell" > /dev/null ; then
+        for i in $lang; do
+            "$aspell" -d "$i" dump master | "$aspell" -l $i expand
+        done | "$sort" -u  | gzip > "$wfile"
+    elif [ -f "/usr/share/myspell/en_US.dic" ]; then
+        for i in $lang; do
+            sed 's@/.*$@@' /usr/share/myspell/"$i"*.dic
+        done | "$sort" -u | gzip > "$wfile"
+    fi
+
+}
+
+function gen_dict
+{
+    init_wordlist
+
+    local n=$(zcat "$wfile" | wc -l)
+    if [ "$n" -eq 0 ]; then
+      echo "Wordlist $wfile is empty"
+      exit 1
+    fi
+
+    local entropy=$(echo "l($n^$words)/l(2)" | bc -l | sed 's/\..*$//')
+    check_entropy "$entropy"
+
+    if [ -n "$shuf" ]; then
+      zcat "$wfile" | "$shuf" --random-source /dev/urandom -r -n $words \
+        | "$awk" '{print(tolower($0))}' \
+        | tr -d "'" \
+        | "$paste" -sd '-'
+    else
+      for i in `seq 1 $words`; do
+        zcat "$wfile" \
+          | "$sed" -n $(($(< /dev/urandom od -N4 -tu4 -An)%n+1))p \
+          | "$awk" '{print(tolower($0))}' \
+          | tr -d "'"
+      done | "$paste" -sd '-'
+    fi
 }
 
 
@@ -199,29 +250,15 @@ min_entropy=60
 : ${wfile:=~/.cache/words.gz}
 words=4
 
-parse_args "$@"
+function main
+{
+    parse_args "$@"
+    if [ $use_dict -ne 0 ]; then
+        gen_dict
+    else
+        gen_nodict
+    fi
+}
 
-[ -f "$wfile" ] || \
-  for i in $lang; do
-    "$aspell" -d $i dump master | "$aspell" -l $i expand
-  done | "$sort" -u  | gzip > "$wfile"
-
-n=$(zcat "$wfile" | wc -l)
-
-entropy=$(echo "l($n^$words)/l(2)" | bc -l | sed 's/\..*$//')
-check_entropy $entropy
-
-if [ -n "$shuf" ]; then
-  zcat "$wfile" | "$shuf" --random-source /dev/urandom -r -n $words \
-    | "$awk" '{print(tolower($0))}' \
-    | tr -d "'" \
-    | "$paste" -sd '-'
-else
-  for i in `seq 1 $words`; do
-    zcat "$wfile" \
-      | "$sed" -n $(($(< /dev/urandom od -N4 -tu4 -An)%n+1))p \
-      | "$awk" '{print(tolower($0))}' \
-      | tr -d "'"
-  done | "$paste" -sd '-'
-fi
+main "$@"
 
