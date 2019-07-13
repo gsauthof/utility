@@ -142,3 +142,31 @@ add_custom_target(check-new
   )
 
 add_custom_target(check DEPENDS check-old check-new)
+
+
+install(TARGETS dcat lockf oldprocs pargs searchb silence swap
+    RUNTIME DESTINATION bin)
+set(scripts
+    arsort.sh
+    ascii.py
+    check-cert.py
+    check-dnsbl.py
+    chromium-extensions.py
+    firefox-addons.py
+    gs-ext.py
+    isempty.py
+    latest-kernel-running.sh
+    lsata.sh
+    macgen.py
+    pdfmerge.py
+    pldd.py
+    pwhatch.sh
+    remove.py
+    ripdvd
+    unrpm.sh
+    user-installed.py
+    )
+foreach(script ${scripts})
+    STRING(REGEX REPLACE "\\.[^.]*$" "" name ${script})
+    install(PROGRAMS ${script} DESTINATION bin RENAME ${name})
+endforeach()

@@ -6,17 +6,17 @@ This repository contains a collection of command line utilities.
 - ascsii.py    - pretty print the ASCII table
 - benchmark.sh - run a command multiple times and report stats
 - benchmark.py - run a command multiple times and report stats (more features)
+- check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
 - check-cert   - check approaching expiration/validate certs of remote servers
 - check-dnsbl  - check if mailservers are DNS blacklisted/have rDNS records
-- check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
-- chromium-addons - list installed Chromium extensions
+- chromium-extensions - list installed Chromium extensions
 - dcat         - decompressing cat (autodetects gzip/zstd/bz2/...)
 - dcheck       - run a program under DBX's memory check mode
 - dtmemtime    - measure high-water memory usage of a process
                  and its descendents under Solaris
-- isempty      - detect empty images (e.g. in batch scan results)
 - firefox-addons  - list installed Firefox addons
 - gs-ext       - list and manage installed Gnome Shell Extensions
+- isempty      - detect empty images (e.g. in batch scan results)
 - latest-kernel-running - is the latest installed kernel actually running?
 - lockf        - protect command execution with a lock
 - lsata.sh     - map ataX kernel log ids to /dev/sdY devices
@@ -975,6 +975,14 @@ Or to use ninja instead of make and create a release build:
     $ mkdir utility-bin-o && cd utility-bin-o
     $ cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ../utility
     $ ninja-build
+
+Or to install it:
+
+    $ mkdir build
+    $ cd build
+    $ cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+    $ DESTDIR=$PWD/out ninja install
+
 
 ## Unittests
 
