@@ -6,6 +6,7 @@
 set -eu
 
 verbose=0
+list=0
 filename=-
 dir=$PWD
 
@@ -14,11 +15,12 @@ function usage
     cat <<EOF
 $1 - unpack a RPM file
 
-Usage: $1 [-C DIRECTORY] [-v] [-|FILENAME.RPM]
+Usage: $1 [-C DIRECTORY] [-v|-t] [-|FILENAME.RPM]
 
 Options:
 
   -C DIRECTORY    change in DIRECTORY before unpacking
+  -t              list filenames instead of extracting
   -v              print filename while extracting them
 EOF
 }
@@ -26,7 +28,7 @@ EOF
 function parse_args
 {
     local a
-    while getopts C:hv a; do
+    while getopts C:hvt a; do
         case "$a" in
             C)
                 dir=$OPTARG
@@ -37,6 +39,9 @@ function parse_args
                 ;;
             v)
                 verbose=1
+                ;;
+            t)
+                list=1
                 ;;
             *)
                 usage $0
@@ -58,11 +63,14 @@ function main
     if [ "$dir" != "$PWD" ]; then
         cd "$dir"
     fi
-    local flags=
-    if [ "$verbose" = 1 ]; then 
-        flags=-v
+    local flags=-di
+    if [ "$list" = 1 ]; then
+        flags=-t
     fi
-    rpm2cpio "$filename" | cpio -di $flags
+    if [ "$verbose" = 1 ]; then
+        flags+="v"
+    fi
+    rpm2cpio "$filename" | cpio --quiet $flags
 }
 
 main "$@"
