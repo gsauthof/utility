@@ -48,18 +48,18 @@ int main(int argc, char **argv)
     return 1;
   }
   size_t m;
-  const void *q = mmap_file(argv[1], &m);
+  const char *q = mmap_file(argv[1], &m);
   if (!q) {
     perror(0);
     return 1;
   }
   size_t n;
-  const void *t = mmap_file(argv[2], &n);
+  const char *t = mmap_file(argv[2], &n);
   if (!q) {
     perror(0);
     return 1;
   }
-  const void *p = memmem(t, n, q, m);
+  const char *p = memmem(t, n, q, m);
   if (!p)
     return 1;
   printf("%zd\n", p-t);
