@@ -146,7 +146,7 @@ add_custom_target(check-new
 add_custom_target(check DEPENDS check-old check-new)
 
 
-install(TARGETS dcat lockf oldprocs pargs searchb silence swap
+install(TARGETS dcat exec lockf oldprocs pargs searchb silence swap
     RUNTIME DESTINATION bin)
 set(scripts
     arsort.sh
