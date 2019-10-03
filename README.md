@@ -14,6 +14,7 @@ This repository contains a collection of command line utilities.
 - dcheck       - run a program under DBX's memory check mode
 - dtmemtime    - measure high-water memory usage of a process
                  and its descendents under Solaris
+- exec         - change argv[0] of a command
 - firefox-addons  - list installed Firefox addons
 - gs-ext       - list and manage installed Gnome Shell Extensions
 - isempty      - detect empty images (e.g. in batch scan results)

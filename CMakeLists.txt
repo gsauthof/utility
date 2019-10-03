@@ -123,6 +123,8 @@ target_link_libraries(searchbxx
   ixxx_static
   )
 
+add_executable(exec exec.c)
+
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
