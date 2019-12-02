@@ -35,14 +35,15 @@ default_blacklists = [
         ('auth.spamrats.com'            , 'Suspicious authentications'       ),
         ('dnsbl.inps.de'                , 'automated and reported'           ),
         ('bl.blocklist.de'              , 'fail2ban reports etc.'            ),
-        ('srnblack.surgate.net'         , 'feeders'                          ),
         ('all.s5h.net'                  , 'traps'                            ),
         ('rbl.realtimeblacklist.com'    , 'lists ip ranges'                  ),
         ('b.barracudacentral.org'       , 'traps'                            ),
         ('hostkarma.junkemailfilter.com', 'Autotected Virus Senders'         ),
-        ('rbl.megarbl.net'              , 'Curated Spamtraps'                ),
         ('ubl.unsubscore.com'           , 'Collected Opt-Out Addresses'      ),
         ('0spam.fusionzero.com'         , 'Spam Trap'                        ),
+        ('bl.nordspam.com'              , 'NordSpam IP addresses'            ),
+        ('rbl.nordspam.com'             , 'NordSpam Domain list '            ),
+        ('combined.mail.abusix.zone'    , 'Abusix aggregated'                ),
         ]
 
 # blacklists disabled by default because they return mostly garbage
