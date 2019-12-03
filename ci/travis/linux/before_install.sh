@@ -32,6 +32,7 @@ function configure_overlayfs
 
 function start_docker
 {
+  docker version
   docker create --name devel \
     -v "$src":/srv/src:ro,Z \
     -v "$build":/srv/build:Z \
