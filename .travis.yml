@@ -6,14 +6,16 @@ language: python
 
 matrix:
   include:
-    - os: linux
-      dist: bionic
-      services: docker
-      env:
-        docker_img=gsauthof/fedora-cxx-devel:29
-        docker_flags="--cap-add=SYS_PTRACE --security-opt apparmor:unconfined"
-        CMAKE_BUILD_TYPE=Debug
-      python: 3.5
+# ## Temporarily disable docker build, as Travis current docker version
+#    on Ubuntu 16.04/18.04, i.e. Docker 18.06.0-ce/1.38 breaks
+#    prctl(PR_SET_PDEATHSIG, SIGTERM) in silence test ...
+#    - os: linux
+#      services: docker
+#      env:
+#        docker_img=gsauthof/fedora-cxx-devel:29
+#        docker_flags="--cap-add=SYS_PTRACE --security-opt apparmor:unconfined"
+#        CMAKE_BUILD_TYPE=Debug
+#      python: 3.5
     - os: linux
       addons:
         apt:
@@ -28,6 +30,18 @@ matrix:
         CXX=clang++
       python: 3.5
       compiler: clang
+    - os: linux
+      dist: bionic
+      addons:
+        apt:
+          packages:
+            - gcc-multilib
+            - gdb
+            - libc6-dev-i386
+            - ninja-build
+      env:
+        CMAKE_BUILD_TYPE=Debug
+      python: 3.5
 
 before_install:
   - ./ci/travis/"$TRAVIS_OS_NAME$tag"/before_install.sh
