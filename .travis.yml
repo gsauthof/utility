@@ -7,6 +7,7 @@ language: python
 matrix:
   include:
     - os: linux
+      dist: bionic
       services: docker
       env:
         docker_img=gsauthof/fedora-cxx-devel:29
