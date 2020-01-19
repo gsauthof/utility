@@ -154,6 +154,7 @@ set(scripts
     check-cert.py
     check-dnsbl.py
     chromium-extensions.py
+    disas.sh
     firefox-addons.py
     gs-ext.py
     isempty.py

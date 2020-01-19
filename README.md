@@ -12,6 +12,7 @@ This repository contains a collection of command line utilities.
 - chromium-extensions - list installed Chromium extensions
 - dcat         - decompressing cat (autodetects gzip/zstd/bz2/...)
 - dcheck       - run a program under DBX's memory check mode
+- disas        - disassemble a certain function
 - dtmemtime    - measure high-water memory usage of a process
                  and its descendents under Solaris
 - exec         - change argv[0] of a command
@@ -46,6 +47,25 @@ For example:
 
 
 2016, Georg Sauthoff <mail@georg.so>
+
+
+## Build/Install instructions
+
+If ninja is available:
+
+    $ cmake -DCMAKE_BUILD_TYPE=Release -GNinja
+    $ ninja install
+
+Otherwise:
+
+    $ cmake -DCMAKE_BUILD_TYPE=Release
+    $ make install
+
+Installing into a specific prefix, e.g.:
+
+    $ cmake -DCMAKE_BUILD_TYPE=Release -GNinja \
+            -DCMAKE_INSTALL_PREFIX=$HOME/local
+    $ ninja install
 
 ## ASCII
 
@@ -241,6 +261,29 @@ to `junit.xml`).
   integration of coverage reports into Jenkins. A good solution
   for this is to use the Jenkins [Cobertura plugin](https://wiki.jenkins-ci.org/display/JENKINS/Cobertura+Plugin), generate the coverage report with lcov and convert it with the [lcov-to-cobertura-xml](https://github.com/eriwen/lcov-to-cobertura-xml.git) script. The lcov HTML reports can also be included with the Jenkins [HTML publisher plugin](https://wiki.jenkins-ci.org/display/JENKINS/HTML+Publisher+Plugin)
 - Easiest to integrate with C/C++ builds is the Jenkins [Warnings plugin](https://wiki.jenkins-ci.org/display/JENKINS/Warnings+Plugin) as it natively suports GCC warnings.
+
+## disas
+
+Disas is a small wrapper around objdump/gdb for disassembling a
+given function.
+
+Examples:
+
+    $ disas a.out main
+    $ disas a.out 10144 -a    # dump function that includes this addr
+    $ disas a.out foobar -f   # also dump functions that call foobar
+    $ disas a.out '.*xyz'     # dump all functions regex match
+    # disas a.out cmpte --gdb # disassemble using gdb instead of objdump
+
+Note that recent versions of `objdump` support the
+`--disassemble=fn` option (e.g. on Fedora 31), but e.g. the
+objdump on CentOS 7 doesn't. The wrapper doesn't require this
+option and thus also runs on older systems.
+
+The wrapper doesn't always use gdb, because objdump is more
+widely available and is more flexible when it comes to dumping
+multiple functions.
+
 
 ## dcat
 
