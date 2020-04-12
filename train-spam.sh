@@ -21,15 +21,16 @@ function cleanup()
 }
 trap cleanup EXIT
 
+# make sure to use the default gonzofilter DB
+cd
+
 base=$HOME/maildir/.Spam
-: ${bogofilter:=bogofilter}
 
 temp=$(mktemp --directory --tmpdir="$base")
 
 find  "$base"/{new,cur} -type f -print0 \
-  | xargs --no-run-if-empty -0 mv -t "$temp"
+        | xargs --no-run-if-empty -0 mv -t "$temp"
 
 if [ -z "$(find "$temp" -prune -empty)" ]; then
-  #ls -l "$temp"
-  "$bogofilter" -B "$temp" -s -v
+    find  "$temp" -type f -print0 | xargs -0rl1 gonzofilter -spam -in
 fi
