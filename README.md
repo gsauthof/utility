@@ -2,8 +2,9 @@
 
 This repository contains a collection of command line utilities.
 
+- addrof       - list IP address(es) of network devices
 - arsort       - topologically sort static libraries
-- ascsii.py    - pretty print the ASCII table
+- ascsii       - pretty print the ASCII table
 - benchmark.sh - run a command multiple times and report stats
 - benchmark.py - run a command multiple times and report stats (more features)
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
@@ -12,6 +13,7 @@ This repository contains a collection of command line utilities.
 - chromium-extensions - list installed Chromium extensions
 - dcat         - decompressing cat (autodetects gzip/zstd/bz2/...)
 - dcheck       - run a program under DBX's memory check mode
+- devof        - list network device names given an address (prefix)
 - disas        - disassemble a certain function
 - dtmemtime    - measure high-water memory usage of a process
                  and its descendents under Solaris
@@ -27,7 +29,7 @@ This repository contains a collection of command line utilities.
 - oldprocs     - list running (and possibly restart) old processes/services
                  whose object files were updated
 - pargs        - display argv and other vectors of PIDs/core files
-- pdfmerge.py  - vertically merge two PDF files (i.e. as two layers)
+- pdfmerge     - vertically merge two PDF files (i.e. as two layers)
 - pldd         - list shared libraries linked into a running process
 - pwhatch      - generate secure and easy to communicate passwords
 - remove       - sync USB drive cache, power down and remove device
@@ -38,7 +40,7 @@ This repository contains a collection of command line utilities.
 - swap         - atomically exchange names of two files on Linux
 - train-spam   - feed spam maildir messages into bogofilter and remove them
 - unrpm        - extract an RPM file
-- user-installed.py - list manually installed packages on major distributions
+- user-installed - list manually installed packages on major distributions
 
 For example:
 
@@ -66,6 +68,24 @@ Installing into a specific prefix, e.g.:
     $ cmake -DCMAKE_BUILD_TYPE=Release -GNinja \
             -DCMAKE_INSTALL_PREFIX=$HOME/local
     $ ninja install
+
+## Addrof/Devof
+
+In the spirit of `pidof` these utilities list the IP address(es) of
+a network devices or the name(s) of network device(s) that use an
+IP address (prefix).
+
+Example:
+
+```
+$ addrof enp0s31f6
+203.0.113.23
+2001:DB8:1337:2323::cafe
+$ addrof -4 enp0s31f6
+203.0.113.23
+$ devof 203.0.113.0/24
+enp0s31f6
+```
 
 ## ASCII
 

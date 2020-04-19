@@ -149,11 +149,13 @@ add_custom_target(check DEPENDS check-old check-new)
 install(TARGETS dcat exec lockf oldprocs pargs searchb silence swap
     RUNTIME DESTINATION bin)
 set(scripts
+    addrof.sh
     arsort.sh
     ascii.py
     check-cert.py
     check-dnsbl.py
     chromium-extensions.py
+    devof.sh
     disas.sh
     firefox-addons.py
     gs-ext.py
