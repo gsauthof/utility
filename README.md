@@ -4,13 +4,14 @@ This repository contains a collection of command line utilities.
 
 - addrof       - list IP address(es) of network devices
 - arsort       - topologically sort static libraries
-- ascsii       - pretty print the ASCII table
+- ascii        - pretty print the ASCII table
 - benchmark.sh - run a command multiple times and report stats
 - benchmark.py - run a command multiple times and report stats (more features)
 - check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
 - check-cert   - check approaching expiration/validate certs of remote servers
 - check-dnsbl  - check if mailservers are DNS blacklisted/have rDNS records
 - chromium-extensions - list installed Chromium extensions
+- cpufreq      - print current CPU frequency using CPU counters
 - dcat         - decompressing cat (autodetects gzip/zstd/bz2/...)
 - dcheck       - run a program under DBX's memory check mode
 - devof        - list network device names given an address (prefix)
@@ -304,6 +305,23 @@ The wrapper doesn't always use gdb, because objdump is more
 widely available and is more flexible when it comes to dumping
 multiple functions.
 
+## CPUfreq
+
+The `cpufreq` utility prints the current CPU frequency of each
+CPU core. It computes the frequency from a set of CPU counters
+(see the help text in `cpufreq.py` and further source code
+comments there for details).
+
+Thus, it doesn't rely on frequency-scaling support being enabled
+in the Linux kernel. When frequency-scaling support is disabled
+in the kernel and/or the BIOS the files
+`/sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq` don't
+exist, commands like `cpupower frequency-info` don't work, and
+(as of 2020) the frequency  obtained via `/proc/cpuinfo` isn't
+necessarily correct.
+
+In any case, this tool can be used to cross-check CPU frequency
+assumptions and frequency scaling results.
 
 ## dcat
 

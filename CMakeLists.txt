@@ -155,6 +155,7 @@ set(scripts
     check-cert.py
     check-dnsbl.py
     chromium-extensions.py
+    cpufreq.py
     devof.sh
     disas.sh
     firefox-addons.py
