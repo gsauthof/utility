@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: © 2020 Georg Sauthoff <mail@gms.tf>
+
 import argparse
 from decimal import Decimal
 import re
