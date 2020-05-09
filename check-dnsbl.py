@@ -20,8 +20,6 @@ default_blacklists = [
         ('dnsbl.sorbs.net'              , 'SORBS aggregated'                 ),
         ('safe.dnsbl.sorbs.net'         , "'safe' subset of SORBS aggregated"),
         ('ix.dnsbl.manitu.net'          , 'Heise iX NiX Spam'                ),
-        ('babl.rbl.webiron.net'         , 'Bad Abuse'                        ),
-        ('cabl.rbl.webiron.net'         , 'Chronicly Bad Abuse'              ),
         ('truncate.gbudb.net'           , 'Exclusively Spam/Malware'         ),
         ('dnsbl-1.uceprotect.net'       , 'Trapserver Cluster'               ),
         ('cbl.abuseat.org'              , 'Net of traps'                     ),
