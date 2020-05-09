@@ -42,6 +42,8 @@ default_blacklists = [
         ('bl.nordspam.com'              , 'NordSpam IP addresses'            ),
         ('rbl.nordspam.com'             , 'NordSpam Domain list '            ),
         ('combined.mail.abusix.zone'    , 'Abusix aggregated'                ),
+        ('black.dnsbl.brukalai.lt'      , 'Brukalai.lt junk mail'            ),
+        ('light.dnsbl.brukalai.lt'      , 'Brukalai.lt abuse'                ),
         ]
 
 # blacklists disabled by default because they return mostly garbage
