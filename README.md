@@ -2,47 +2,85 @@
 
 This repository contains a collection of command line utilities.
 
-- addrof       - list IP address(es) of network devices
-- arsort       - topologically sort static libraries
-- ascii        - pretty print the ASCII table
-- benchmark.sh - run a command multiple times and report stats
-- benchmark.py - run a command multiple times and report stats (more features)
-- check2junit  - convert libcheck XML to Jenkins/JUnit compatible XML
-- check-cert   - check approaching expiration/validate certs of remote servers
-- check-dnsbl  - check if mailservers are DNS blacklisted/have rDNS records
-- chromium-extensions - list installed Chromium extensions
-- cpufreq      - print current CPU frequency using CPU counters
-- dcat         - decompressing cat (autodetects gzip/zstd/bz2/...)
-- dcheck       - run a program under DBX's memory check mode
-- devof        - list network device names given an address (prefix)
-- disas        - disassemble a certain function
-- dtmemtime    - measure high-water memory usage of a process
-                 and its descendents under Solaris
-- exec         - change argv[0] of a command
-- firefox-addons  - list installed Firefox addons
-- gs-ext       - list and manage installed Gnome Shell Extensions
-- isempty      - detect empty images (e.g. in batch scan results)
-- latest-kernel-running - is the latest installed kernel actually running?
-- lockf        - protect command execution with a lock
-- lsata.sh     - map ataX kernel log ids to /dev/sdY devices
-- macgen       - randomly generate a private/internal MAC address
-- macgen.py    - Python implementation of macgen
-- oldprocs     - list running (and possibly restart) old processes/services
-                 whose object files were updated
-- pargs        - display argv and other vectors of PIDs/core files
-- pdfmerge     - vertically merge two PDF files (i.e. as two layers)
-- pldd         - list shared libraries linked into a running process
-- pwhatch      - generate secure and easy to communicate passwords
-- remove       - sync USB drive cache, power down and remove device
-- reset-tmux   - reset a tmux session after binary data escaped to the console
-- ripdvd       - copy each DVD track into a nicely named .vob file
-- searchb      - search a binary file in another
-- silence      - silence stdout/stderr unless command fails
-- silencce     - C++ implementation of silence
-- swap         - atomically exchange names of two files on Linux
-- train-spam   - feed spam maildir messages into bogofilter and remove them
-- unrpm        - extract an RPM file
-- user-installed - list manually installed packages on major distributions
+- [addrof](#addrofdevof)
+    -- list IP address(es) of network devices
+- arsort
+    -- topologically sort static libraries
+- [ascii](#ascii)
+    -- pretty print the ASCII table
+- benchmark.sh
+    -- run a command multiple times and report stats
+- benchmark.py
+    -- run a command multiple times and report stats (more features)
+- [check2junit](#check2junit)
+    -- convert libcheck XML to Jenkins/JUnit compatible XML
+- [check-cert](#check-cert)
+    -- check approaching expiration/validate certs of remote servers
+- [check-dnsbl](#check-dnsbl)
+    -- check if mailservers are DNS blacklisted/have rDNS records
+- chromium-extensions
+    -- list installed Chromium extensions
+- [cpufreq](#cpufreq)
+    -- print current CPU frequency using CPU counters
+- [dcat](#dcat)
+    -- decompressing cat (autodetects gzip/zstd/bz2/...)
+- [dcheck](#dcheck)
+    -- run a program under DBX's memory check mode
+- devof
+    -- list network device names given an address (prefix)
+- disas
+    -- disassemble a certain function
+- [dtmemtime](#dtmemtime)
+    -- measure high-water memory usage of a process and its descendants under Solaris
+- exec
+    -- change argv[0] of a command
+- [firefox-addons](#firefox-addons)
+    -- list installed Firefox addons
+- gs-ext
+    -- list and manage installed Gnome Shell Extensions
+- isempty
+    -- detect empty images (e.g. in batch scan results)
+- [latest-kernel-running](#latest-kernel)
+    -- is the latest installed kernel actually running?
+- [lockf](#lockf)
+    -- protect command execution with a lock
+- lsata.sh
+    -- map ataX kernel log ids to /dev/sdY devices
+- [macgen](#macgen)
+    -- randomly generate a private/internal MAC address
+- macgen.py
+    -- Python implementation of macgen
+- [oldprocs](#oldprocs)
+    -- list running (and possibly restart) old processes/services whose object
+      files were updated
+- [pargs](#pargs)
+    -- display argv and other vectors of PIDs/core files
+- [pdfmerge](#pdfmerge)
+    -- vertically merge two PDF files (i.e. as two layers)
+- [pldd](#pldd)
+    -- list shared libraries linked into a running process
+- pwhatch
+    -- generate secure and easy to communicate passwords
+- [remove](#remove)
+    -- sync USB drive cache, power down and remove device
+- reset-tmux
+    -- reset a tmux session after binary data escaped to the console
+- ripdvd
+    -- copy each DVD track into a nicely named .vob file
+- [searchb](#searchb)
+    -- search a binary file in another
+- [silence](#silence)
+    -- silence stdout/stderr unless command fails
+- [silencce](#silencce)
+    -- C++ implementation of silence
+- [swap](#swap)
+    -- atomically exchange names of two files on Linux
+- train-spam
+    -- feed spam maildir messages into bogofilter and remove them
+- unrpm
+    -- extract an RPM file
+- [user-installed](#user-installed)
+    -- list manually installed packages on major distributions
 
 For example:
 
@@ -50,26 +88,16 @@ For example:
     15 10 * * * silence backup_stuff.sh /home
 
 
-2016, Georg Sauthoff <mail@georg.so>
+2016, Georg Sauthoff <mail@gms.tf>
 
 
-## Build/Install instructions
+## TOC Tail
 
-If ninja is available:
+To skip over the utility sections:
 
-    $ cmake -DCMAKE_BUILD_TYPE=Release -GNinja
-    $ ninja install
-
-Otherwise:
-
-    $ cmake -DCMAKE_BUILD_TYPE=Release
-    $ make install
-
-Installing into a specific prefix, e.g.:
-
-    $ cmake -DCMAKE_BUILD_TYPE=Release -GNinja \
-            -DCMAKE_INSTALL_PREFIX=$HOME/local
-    $ ninja install
+- [Build Instructions](#build-instructions)
+- [Unittests](#unittests)
+- [License](#license)
 
 ## Addrof/Devof
 
@@ -1046,6 +1074,8 @@ Ignoring any unavailable packages:
 Get the source:
 
     $ git clone https://github.com/gsauthof/utility.git
+    $ cd utility
+    # git submodule update --init
 
 Out of source builds are recommended, e.g.:
 
@@ -1059,12 +1089,16 @@ Or to use ninja instead of make and create a release build:
     $ cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ../utility
     $ ninja-build
 
-Or to install it:
+Install it (for packaging):
 
     $ mkdir build
     $ cd build
-    $ cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local
+    $ cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release \
+                 -DCMAKE_INSTALL_PREFIX=/usr/local
     $ DESTDIR=$PWD/out ninja install
+
+If you want to directly install it into the final destination you
+can drop the `DESTDIR=...` part.
 
 
 ## Unittests
