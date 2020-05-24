@@ -34,6 +34,7 @@ This repository contains a collection of command line utilities.
 - pldd         - list shared libraries linked into a running process
 - pwhatch      - generate secure and easy to communicate passwords
 - remove       - sync USB drive cache, power down and remove device
+- reset-tmux   - reset a tmux session after binary data escaped to the console
 - ripdvd       - copy each DVD track into a nicely named .vob file
 - searchb      - search a binary file in another
 - silence      - silence stdout/stderr unless command fails

@@ -168,6 +168,7 @@ set(scripts
     pldd.py
     pwhatch.sh
     remove.py
+    reset-tmux.sh
     ripdvd
     unrpm.sh
     user-installed.py
