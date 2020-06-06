@@ -59,7 +59,7 @@ def parse_args(*a):
 def args_exts(profile):
   a = json.load(open(profile + '/addons.json'))
   a = a['addons']
-  a.sort(key=lambda x:x['learnmoreURL'])
+  a.sort(key=lambda x:x['reviewURL'])
   e = json.load(open(profile + '/extensions.json'))
   e = e['addons']
   e = dict((x['id'], x) for x in e)
@@ -79,22 +79,23 @@ def run(args):
   with open(args.output, 'w', newline='') as f:
     w = csv.writer(f, lineterminator=os.linesep)
     w.writerow(['mozilla_url', 'slug', 'guid', 'name',
-        'compatible_android', 'compatible_57', 'url' ])
+        'compatible_android', 'url' ])
     for a in addons:
       if a['id'] not in exts or not exts[a['id']]['active']:
         continue
-      mozilla_url = a['learnmoreURL']
-      mozilla_url = mozilla_url.replace('?src=api', '')
+      mozilla_url = a['reviewURL']
+      if mozilla_url.endswith('reviews/'):
+          mozilla_url = mozilla_url[:-8]
       slug = mozilla_url.split('/')[-2]
       guid = a['id']
       d = details(slug, session)
       compatible_android = str(
           'android' in d['current_version']['compatibility']).lower()
-      compatible_57 = str('firefox57' in d['tags']).lower()
       url = a['homepageURL']
-      url = url.replace('?src=api', '')
+      if url:
+          url = url.replace('?src=api', '')
       w.writerow([ mozilla_url, slug, guid, a['name'],
-          compatible_android, compatible_57, url ])
+          compatible_android, url ])
 
 def imain(*argv):
   args = parse_args(*argv)
