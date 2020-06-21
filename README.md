@@ -2,6 +2,8 @@
 
 This repository contains a collection of command line utilities.
 
+- [adjtimex](#adjtime)
+    -- list some clock related system settings
 - [addrof](#addrofdevof)
     -- list IP address(es) of network devices
 - arsort
@@ -98,6 +100,23 @@ To skip over the utility sections:
 - [Build Instructions](#build-instructions)
 - [Unittests](#unittests)
 - [License](#license)
+
+## Adjtimex
+
+The adjtimex syscall allows to set and get many clock related
+system settings. This utility displays some settings that are
+mainly of interest when dealing with time synchronisation such
+as NTP and PTP. Example output:
+
+```
+$ ./adjtimex
+Clock is synchronized (STA_UNSYNC unset)
+Maxerror: 500 us
+TAI offset: 37 s
+PPS frequency discipline (STA_PPSFREQ): disabled
+PPS time discipline (STA_PPSTIME): disabled
+```
+
 
 ## Addrof/Devof
 

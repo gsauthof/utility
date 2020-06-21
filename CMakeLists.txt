@@ -125,6 +125,8 @@ target_link_libraries(searchbxx
 
 add_executable(exec exec.c)
 
+add_executable(adjtimex adjtimex.c)
+
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
@@ -146,7 +148,7 @@ add_custom_target(check-new
 add_custom_target(check DEPENDS check-old check-new)
 
 
-install(TARGETS dcat exec lockf oldprocs pargs searchb silence swap
+install(TARGETS adjtimex dcat exec lockf oldprocs pargs searchb silence swap
     RUNTIME DESTINATION bin)
 set(scripts
     addrof.sh
