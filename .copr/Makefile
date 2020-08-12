@@ -3,4 +3,4 @@ srpm:
 	dnf -y install git-core
 	git submodule update --init
 	./build-tar.sh
-	rpmbuild --define "_sourcedir $(outdir)" --define "_specdir $(outdir)" --define "_rpmdir out" --define "_srcrpmdir out" --define "_builddir $(outdir)" -bs gms-utils.spec
+	rpmbuild --define "_sourcedir $$PWD" --define "_specdir $$PWD" --define "_builddir $$PWD" --define "_rpmdir $(outdir)" --define "_srcrpmdir $(outdir)" -bs gms-utils.spec
