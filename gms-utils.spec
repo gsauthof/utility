@@ -20,7 +20,7 @@ Collection of command line utilities.
 
 %prep
 %if %{with srpm}
-%autosetup
+%autosetup -n gms-utils
 %endif
 
 %build
