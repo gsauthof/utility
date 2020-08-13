@@ -19,7 +19,8 @@ BuildRequires:   gcc-c++
 BuildRequires:   python3-pytest
 BuildRequires:   python3-distro
 BuildRequires:   python3-psutil
-BuildRequires:   procps-ng
+BuildRequires:   procps-ng         # pgrep
+BuildRequires:   gdb               # gcore
 
 
 %if %{__isa_bits} == 64
