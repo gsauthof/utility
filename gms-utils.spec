@@ -14,7 +14,13 @@ Source:     https://example.org/gms-utils.tar.gz
 
 BuildRequires:   cmake
 BuildRequires:   gcc-c++
+
+# For the check target
 BuildRequires:   python3-pytest
+BuildRequires:   python3-distro
+BuildRequires:   python3-psutil
+BuildRequires:   procps-ng
+
 
 %if %{__isa_bits} == 64
 BuildRequires: glibc-devel(%{__isa_name}-32)
