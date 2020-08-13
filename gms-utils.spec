@@ -6,7 +6,7 @@
 
 Name:       gms-utils
 Version:    0.5.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
 License:    GPLv3+
