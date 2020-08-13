@@ -15,12 +15,14 @@ Source:     https://example.org/gms-utils.tar.gz
 BuildRequires:   cmake
 BuildRequires:   gcc-c++
 
-# For the check target
+# Required by the check target
 BuildRequires:   python3-pytest
 BuildRequires:   python3-distro
 BuildRequires:   python3-psutil
-BuildRequires:   procps-ng         # pgrep
-BuildRequires:   gdb               # gcore
+# i.e. because of pgrep
+BuildRequires:   procps-ng
+# i.e. because of gcore
+BuildRequires:   gdb
 
 
 %if %{__isa_bits} == 64
