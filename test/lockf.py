@@ -49,7 +49,7 @@ class Basic(unittest.TestCase):
     begin = timeit.default_timer()
     code = subprocess.call([lockf, '-c', self.base_dir + '/foo', 'false'])
     end = timeit.default_timer()
-    self.assertTrue(end-begin <= 0.01)
+    self.assertTrue(end-begin <= 0.07)
     self.assertEqual(code, 1)
 
   def test_abort(self):

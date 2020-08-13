@@ -14,6 +14,7 @@ Source:     https://example.org/gms-utils.tar.gz
 
 BuildRequires:   cmake
 BuildRequires:   gcc-c++
+BuildRequires:   python3-pytest
 
 %if %{__isa_bits} == 64
 BuildRequires: glibc-devel(%{__isa_name}-32)
@@ -33,9 +34,16 @@ Collection of command line utilities.
 
 %install
 %cmake_install
+mkdir -p %{buildroot}/usr/local/bin
+# resolve conflict with glibc-common
+mv %{buildroot}/usr/bin/pldd %{buildroot}/usr/local/bin/
+# resolve conflict with obs-build
+mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 
 %check
-%ctest
+# for ctests there is also the ctest macro
+%cmake_build --target check
+
 
 %files
 /usr/bin/addrof
@@ -60,7 +68,7 @@ Collection of command line utilities.
 /usr/bin/oldprocs
 /usr/bin/pargs
 /usr/bin/pdfmerge
-/usr/bin/pldd
+/usr/local/bin/pldd
 /usr/bin/pwhatch
 /usr/bin/remove
 /usr/bin/reset-tmux
@@ -68,7 +76,7 @@ Collection of command line utilities.
 /usr/bin/searchb
 /usr/bin/silence
 /usr/bin/swap
-/usr/bin/unrpm
+/usr/local/bin/unrpm
 /usr/bin/user-installed
 %doc README.md
 

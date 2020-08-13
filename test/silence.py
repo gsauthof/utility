@@ -78,7 +78,7 @@ class Basic(unittest.TestCase):
     subprocess.check_output([self.silence, 'true'], stderr=subprocess.STDOUT)
     end = timeit.default_timer()
     # moreutils chronic fails this on an i7 with SSD
-    self.assertTrue(end-begin <= 0.01)
+    self.assertTrue(end-begin <= 0.05)
 
   def test_false(self):
     begin = timeit.default_timer()
