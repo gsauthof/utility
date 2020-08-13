@@ -16,7 +16,7 @@ BuildRequires:   cmake
 BuildRequires:   gcc-c++
 
 %if %{__isa_bits} == 64
-Requires: glibc-devel(%{__isa_name}-32)
+BuildRequires: glibc-devel(%{__isa_name}-32)
 %endif
 
 %description
