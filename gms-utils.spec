@@ -24,10 +24,11 @@ BuildRequires:   procps-ng
 # i.e. because of gcore
 BuildRequires:   gdb
 
-
 %if %{__isa_bits} == 64
 BuildRequires: glibc-devel(%{__isa_name}-32)
 %endif
+
+Requires: python3-dns
 
 %description
 Collection of command line utilities.
@@ -91,5 +92,7 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 
 
 %changelog
+* Fri Aug 21 2020 Georg Sauthoff <mail@gms.tf> - 0.5.0-2
+- fix check-dnsbl depedency
 * Wed Aug 12 2020 Georg Sauthoff <mail@gms.tf> - 0.5.0-1
 - initial packaging
