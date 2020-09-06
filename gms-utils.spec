@@ -6,7 +6,7 @@
 
 Name:       gms-utils
 Version:    0.5.0
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
 License:    GPLv3+
@@ -28,6 +28,8 @@ BuildRequires:   gdb
 BuildRequires: glibc-devel(%{__isa_name}-32)
 %endif
 
+# for check-cert
+Requires: gnutls-utils
 Requires: python3-dns
 
 %description
@@ -92,6 +94,8 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 
 
 %changelog
+* Sun Sep 06 2020 Georg Sauthoff <mail@gms.tf> - 0.5.0-3
+- fix check-cert depedency
 * Fri Aug 21 2020 Georg Sauthoff <mail@gms.tf> - 0.5.0-2
 - fix check-dnsbl depedency
 * Wed Aug 12 2020 Georg Sauthoff <mail@gms.tf> - 0.5.0-1
