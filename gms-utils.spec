@@ -4,6 +4,8 @@
 # Only required in Fedora < f33 as this is the new default
 %undefine __cmake_in_source_build
 
+%define _lto_cflags %{nil}
+
 Name:       gms-utils
 Version:    0.5.0
 Release:    3%{?dist}
@@ -42,7 +44,17 @@ Collection of command line utilities.
 
 %build
 %cmake
-%cmake_build
+%cmake_build || true
+
+echo "CFLAGS: $CFLAGS"
+echo "LDFLAGS: $LDFLAGS"
+
+file CMakeFiles/pargs32.dir/pargs.c.o
+
+rpm -q binutils
+rpm -q gcc
+
+false
 
 %install
 %cmake_install
