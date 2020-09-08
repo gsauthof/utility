@@ -49,7 +49,7 @@ Collection of command line utilities.
 echo "CFLAGS: $CFLAGS"
 echo "LDFLAGS: $LDFLAGS"
 
-file CMakeFiles/pargs32.dir/pargs.c.o
+file /builddir/build/BUILD/gms-utils/x86_64-redhat-linux-gnu/CMakeFiles/pargs32.dir/pargs.c.o
 
 rpm -q binutils
 rpm -q gcc
