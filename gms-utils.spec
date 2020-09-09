@@ -59,6 +59,8 @@ echo "LDFLAGS: $LDFLAGS"
 rpm -q binutils
 rpm -q gcc
 
+cat /builddir/build/BUILD/gms-utils/x86_64-redhat-linux-gnu/snooze.s
+
 cat /builddir/build/BUILD/gms-utils/x86_64-redhat-linux-gnu/pargs.s
 
 false
