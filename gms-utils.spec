@@ -5,6 +5,9 @@
 %undefine __cmake_in_source_build
 
 %define _lto_cflags %{nil}
+%define _smp_mflags %{nil}
+
+%global optflags %{optflags} -v --save-temps
 
 Name:       gms-utils
 Version:    0.5.0
@@ -44,17 +47,23 @@ Collection of command line utilities.
 
 %build
 %cmake
-%cmake_build || true
+
+%cmake_build --target snooze32 || true
+%cmake_build --target pargs32 || true
 
 echo "CFLAGS: $CFLAGS"
 echo "LDFLAGS: $LDFLAGS"
 
-file /builddir/build/BUILD/gms-utils/x86_64-redhat-linux-gnu/CMakeFiles/pargs32.dir/pargs.c.o
+#file /builddir/build/BUILD/gms-utils/x86_64-redhat-linux-gnu/CMakeFiles/pargs32.dir/pargs.c.o
 
 rpm -q binutils
 rpm -q gcc
 
+cat /builddir/build/BUILD/gms-utils/x86_64-redhat-linux-gnu/pargs.s
+
 false
+
+%cmake_build || true
 
 %install
 %cmake_install
