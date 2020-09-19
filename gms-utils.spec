@@ -5,8 +5,8 @@
 %undefine __cmake_in_source_build
 
 Name:       gms-utils
-Version:    0.5.0
-Release:    3%{?dist}
+Version:    0.5.1
+Release:    1%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
 License:    GPLv3+
@@ -94,6 +94,8 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 
 
 %changelog
+* Sat Sep 19 2020 Georg Sauthoff <mail@gms.tf> - 0.5.1-1
+- bump version
 * Sun Sep 06 2020 Georg Sauthoff <mail@gms.tf> - 0.5.0-3
 - fix check-cert depedency
 * Fri Aug 21 2020 Georg Sauthoff <mail@gms.tf> - 0.5.0-2
