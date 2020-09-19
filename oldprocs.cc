@@ -102,6 +102,7 @@ static void debug(Args&&... args)
         cout << "[dbg] ";
         debugP(std::forward<Args>(args)...);
         cout << '\n';
+        cout.flush();
     }
 }
 
@@ -216,7 +217,9 @@ class Proc_Reader {
         //State state_ {OK};
         ixxx::util::Directory proc;
         const struct dirent *d{nullptr};
+        size_t root_off {0};
         array<char, 4096> a;
+        array<char, 4096> b;
         string path;
         string path2;
         mutable uid_t uid_{0};
@@ -247,7 +250,7 @@ const char *Proc_Reader::pid_c_str() const
 }
 const char *Proc_Reader::exe() const
 {
-    return a.data();
+    return a.data() + root_off;
 }
 Proc_Reader::State Proc_Reader::next()
 {
@@ -261,8 +264,23 @@ Proc_Reader::State Proc_Reader::next()
             path.resize(6);
             path += d->d_name;
             size_t path_len = path.size();
+
+            path += "/root";
+            auto l = ixxx::posix::readlink(path, b);
+
+            path.resize(path_len);
+            root_off = 0;
+            if (!is_deleted(b.data(), l)) {
+                auto p = static_cast<const char*>(
+                        mempcpy(mempcpy(a.data(), path.data(), path.size()), "/root/", 6));
+                root_off = p - a.data();
+            }
+
             path += "/exe";
-            auto l = ixxx::posix::readlink(path, a);
+
+            l = root_off + ixxx::posix::readlink(path.data(),
+                               a.data() + root_off, a.size() - root_off - 1);
+            a[l] = 0;
             if (is_deleted(a.data(), l)) {
                 debug("executable is deleted: ", path, " -> ", a.data());
                 return EXE_DELETED;
@@ -283,12 +301,14 @@ Proc_Reader::State Proc_Reader::next()
             path2 += d->d_name;
             path2 += "/map_files/";
             size_t path2_len = path2.size();
+            memcpy(b.data(), a.data(), root_off);
             Maps_Reader maps(path, a.data());
             while (auto m = maps.next()) {
-                array<char, 4096> b;
                 path2.resize(path2_len);
                 path2 += m;
-                auto l = ixxx::posix::readlink(path2, b);
+                l = root_off + ixxx::posix::readlink(path2.data(),
+                                    b.data() + root_off, b.size() - root_off - 1);
+                b[l] = 0;
                 if (is_deleted(b.data(), l)) {
                     debug("library deleted: ", path, ' ', b.data());
                     return LIB_DELETED;
@@ -299,6 +319,11 @@ Proc_Reader::State Proc_Reader::next()
                     debug("library updated after process start: ", path, ' ', b.data());
                     return LIB_CTIME_MISMATCH;
                 }
+            }
+        } catch (const ixxx::stat_error &e) {
+            if (e.code() == ENOENT) {
+                debug("could not stat while processing: ", path);
+                continue;
             }
         } catch (const ixxx::readlink_error &e) {
             if (e.code() == EACCES)
