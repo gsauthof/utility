@@ -261,6 +261,9 @@ Proc_Reader::State Proc_Reader::next()
         if (!is_num(d->d_name))
             continue;
         try {
+
+          for (unsigned k = 0; k<2; ++k) {
+          try {
             path.resize(6);
             path += d->d_name;
             size_t path_len = path.size();
@@ -270,7 +273,7 @@ Proc_Reader::State Proc_Reader::next()
 
             path.resize(path_len);
             root_off = 0;
-            if (!is_deleted(b.data(), l)) {
+            if (!k && !is_deleted(b.data(), l)) {
                 auto p = static_cast<const char*>(
                         mempcpy(mempcpy(a.data(), path.data(), path.size()), "/root/", 6));
                 root_off = p - a.data();
@@ -320,11 +323,15 @@ Proc_Reader::State Proc_Reader::next()
                     return LIB_CTIME_MISMATCH;
                 }
             }
-        } catch (const ixxx::stat_error &e) {
+            break;
+          } catch (const ixxx::stat_error &e) {
             if (e.code() == ENOENT) {
                 debug("could not stat while processing: ", path);
                 continue;
             }
+          }
+          }
+
         } catch (const ixxx::readlink_error &e) {
             if (e.code() == EACCES)
                 continue;
