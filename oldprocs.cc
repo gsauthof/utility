@@ -33,6 +33,7 @@
 using namespace std;
 
 struct Args {
+    bool verbose{false};
     bool restart{false};
     bool print_pid{false};
     bool check_dm{true};
@@ -52,6 +53,8 @@ void Args::parse(int argc, char **argv)
             print_pid = true;
         } else if (!strcmp(argv[i], "-r") || !strcmp(argv[i], "--restart")) {
             restart = true;
+        } else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--verbose")) {
+            verbose = true;
         } else if (!strcmp(argv[i], "--no-check-dm")) {
             check_dm = false;
         } else {
@@ -73,11 +76,35 @@ void Args::help(ostream &o, const char *argv0)
         "                         during a service restart)\n"
          "  --pid, -p             print pids\n"
          "  --restart, -r         automatically restart systemd services\n"
+         "  --verbose, -v         print debug output\n"
          "\n"
          "GPL-3.0-or-later, 2018, Georg Sauthoff\n"
          "https://github.com/gsauthof/utility\n\n"
          ;
 }
+
+
+static bool log_debug;
+
+static void debugP()
+{
+}
+template<typename Arg, typename... Args>
+static void debugP(Arg&& arg, Args&&... args)
+{
+    cout << std::forward<Arg>(arg);
+    debugP(std::forward<Args>(args)...);
+}
+template<typename... Args>
+static void debug(Args&&... args)
+{
+    if (log_debug) {
+        cout << "[dbg] ";
+        debugP(std::forward<Args>(args)...);
+        cout << '\n';
+    }
+}
+
 
 static bool is_num(const char *s)
 {
@@ -236,9 +263,8 @@ Proc_Reader::State Proc_Reader::next()
             size_t path_len = path.size();
             path += "/exe";
             auto l = ixxx::posix::readlink(path, a);
-            //cout << path << " -> " << a.data() << '\n';
             if (is_deleted(a.data(), l)) {
-                //cout << "    Warning: exe is deleted\n";
+                debug("executable is deleted: ", path, " -> ", a.data());
                 return EXE_DELETED;
             }
 
@@ -247,7 +273,7 @@ Proc_Reader::State Proc_Reader::next()
             uid_ = 0;
             auto y = file_ctime(a.data());
             if (x < y) {
-                //cout << "    Warning: executable updated after process start!\n";
+                debug("executable updated after process start: ", path, " -> ", a.data());
                 return EXE_CTIME_MISMATCH;
             }
 
@@ -259,20 +285,18 @@ Proc_Reader::State Proc_Reader::next()
             size_t path2_len = path2.size();
             Maps_Reader maps(path, a.data());
             while (auto m = maps.next()) {
-                //cout << "  => " << m << '\n';
                 array<char, 4096> b;
                 path2.resize(path2_len);
                 path2 += m;
                 auto l = ixxx::posix::readlink(path2, b);
-                //cout << "  => " << b.data() << '\n';
                 if (is_deleted(b.data(), l)) {
-                    //cout << "    Warning: library deleted!\n";
+                    debug("library deleted: ", path, ' ', b.data());
                     return LIB_DELETED;
                 }
                 auto x = link_ctime(path2);
                 auto y = file_ctime(b.data());
                 if (x < y) {
-                    //cout << "    Warning: library updated after process start!\n";
+                    debug("library updated after process start: ", path, ' ', b.data());
                     return LIB_CTIME_MISMATCH;
                 }
             }
@@ -740,6 +764,8 @@ int main(int argc, char **argv)
     args.parse(argc, argv);
     if (args.check_dm)
         args.display_managers = get_display_managers();
+    if (args.verbose)
+        log_debug = true;;
     Proc_Checker pc(args);
     int rc = pc.check();
     pc.report();
