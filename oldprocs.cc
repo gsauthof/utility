@@ -287,8 +287,7 @@ Proc_Reader::State Proc_Reader::next()
 enum class Service {
     UNKNOWN,
     SYSTEMD,
-    YES,
-    SESSION
+    YES
 };
 #if 0
 static ostream &operator<<(ostream &o, Service s)
@@ -332,12 +331,15 @@ static pair<Service, string> get_service(const char *pid_str)
     size_t n = ixxx::util::read_all(fd, a);
     const char *begin = a.data();
     const char *end = begin + n;
-    const char name_mark[] = "1:name=systemd:/";
+    const char name_mark[] = "/system.slice/";
     const char *p = search(begin, end, name_mark, name_mark + sizeof name_mark - 1);
-    if (p == end || (p > begin && *(p-1) != '\n' ) )
-        return make_pair(Service::UNKNOWN, string());
-    p += sizeof name_mark - 1;
+    if (p == end || (p > begin && *(p-1) != '\n' ) ) {
+        p = begin;
+    } else {
+        p += sizeof name_mark - 1;
+    }
     end = find(p, end, '\n');
+
     const char service_mark[] = ".service";
     if (ends_with(p, end, service_mark, service_mark + sizeof service_mark - 1)) {
         p = static_cast<const char*>(memrchr(p-1, '/', end-(p-1)));
@@ -347,14 +349,7 @@ static pair<Service, string> get_service(const char *pid_str)
     if (ends_with(p-1, end, init_mark, init_mark + sizeof init_mark - 1)) {
         return make_pair(Service::SYSTEMD, string());
     }
-    const char scope_mark[] = ".scope";
-    if (ends_with(p, end, scope_mark, scope_mark + sizeof scope_mark - 1)) {
-        p = static_cast<const char*>(memrchr(p-1, '/', end-(p-1)));
-        ++p;
-        const char session_mark[] = "session";
-        if (starts_with(p, end, session_mark, session_mark + sizeof session_mark - 1))
-            return make_pair(Service::SESSION, string());
-    }
+
     return make_pair(Service::UNKNOWN, string());
 }
 
@@ -449,8 +444,11 @@ int Proc_Checker::check()
                 } else {
                     if (reader.uid() < 1000) {
                         services.insert(x.second);
-                    } else
+                    } else {
                         user_services[reader.uid()].insert(x.second);
+                        if (x.second == "gnome-terminal-server.service")
+                            processes[reader.uid()][reader.exe()].push_back(reader.pid());
+                    }
                 }
                 break;
             case Service::SYSTEMD:
@@ -461,7 +459,7 @@ int Proc_Checker::check()
                     user_systemd.emplace(reader.uid(), reader.pid());
                 }
                 break;
-            case Service::SESSION:
+            case Service::UNKNOWN:
                 processes[reader.uid()][reader.exe()].push_back(reader.pid());
                 break;
             default:
