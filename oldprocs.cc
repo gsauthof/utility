@@ -543,27 +543,8 @@ void Proc_Checker::report_system()
         // cf. https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=805449
         cout << "\nYou have to restart the system (because dbus changed).\n\n";
     }
-    cmd.clear();
-    cmd.push_back("systemctl");
-    cmd.push_back("restart");
-    if (!services.empty()) {
+    if (auditd || systemd || !services.empty()) {
         cout << "\nYou have to restart the following system services:\n\n";
-        for (auto &service: services) {
-            cout << "systemctl restart " << service;
-            if (args_->display_managers.count(service))
-                cout << "    # ATTENTION: a local user session might be terminated";
-            cout << '\n';
-            if (args_->restart && my_uid == 0) {
-                if (args_->display_managers.count(service)) {
-                    cout << "    => NOT restarting it automatically!\n";
-                } else {
-                    cmd.resize(2);
-                    cmd.push_back(service.c_str());
-                    cmd.push_back(nullptr);
-                    execute(cmd);
-                }
-            }
-        }
     }
     if (auditd) {
         // cf. https://bugzilla.redhat.com/show_bug.cgi?id=973697
@@ -589,6 +570,27 @@ void Proc_Checker::report_system()
             execute(cmd);
         }
     }
+    cmd.clear();
+    cmd.push_back("systemctl");
+    cmd.push_back("restart");
+    if (!services.empty()) {
+        for (auto &service: services) {
+            cout << "systemctl restart " << service;
+            if (args_->display_managers.count(service))
+                cout << "    # ATTENTION: a local user session might be terminated";
+            cout << '\n';
+            if (args_->restart && my_uid == 0) {
+                if (args_->display_managers.count(service)) {
+                    cout << "    => NOT restarting it automatically!\n";
+                } else {
+                    cmd.resize(2);
+                    cmd.push_back(service.c_str());
+                    cmd.push_back(nullptr);
+                    execute(cmd);
+                }
+            }
+        }
+    }
 }
 
 void Proc_Checker::report_users()
@@ -599,8 +601,10 @@ void Proc_Checker::report_users()
             cout << " (your user!)";
         cout << "\nbecause dbus changed.\n\n";
     }
-    if (!user_services.empty()) {
+    if (!user_services.empty() || !user_systemd.empty()) {
         cout << "\nYou have to restart the following user services:\n\n";
+    }
+    if (!user_services.empty()) {
         cmd.clear();
         cmd.push_back("systemctl");
         cmd.push_back("--user");
