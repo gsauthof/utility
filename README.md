@@ -43,6 +43,8 @@ This repository contains a collection of command line utilities.
     -- list installed Firefox addons
 - gs-ext
     -- list and manage installed Gnome Shell Extensions
+- inhibit
+    -- temporarily disable Gnome-Shell screen blanking from the terminal
 - isempty
     -- detect empty images (e.g. in batch scan results)
 - [latest-kernel-running](#latest-kernel)

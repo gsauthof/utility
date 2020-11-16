@@ -162,6 +162,7 @@ set(scripts
     disas.sh
     firefox-addons.py
     gs-ext.py
+    inhibit.py
     isempty.py
     latest-kernel-running.sh
     lsata.sh
