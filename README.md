@@ -16,6 +16,9 @@ This repository contains a collection of command line utilities.
     -- run a command multiple times and report stats (more features)
 - [check2junit](#check2junit)
     -- convert libcheck XML to Jenkins/JUnit compatible XML
+- check-bat.py
+    -- alarm user when battery capacity reaches an upper threshold on Android
+       during charging
 - [check-cert](#check-cert)
     -- check approaching expiration/validate certs of remote servers
 - [check-dnsbl](#check-dnsbl)
