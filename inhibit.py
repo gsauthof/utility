@@ -37,6 +37,8 @@ def parse_args(*a):
             help='list active inhibitors')
     p.add_argument('--check', '-c', type=int, metavar='FLAGS',
             help='check for active inhibitors and set exit status accordingly (1|2|4|8 => LOGOUT|SWITCH|SUSPEND|IDLE)')
+    p.add_argument('--flags', type=int, metavar='FLAGS', default=INHIBIT_IDLE,
+            help='flags to use for inhibit action (1|2|4|8 => LOGOUT|SWITCH|SUSPEND|IDLE) (default: %(default)i)')
     p.add_argument('--time', '-t', type=int, metavar='SECONDS', default=2**32-1,
             help='sleep time, i.e. time the inhibitor is active (default: %(default)i)')
     return p.parse_args(*a)
@@ -50,7 +52,7 @@ def parse_args(*a):
 #             dbus_interface='org.gnome.SessionManager')
 #     time.sleep(2**32-1)
 
-def inhibit(secs):
+def inhibit(flags, secs):
     bus = pydbus.SessionBus()
     # we could leave out object_path because it defaults to bus_name
     # with . replaced by / ...
@@ -60,7 +62,7 @@ def inhibit(secs):
     xid = 0
     # again, we could leave out interface name, as it defaults to that
     sm['org.gnome.SessionManager'].Inhibit('inhibit.py', xid,
-            'user requested idle-off from terminal', INHIBIT_IDLE)
+            'user requested idle-off from terminal', flags)
     time.sleep(secs)
 
 def check_inhibited(flags):
@@ -86,7 +88,7 @@ def main():
         return(not check_inhibited(args.check))
     else:
         try:
-            inhibit(args.time)
+            inhibit(args.flags, args.time)
         except KeyboardInterrupt:
             pass
 
