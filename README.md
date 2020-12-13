@@ -66,6 +66,8 @@ This repository contains a collection of command line utilities.
     -- vertically merge two PDF files (i.e. as two layers)
 - [pldd](#pldd)
     -- list shared libraries linked into a running process
+- [pq](#pq)
+    -- query process and thread attributes
 - pwhatch
     -- generate secure and easy to communicate passwords
 - [remove](#remove)
@@ -661,7 +663,7 @@ Example output when user with id 1000 executes it:
     /usr/bin/clementine-tagreader (deleted) (uid 1000) - pids: 20831 20832 20833 20834
     /usr/lib64/firefox/firefox (deleted) (uid 1000) - pids: 2601 2696 2981 7154 21053
     /usr/libexec/gnome-shell-calendar-server (uid 1000) - pids: 2142
-    /usr/libexec/goa-daemon (uid 1000) - pids: 2163 
+    /usr/libexec/goa-daemon (uid 1000) - pids: 2163
 
 The difference is that the restart commands for the systemd
 user services are generated from the user's perspective - and the
@@ -831,6 +833,110 @@ endless loop instead of printing any results.
 
 [pldd-sol]: https://www.freebsd.org/cgi/man.cgi?query=pldd&apropos=0&sektion=0&manpath=SunOS+5.10&arch=default&format=html
 [pldd-glibc]: https://manpages.debian.org/stretch/manpages/pldd.1.en.html#BUGS
+
+## PQ
+
+The `pq` (process query) utility queries task attributes such as
+process flags, number of threads or environment variables.
+
+Examples:
+
+List all tasks that match the 'rcu' regular expression:
+
+```
+$ pq -e rcu -o pid aff cpu cls pri nice comm
+    pid aff cpu cls pri nice            comm
+      3   3   3 OTH   0  -20          rcu_gp
+      4 0-3   0 OTH   0  -20      rcu_par_gp
+     11 0-3   1 OTH   0    0       rcu_sched
+     31 0-3   1 OTH   0    0 rcu_tasks_kthre
+     32 0-3   1 OTH   0    0 rcu_tasks_rude_
+     33 0-3   1 OTH   0    0 rcu_tasks_trace
+
+```
+
+List all processes and threads:
+
+```
+$ pq -a -t | { head -3 ; tail -5; }
+    pid     tid    ppid aff cpu cls pri nice    syscall      rss            comm
+      1       1       0 0-3   3 OTH   0    0          #    10872         systemd
+      2       2       0 0-3   2 OTH   0    0          #        #        kthreadd
+ 118106  118106    1326 0-3   3 OTH   0    0          #     8828 systemd-userwor
+ 118107  118107    1326 0-3   1 OTH   0    0          #     8624 systemd-userwor
+ 118115  118115       2 0-3   0 OTH   0    0          #        # kworker/u8:6-btrfs
+-endio-write
+ 118117  118117  100290 0-3   0 OTH   0    0       read     3800              pq
+ 118118  118118       #   #   #   ?   #    #          #        #               #
+```
+
+List all processes owned by a user:
+
+```
+$ pq -u juser | { head -3 ; tail -5; }
+    pid     tid    ppid aff cpu cls pri nice    syscall      rss            comm
+   1855    1855       1 0-3   0 OTH   0    0 epoll_wait     8976         systemd
+   1857    1857    1855 0-3   3 OTH   0    0          #     5856        (sd-pam)
+  87182   87182    3546 0-3   2 OTH   0    0      futex    65096 chromium-browse
+  95873   95873    5034 0-3   0 OTH   0    0       kill    11792             vim
+ 100284  100284   57938 0-3   3 OTH   0    0     select    26044             vim
+ 100290  100290  100284 0-3   0 OTH   0    0 rt_sigsuspend     8196             zsh
+
+ 118138  118138  100290 0-3   1 OTH   0    0       read     3364              pq
+```
+
+List all available attributes:
+
+```
+$ pq -o help
+```
+
+List all kernel threads whose CPU affinity can't  be changed:
+
+```
+$ pq -a -k -o pid comm flags | grep 'pid\|NO_SETAFF' | head -4
+    pid            comm flags
+      3          rcu_gp PF_WQ_WORKER|PF_FORKNOEXEC|PF_NOFREEZE|PF_KTHREAD|PF_NO_SET
+AFFINITY
+      4      rcu_par_gp PF_WQ_WORKER|PF_FORKNOEXEC|PF_NOFREEZE|PF_KTHREAD|PF_NO_SET
+AFFINITY
+      6 kworker/0:0H-kblockd PF_WQ_WORKER|PF_FORKNOEXEC|PF_NOFREEZE|PF_KTHREAD|PF_NO_SETAFFINITY
+```
+
+List attributes of two processes which are identified by their PIDs:
+
+```
+$ pq -p 48178 22548  -o pid tid uid comm loginuid threads env:OLDPWD cwd exe
+    pid     tid  uid            comm   loginuid threads      env             cwd
+     exe
+  48178   48178 1000       kwalletd5       1000       9 /home/juser       /home/juser /
+usr/bin/kwalletd5
+  22548   22548 1000     Web Content       1000      30 /home/juser /proc/22549/fdinfo (deleted) /usr/lib64/firefox/firefox
+```
+
+Some attributes `pq` supports can also be queried with `ps`,
+`tuna -P`, `pgrep` or `taskset -pc` - but not all, and none of the other
+tools supports all of the interesting attributes on its own, such
+that one often needs to chain them together and/or add `cat
+/proc/$pid/...` commands, possibly wrapped in a long shell
+one-liner.
+
+Also, using `pq` can be more efficient. For example, when
+querying just a single process (with `-p $PID`), `pq` really just
+reads a few files under `/proc/$PID/` whereas `ps` even then
+traverses all process specific directories under `/proc`. For
+example on a Fedora 33 system:
+
+```
+$ strace ps -p 48178 2>&1 | grep '^open.*/proc' -c
+624
+$ strace ./pq -p 48178 2>&1 | grep '^open.*/proc' -c
+5
+```
+
+Same `ps` behaviour can be observed on RHEL/CentOS 7, as well.
+Obviously, this gets very annoying fast on systems that hosts
+thousands of processes.
 
 ## Remove
 

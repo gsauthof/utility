@@ -5,7 +5,7 @@
 %undefine __cmake_in_source_build
 
 Name:       gms-utils
-Version:    0.5.1
+Version:    0.5.2
 Release:    1%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
@@ -81,6 +81,7 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 /usr/bin/pargs
 /usr/bin/pdfmerge
 /usr/local/bin/pldd
+/usr/bin/pq
 /usr/bin/pwhatch
 /usr/bin/remove
 /usr/bin/reset-tmux
@@ -94,6 +95,8 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 
 
 %changelog
+* Sun Dec 13 2020 Georg Sauthoff <mail@gms.tf> - 0.5.2-1
+- add pq
 * Sat Sep 19 2020 Georg Sauthoff <mail@gms.tf> - 0.5.1-1
 - bump version
 * Sun Sep 06 2020 Georg Sauthoff <mail@gms.tf> - 0.5.0-3

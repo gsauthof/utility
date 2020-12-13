@@ -12,13 +12,8 @@ check_function_exists(renameat2 HAVE_RENAMEAT2)
 cmake_pop_check_state()
 configure_file(config.h.in config.h)
 
-# guard from super-projects, i.e. when it is added as subdirectory
-IF(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
-
-  add_subdirectory(libixxx)
-  add_subdirectory(libixxxutil)
-endif()
+add_subdirectory(libixxx)
+add_subdirectory(libixxxutil)
 
 if((CMAKE_C_COMPILER_ID STREQUAL "GNU"
         AND CMAKE_C_COMPILER_VERSION VERSION_LESS "5")
@@ -127,6 +122,16 @@ add_executable(exec exec.c)
 
 add_executable(adjtimex adjtimex.c)
 
+add_executable(pq pq.cc syscalls.cc)
+set_property(TARGET pq PROPERTY INCLUDE_DIRECTORIES
+  ${CMAKE_SOURCE_DIR}/libixxx
+  ${CMAKE_SOURCE_DIR}/libixxxutil
+  )
+target_link_libraries(pq
+    ixxxutil_static
+    ixxx_static
+    )
+
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
@@ -148,7 +153,7 @@ add_custom_target(check-new
 add_custom_target(check DEPENDS check-old check-new)
 
 
-install(TARGETS adjtimex dcat exec lockf oldprocs pargs searchb silence swap
+install(TARGETS adjtimex dcat exec lockf oldprocs pargs pq searchb silence swap
     RUNTIME DESTINATION bin)
 set(scripts
     addrof.sh
