@@ -340,7 +340,6 @@ static size_t parse_uid(const char *s)
         auto r = from_chars(s, e, uid);
         if (r.ptr != e)
             throw runtime_error("uid parse error");
-        uid = uid;
     }
     return uid;
 }
