@@ -1,4 +1,3 @@
-sudo: required
 
 # default is ruby, we set python in case we need to do some
 # advanced scripting in our setup of the C++ tests
@@ -17,6 +16,7 @@ matrix:
 #        CMAKE_BUILD_TYPE=Debug
 #      python: 3.5
     - os: linux
+      dist: focal
       addons:
         apt:
           packages:
@@ -28,10 +28,10 @@ matrix:
         CMAKE_BUILD_TYPE=Release
         CC=clang
         CXX=clang++
-      python: 3.5
+      python: 3.6
       compiler: clang
     - os: linux
-      dist: bionic
+      dist: focal
       addons:
         apt:
           packages:
@@ -41,7 +41,7 @@ matrix:
             - ninja-build
       env:
         CMAKE_BUILD_TYPE=Debug
-      python: 3.5
+      python: 3.6
 
 before_install:
   - ./ci/travis/"$TRAVIS_OS_NAME$tag"/before_install.sh
