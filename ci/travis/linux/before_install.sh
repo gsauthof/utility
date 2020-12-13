@@ -60,6 +60,8 @@ if [ "$docker_img" ]; then
   setup_dirs
   start_docker
 else
+  # we have to install via pip (instead of apt-get) for travis where
+  # the python comes from /opt - e.g. /opt/python/3.6.10
   pip3 install psutil pytest distro
   exit 0
 fi
