@@ -24,10 +24,13 @@ matrix:
             - gdb
             - libc6-dev-i386
             - ninja-build
+            # this gets us clang-10 on Ubuntu 20.04
+            # instead of the broken /usr/local/clang-7.0.0/bin/ mess travis provides
+            - clang
       env:
         CMAKE_BUILD_TYPE=Release
-        CC=clang
-        CXX=clang++
+        CC=/usr/lib/llvm-10/bin/clang
+        CXX=/usr/lib/llvm-10/bin/clang++
         CFLAGS="-O3    -Wall -Wextra -Wno-missing-field-initializers -Wno-parentheses -Wno-missing-braces -Wmissing-prototypes -Wfloat-equal -Wwrite-strings -Wpointer-arith -Wcast-align -Wnull-dereference -Werror=multichar -Werror=sizeof-pointer-memaccess -Werror=return-type -fstrict-aliasing    "
         CXXFLAGS="-O3 -std=gnu++17    -stdlib=libc++ -rtlib=compiler-rt   -Wall -Wextra -Wno-missing-field-initializers -Wno-parentheses -Wno-missing-braces -Wno-unused-local-typedefs -Wfloat-equal -Wpointer-arith -Wcast-align -Wnull-dereference -Wnon-virtual-dtor -Wmissing-declarations -Werror=multichar -Werror=sizeof-pointer-memaccess -Werror=return-type -Werror=delete-non-virtual-dtor -fstrict-aliasing    "
       python: 3.6
