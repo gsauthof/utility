@@ -60,7 +60,8 @@ if [ "$docker_img" ]; then
   setup_dirs
   start_docker
 else
-  pip3 install psutil pytest distro
+  # install from the distribution's package manager for now
+  #pip3 install psutil pytest distro
   exit 0
 fi
 
