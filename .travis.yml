@@ -26,11 +26,9 @@ matrix:
             - ninja-build
             # this gets us clang-10 on Ubuntu 20.04
             # instead of the broken /usr/local/clang-7.0.0/bin/ mess travis provides
-            - clang-10
-            - libc++-10-dev
-            - python3-psutil
-            - python3-pytest
-            - python3-distro
+            - clang
+            - libc++-dev
+            - libc++abi-dev
       env:
         CMAKE_BUILD_TYPE=Release
         CC=/usr/lib/llvm-10/bin/clang
