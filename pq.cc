@@ -855,7 +855,11 @@ string_view Process::pflags()
             p = static_cast<char*>(mempcpy(p, pf2str[i].data(), pf2str[i].size()));
         }
     }
+#if __cplusplus > 201703L
     misc = string_view(misc_arr.begin(), p);
+#else
+    misc = string_view(misc_arr.begin(), p - misc_arr.begin());
+#endif
     return misc;
 }
 string_view Process::minflt()
@@ -1074,13 +1078,21 @@ string_view Process::rss()
 {
     auto r = read_status("\nVmRSS:");
     auto p = fast_find(r.begin(), r.end(), ' ');
+#if __cplusplus > 201703L
     return string_view(r.begin(), p);
+#else
+    return string_view(r.begin(), p - r.begin());
+#endif
 }
 string_view Process::vsize()
 {
     auto r = read_status("\nVmSize:");
     auto p = fast_find(r.begin(), r.end(), ' ');
+#if __cplusplus > 201703L
     return string_view(r.begin(), p);
+#else
+    return string_view(r.begin(), p - r.begin());
+#endif
 }
 string_view Process::fdsize()
 {
