@@ -864,8 +864,7 @@ $ pq -a -t | { head -3 ; tail -5; }
       2       2       0 0-3   2 OTH   0    0          #        #        kthreadd
  118106  118106    1326 0-3   3 OTH   0    0          #     8828 systemd-userwor
  118107  118107    1326 0-3   1 OTH   0    0          #     8624 systemd-userwor
- 118115  118115       2 0-3   0 OTH   0    0          #        # kworker/u8:6-btrfs
--endio-write
+ 118115  118115       2 0-3   0 OTH   0    0          #        # kworker/u8:6-btrfs-endio-write
  118117  118117  100290 0-3   0 OTH   0    0       read     3800              pq
  118118  118118       #   #   #   ?   #    #          #        #               #
 ```
@@ -896,10 +895,8 @@ List all kernel threads whose CPU affinity can't  be changed:
 ```
 $ pq -a -k -o pid comm flags | grep 'pid\|NO_SETAFF' | head -4
     pid            comm flags
-      3          rcu_gp PF_WQ_WORKER|PF_FORKNOEXEC|PF_NOFREEZE|PF_KTHREAD|PF_NO_SET
-AFFINITY
-      4      rcu_par_gp PF_WQ_WORKER|PF_FORKNOEXEC|PF_NOFREEZE|PF_KTHREAD|PF_NO_SET
-AFFINITY
+      3          rcu_gp PF_WQ_WORKER|PF_FORKNOEXEC|PF_NOFREEZE|PF_KTHREAD|PF_NO_SETAFFINITY
+      4      rcu_par_gp PF_WQ_WORKER|PF_FORKNOEXEC|PF_NOFREEZE|PF_KTHREAD|PF_NO_SETAFFINITY
       6 kworker/0:0H-kblockd PF_WQ_WORKER|PF_FORKNOEXEC|PF_NOFREEZE|PF_KTHREAD|PF_NO_SETAFFINITY
 ```
 
@@ -907,10 +904,8 @@ List attributes of two processes which are identified by their PIDs:
 
 ```
 $ pq -p 48178 22548  -o pid tid uid comm loginuid threads env:OLDPWD cwd exe
-    pid     tid  uid            comm   loginuid threads      env             cwd
-     exe
-  48178   48178 1000       kwalletd5       1000       9 /home/juser       /home/juser /
-usr/bin/kwalletd5
+    pid     tid  uid            comm   loginuid threads      env             cwd        exe
+  48178   48178 1000       kwalletd5       1000       9 /home/juser       /home/juser /usr/bin/kwalletd5
   22548   22548 1000     Web Content       1000      30 /home/juser /proc/22549/fdinfo (deleted) /usr/lib64/firefox/firefox
 ```
 
