@@ -90,6 +90,8 @@ This repository contains a collection of command line utilities.
     -- extract an RPM file
 - [user-installed](#user-installed)
     -- list manually installed packages on major distributions
+- wipedev
+    -- wipe storage device fast and thoroughly
 
 For example:
 

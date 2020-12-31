@@ -180,6 +180,7 @@ set(scripts
     ripdvd
     unrpm.sh
     user-installed.py
+    wipedev.py
     )
 foreach(script ${scripts})
     STRING(REGEX REPLACE "\\.[^.]*$" "" name ${script})
