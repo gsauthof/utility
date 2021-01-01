@@ -68,10 +68,10 @@ user-selected password turns out being not strong enough.
 There is some folklore around (magnetic) disk wiping which tells
 users to wipe disk drives multiple times in a row (with different
 patterns), because after one wipe the previous magnetization
-levels might still be recoverable with special equipment. This was
-probably never true; however since the last decades the
-high-density of magnetic storage devices it's certainly
-superfluous.
+levels might still be recoverable with special equipment. This
+was probably never true; however since a few decades magnetic
+storage devices come with high areal storage density, thus it's
+certainly superfluous now.
 
 2020, Georg Sauthoff <mail@gms.tf>, GPV3+
 
