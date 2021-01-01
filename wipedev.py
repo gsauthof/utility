@@ -42,7 +42,7 @@ using random data (instead of zeroes) because nowadays some
 storage devices (such as some SSDs) internally compress and/or
 deduplicate the written data. Since random data doesn't compress
 well (if at all) and can't be deduplicated those writes likely
-overwrite (almost all) disk blocks/storage cellls.
+overwrite (almost all) disk blocks/storage cells.
 
 Note that modern devices often also contain some internal pool of
 extra cells to deal with failing cells and optimizing writes.
@@ -60,7 +60,7 @@ some internal storage cells and possibly speeds up following
 writes.
 
 In general, also as part of an defense-in-depth approach, it's
-recommended to encrypt fileysstem which may contain any
+recommended to encrypt fileysstems which may contain any
 sensitive data, e.g. with LUKS. The primary goal of the wipe is
 then to make the key-slots inaccessible; in case the
 user-selected password turns out being not strong enough.
@@ -68,9 +68,9 @@ user-selected password turns out being not strong enough.
 There is some folklore around (magnetic) disk wiping which tells
 users to wipe disk drives multiple times in a row (with different
 patterns), because after one wipe the previous magnetization
-levels might still be recoverable with pecial equipment. This was
+levels might still be recoverable with special equipment. This was
 probably never true; however since the last decades the
-high-densitiy of magnetic storage devices it's certainly
+high-density of magnetic storage devices it's certainly
 superfluous.
 
 2020, Georg Sauthoff <mail@gms.tf>, GPV3+
