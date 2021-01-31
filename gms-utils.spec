@@ -72,6 +72,7 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 /usr/bin/exec
 /usr/bin/firefox-addons
 /usr/bin/gs-ext
+/usr/bin/inhibit
 /usr/bin/isempty
 /usr/bin/latest-kernel-running
 /usr/bin/lockf
@@ -98,7 +99,7 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 
 %changelog
 * Sun Jan 31 2021 Georg Sauthoff <mail@gms.tf> - 0.5.4-1
-- add matrixto
+- add matrixto, inhibit
 * Fri Jan  1 2021 Georg Sauthoff <mail@gms.tf> - 0.5.3-1
 - add wipedev
 * Sun Dec 13 2020 Georg Sauthoff <mail@gms.tf> - 0.5.2-1
