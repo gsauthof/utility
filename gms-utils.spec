@@ -2,7 +2,14 @@
 
 # Do out-of-source-tree builds
 # Only required in Fedora < f33 as this is the new default
+%if 0%{?fedora} < 33
 %undefine __cmake_in_source_build
+%endif
+
+# pq require C++17 - only required for Fedora <= 33
+%if 0%{?fedora} <= 33
+%global optflags %{optflags} -std=gnu++17
+%endif
 
 Name:       gms-utils
 Version:    0.5.4
