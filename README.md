@@ -57,6 +57,8 @@ This repository contains a collection of command line utilities.
     -- randomly generate a private/internal MAC address
 - macgen.py
     -- Python implementation of macgen
+- matrixto
+    -- Send messages to a Matrix room from the command line
 - [oldprocs](#oldprocs)
     -- list running (and possibly restart) old processes/services whose object
       files were updated

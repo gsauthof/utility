@@ -77,6 +77,7 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 /usr/bin/lockf
 /usr/bin/lsata
 /usr/bin/macgen
+/usr/bin/matrixto
 /usr/bin/oldprocs
 /usr/bin/pargs
 /usr/bin/pdfmerge

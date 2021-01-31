@@ -172,6 +172,7 @@ set(scripts
     latest-kernel-running.sh
     lsata.sh
     macgen.py
+    matrixto.py
     pdfmerge.py
     pldd.py
     pwhatch.sh
