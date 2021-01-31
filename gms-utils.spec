@@ -5,7 +5,7 @@
 %undefine __cmake_in_source_build
 
 Name:       gms-utils
-Version:    0.5.3
+Version:    0.5.4
 Release:    1%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
@@ -97,6 +97,8 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 
 
 %changelog
+* Sun Jan 31 2021 Georg Sauthoff <mail@gms.tf> - 0.5.4-1
+- add matrixto
 * Fri Jan  1 2021 Georg Sauthoff <mail@gms.tf> - 0.5.3-1
 - add wipedev
 * Sun Dec 13 2020 Georg Sauthoff <mail@gms.tf> - 0.5.2-1
