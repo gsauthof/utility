@@ -13,7 +13,7 @@
 
 Name:       gms-utils
 Version:    0.5.4
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
 License:    GPLv3+
@@ -40,6 +40,8 @@ Requires: gnutls-utils
 Requires: python3-dns
 # for matrixto
 Requires: python3-matrix-nio
+# workaround missing matrix-nio depedency: https://bugzilla.redhat.com/show_bug.cgi?id=1925689
+Requires: python3-crypto
 
 
 %description
