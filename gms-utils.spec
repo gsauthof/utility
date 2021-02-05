@@ -13,7 +13,7 @@
 
 Name:       gms-utils
 Version:    0.5.4
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
 License:    GPLv3+
@@ -38,6 +38,9 @@ BuildRequires: glibc-devel(%{__isa_name}-32)
 # for check-cert
 Requires: gnutls-utils
 Requires: python3-dns
+# for matrixto
+Requires: python3-matrix-nio
+
 
 %description
 Collection of command line utilities.
