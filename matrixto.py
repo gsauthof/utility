@@ -32,7 +32,7 @@ Send a message to some room:
 
 Send multiple messages:
 
-    dstat -cdngy 60 10 | matrixto -u @juser:matrix.example.de
+    dstat -cdngy 60 10 | matrixto --line -u @juser:matrix.example.de
 
 
 Initial Setup:
