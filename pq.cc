@@ -93,6 +93,7 @@ enum class Column {
     PPID      , //
     RSS       , //
     RTPRIO    , // /proc/$pid/stat
+    SLACK     , // /proc/$pid/timerslack_ns
     STACK     , //
     STATE     , // /proc/$pid/status or /proc/$pid/stat
     STIME     , // start time /proc/$pid/stat
@@ -139,6 +140,7 @@ static const string_view col2header[] = {
     "ppid"      , // PPID
     "rss"       , // RSS
     "pri"       , // RTPRIO
+    "slack"     , // SLACK
     "stack"     , // STACK
     "state"     , // STATE
     "stime"     , // STIME
@@ -177,6 +179,7 @@ static const char * const col2help[] = {
     "parent process ID"      , // PPID
     "resident size set in KiB"       , // RSS
     "realtime priority (1-99)", // RTPRIO
+    "current timer slack value of a thread in ns", // SLACK
     "top of stack function the task is executing/blocked on (requires root)"     , // STACK
     "state the process is in, e.g. running, sleeping etc."     , // STATE
     "start time in ISO format"     , // STIME
@@ -215,6 +218,7 @@ static const unsigned col2width[] = {
      7 , // PPID
      8 , // RSS
      3 , // RTPRIO
+     5 , // SLACK
     10 , // STACK
     10 , // STATE
     10 , // STIME
@@ -258,6 +262,7 @@ static const unordered_map<string_view, Column> str2column = {
     { "hugepages" , Column::HUGEPAGES },
     { "hpages"    , Column::HUGEPAGES },
     { "threads"   , Column::THREADS   },
+    { "slack"     , Column::SLACK     },
     { "stack"     , Column::STACK     },
     { "ppid"      , Column::PPID      },
     { "stime"     , Column::STIME     },
@@ -585,6 +590,7 @@ struct Process {
         string_view uid();
         string_view hugepages();
         string_view threads();
+        string_view slack();
         string_view stack();
         string_view ppid();
         string_view stime();
@@ -637,6 +643,7 @@ Process_Attr process_attrs[] = {
     &Process::ppid      , // PPID
     &Process::rss       , // RSS
     &Process::rtprio    , // RTPRIO
+    &Process::slack     , // SLACK
     &Process::stack     , // STACK
     &Process::state     , // STATE
     &Process::stime     , // STIME
@@ -962,6 +969,16 @@ string_view Process::loginuid()
 {
     misc = string_view(misc_arr.begin(), 0);
     read_proc("loginuid", misc_arr, misc);
+
+    return string_view(misc.data(), misc.size());
+}
+string_view Process::slack()
+{
+    misc = string_view(misc_arr.begin(), 0);
+    read_proc("timerslack_ns", misc_arr, misc);
+
+    if (!misc.empty())
+        misc.remove_suffix(1);
 
     return string_view(misc.data(), misc.size());
 }
