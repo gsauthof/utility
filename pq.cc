@@ -75,6 +75,7 @@ enum class Column {
     CMD       , // /proc/$pid/commandline
     COMM      , // /proc/comm or /proc/$pid/status::Name or /proc/$pid/stat
     CPU       , // last run on this CPU, /proc/$pid/stat::processor
+    CWBYTE    , // /proc/$pid/io::cancelled_write_bytes
     CWD       , //
     ENV       , //
     EXE       , //
@@ -91,6 +92,8 @@ enum class Column {
     NVCTX     , // non-voluntary context switches /proc/$pid/status
     PID       , //
     PPID      , //
+    RBYTE     , // /proc/$pid/io::read_bytes
+    RCHAR     , // /proc/$pid/io::rchar
     RSS       , //
     RTPRIO    , // /proc/$pid/stat
     SLACK     , // /proc/$pid/timerslack_ns
@@ -98,6 +101,8 @@ enum class Column {
     STATE     , // /proc/$pid/status or /proc/$pid/stat
     STIME     , // start time /proc/$pid/stat
     SYSCALL   , // /proc/$pid/syscall
+    SYSCR     , // /proc/$pid/io::syscr
+    SYSCW     , // /proc/$pid/io::syscw
     THREADS   , //
     TID       , //
     UID       , // effective ...
@@ -105,7 +110,9 @@ enum class Column {
     USER      , //
     VCTX      , // voluntary context switches /proc/$pid/status
     VSIZE     , //
-    WCHAN       // /proc/$pid/wchan
+    WBYTE     , // /proc/$pid/io::write_bytes
+    WCHAN     , // /proc/$pid/wchan
+    WCHAR       // /proc/$pid/io::wchar
 
     // TODO:
     //
@@ -122,6 +129,7 @@ static const string_view col2header[] = {
     "cmd"       , // CMD
     "comm"      , // COMM
     "cpu"       , // CPU
+    "cwbyte"    , // CWBYTE
     "cwd"       , // CWD
     "env"       , // ENV
     "exe"       , // EXE
@@ -138,6 +146,8 @@ static const string_view col2header[] = {
     "nvctx"     , // NVCTX
     "pid"       , // PID
     "ppid"      , // PPID
+    "rbyte"     , // RBYTE
+    "rchar"     , // RCHAR
     "rss"       , // RSS
     "pri"       , // RTPRIO
     "slack"     , // SLACK
@@ -145,6 +155,8 @@ static const string_view col2header[] = {
     "state"     , // STATE
     "stime"     , // STIME
     "syscall"   , // SYSCALL
+    "syscr"     , // SYSCR
+    "syscw"     , // SYSCW
     "threads"   , // THREADS
     "tid"       , // TID
     "uid"       , // UID
@@ -152,7 +164,9 @@ static const string_view col2header[] = {
     "user"      , // USER
     "vctx"      , // VCTX
     "vsize"     , // VSIZE
-    "wchan"       // WCHAN
+    "wbyte"     , // WBYTE
+    "wchan"     , // WCHAN
+    "wchar"       // WCHAR
 };
 
 static const char * const col2help[] = {
@@ -161,6 +175,7 @@ static const char * const col2help[] = {
     "command line, i.e. the argument vector"       , // CMD
     "process/thread name"      , // COMM
     "last ran on that CPU (core)"       , // CPU
+    "write bytes, cancelled"       , // CWBYTE
     "current wording directory"       , // CWD
     "display an environment variable, e.g. env:MYID"       , // ENV
     "process' executable"       , // EXE
@@ -177,6 +192,8 @@ static const char * const col2help[] = {
     "non-voluntary context switches"     , // NVCTX
     "process ID"       , // PID
     "parent process ID"      , // PPID
+    "bytes read, actually", // RBYTE
+    "bytes read", // RCHAR
     "resident size set in KiB"       , // RSS
     "realtime priority (1-99)", // RTPRIO
     "current timer slack value of a thread in ns", // SLACK
@@ -184,6 +201,8 @@ static const char * const col2help[] = {
     "state the process is in, e.g. running, sleeping etc."     , // STATE
     "start time in ISO format"     , // STIME
     "current syscall the task is executing/blocked on, if any"   , // SYSCALL
+    "number of read syscalls"   , // SYSCR
+    "number of write syscalls"   , // SYSCW
     "number of threads of that process/the process the thread is part of"   , // THREADS
     "thread ID"       , // TID
     "(effective) user ID"       , // UID
@@ -191,7 +210,9 @@ static const char * const col2help[] = {
     "(effective) user name", // USER
     "number of voluntary context-switches"      , // VCTX
     "virtual memory usage in KiB"     , // VSIZE
-    "kernel function the task waits for, cf. stack (some kernels doesn't support it - e.g. Fedora's doesn't)"       // WCHAN
+    "bytes written, actually"       // WBYTE
+    "kernel function the task waits for, cf. stack (some kernels doesn't support it - e.g. Fedora's doesn't)",       // WCHAN
+    "bytes written"       // WCHAR
 };
 
 static const unsigned col2width[] = {
@@ -200,6 +221,7 @@ static const unsigned col2width[] = {
     15 , // CMD
     15 , // COMM
      3 , // CPU
+    11 , // CWBYTE
     15 , // CWD
      8 , // ENV
     10 , // EXE
@@ -216,6 +238,8 @@ static const unsigned col2width[] = {
     10 , // NVCTX
      7 , // PID
      7 , // PPID
+    11,  // RBYTE
+    11,  // RCHAR
      8 , // RSS
      3 , // RTPRIO
      5 , // SLACK
@@ -223,6 +247,8 @@ static const unsigned col2width[] = {
     10 , // STATE
     10 , // STIME
     10 , // SYSCALL
+     8 , // SYSCR
+     8 , // SYSCW
      7 , // THREADS
      7 , // TID
      4 , // UID
@@ -230,7 +256,9 @@ static const unsigned col2width[] = {
      8 , // USER
     10 , // VCTX
      8 , // VSIZE
-    10   // WCHAN
+    11 , // WBYTE
+    10 , // WCHAN
+    11   // WCHAR
 };
 
 static const unordered_map<string_view, Column> str2column = {
@@ -243,9 +271,13 @@ static const unordered_map<string_view, Column> str2column = {
     { "aff"       , Column::AFFINITY  },
     { "cores"     , Column::AFFINITY  },
     { "wchan"     , Column::WCHAN     },
+    { "wchar"     , Column::WCHAR     },
+    { "wbyte"     , Column::WBYTE     },
     { "syscall"   , Column::SYSCALL   },
     { "scall"     , Column::SYSCALL   },
     { "ecall"     , Column::SYSCALL   },
+    { "syscr"     , Column::SYSCR     },
+    { "syscw"     , Column::SYSCW     },
     { "state"     , Column::STATE     },
     { "cmd"       , Column::CMD       },
     { "cmdline"   , Column::CMD       },
@@ -254,6 +286,7 @@ static const unordered_map<string_view, Column> str2column = {
     { "cpu"       , Column::CPU       },
     { "psr"       , Column::CPU       },
     { "core"      , Column::CPU       },
+    { "cwbyte"    , Column::CWBYTE    },
     { "gid"       , Column::GID       },
     { "egid"      , Column::GID       },
     { "uid"       , Column::UID       },
@@ -265,6 +298,8 @@ static const unordered_map<string_view, Column> str2column = {
     { "slack"     , Column::SLACK     },
     { "stack"     , Column::STACK     },
     { "ppid"      , Column::PPID      },
+    { "rbyte"     , Column::RBYTE     },
+    { "rchar"     , Column::RCHAR     },
     { "stime"     , Column::STIME     },
     { "start"     , Column::STIME     },
     { "nvctx"     , Column::NVCTX     },
@@ -557,10 +592,12 @@ struct Process {
         array<char, 4*1024>           stat_arr                 ;
         array<char, 4*1024>           status_arr               ;
         array<char, 4*1024>           misc_arr                 ;
+        array<char, 4*1024>           io_arr                   ;
         string_view                   environ                  ;
         string_view                   stat                     ;
         string_view                   status                   ;
         string_view                   misc                     ;
+        string_view                   io                       ;
 
         array<char, 1024>             buffer                   ;
 
@@ -579,8 +616,13 @@ struct Process {
         string_view comm();
         string_view exe();
         string_view wchan();
+        string_view wchar();
+        string_view wbyte();
+        string_view cwbyte();
         string_view affinity();
         string_view syscall();
+        string_view syscr();
+        string_view syscw();
         string_view loginuid();
         string_view state();
         string_view cls();
@@ -594,6 +636,8 @@ struct Process {
         string_view slack();
         string_view stack();
         string_view ppid();
+        string_view rchar();
+        string_view rbyte();
         string_view stime();
         string_view nvctx();
         string_view vctx();
@@ -615,7 +659,9 @@ struct Process {
         template <size_t N>
         void read_proc(const char *q, array<char, N> &src,
                 string_view &dst, bool prefix = false);
+        string_view read_key_value(const string_view &status, const string_view &q);
         string_view read_status(const string_view &q);
+        string_view read_io(const string_view &q);
         string_view read_stat(unsigned i);
         string_view read_link(const char *q);
 };
@@ -626,6 +672,7 @@ Process_Attr process_attrs[] = {
     &Process::cmd       , // CMD
     &Process::comm      , // COMM
     &Process::cpu       , // CPU
+    &Process::cwbyte    , // CWBYTE
     &Process::cwd       , // CWD
     nullptr             , // ENV
     &Process::exe       , // EXE
@@ -642,6 +689,8 @@ Process_Attr process_attrs[] = {
     &Process::nvctx     , // NVCTX
     nullptr             , // PID
     &Process::ppid      , // PPID
+    &Process::rbyte     , // RBYTE
+    &Process::rchar     , // RCHAR
     &Process::rss       , // RSS
     &Process::rtprio    , // RTPRIO
     &Process::slack     , // SLACK
@@ -649,6 +698,8 @@ Process_Attr process_attrs[] = {
     &Process::state     , // STATE
     &Process::stime     , // STIME
     &Process::syscall   , // SYSCALL
+    &Process::syscr     , // SYSCR
+    &Process::syscw     , // SYSCW
     &Process::threads   , // THREADS
     nullptr             , // TID
     &Process::uid       , // UID
@@ -656,7 +707,9 @@ Process_Attr process_attrs[] = {
     &Process::user      , // USER
     &Process::vctx      , // VCTX
     &Process::vsize     , // VSIZE
-    &Process::wchan       // WCHAN
+    &Process::wbyte     , // WBYTE
+    &Process::wchan     , // WCHAN
+    &Process::wchar       // WCHAR
 };
 
 string_view Process::column(Column c)
@@ -679,6 +732,7 @@ void Process::set_pid(size_t pid, size_t tid)
     environ = string_view(environ_arr.begin(), 0);
     stat    = string_view(stat_arr.begin()   , 0);
     status  = string_view(status_arr.begin() , 0);
+    io      = string_view(io_arr.begin()     , 0);
 }
 
 template <size_t N>
@@ -708,10 +762,8 @@ void Process::read_proc(const char *q, array<char, N> &src,
     fn.resize(l);
 }
 
-string_view Process::read_status(const string_view &q)
+string_view Process::read_key_value(const string_view &status, const string_view &q)
 {
-    read_proc("status", status_arr, status, true);
-
     auto p = search(status.begin(), status.end(),
             std::default_searcher(q.begin(), q.end()));
 
@@ -726,6 +778,17 @@ string_view Process::read_status(const string_view &q)
         ;
 
     return string_view(&*p, e-p);
+}
+
+string_view Process::read_status(const string_view &q)
+{
+    read_proc("status", status_arr, status, true);
+    return read_key_value(status, q);
+}
+string_view Process::read_io(const string_view &q)
+{
+    read_proc("io", io_arr, io, true);
+    return read_key_value(io, q);
 }
 
 
@@ -1074,6 +1137,34 @@ string_view Process::threads()
 string_view Process::ppid()
 {
     return read_status("\nPPid:");
+}
+string_view Process::rchar()
+{
+    return read_io("\nrchar:");
+}
+string_view Process::rbyte()
+{
+    return read_io("\nread_bytes:");
+}
+string_view Process::wchar()
+{
+    return read_io("\nwchar:");
+}
+string_view Process::wbyte()
+{
+    return read_io("\nwrite_bytes:");
+}
+string_view Process::cwbyte()
+{
+    return read_io("\ncancelled_write_bytes:");
+}
+string_view Process::syscr()
+{
+    return read_io("\nsyscr:");
+}
+string_view Process::syscw()
+{
+    return read_io("\nsyscw:");
 }
 string_view Process::affinity()
 {
