@@ -383,6 +383,7 @@ static void help(FILE *o, const char *argv0)
             "  -o COL..   columns to display (use `-o help` to get a list)\n"
             "  -p PID..   only list the specified processes/threads\n"
             "  -t         also list threads\n"
+            "  -u USER    filter by user/uid\n"
             "\n"
             "2020, Georg Sauthoff <mail@gms.tf>, GPLv3+\n"
             ,
