@@ -25,7 +25,6 @@ default_blacklists = [
         ('cbl.abuseat.org'              , 'Net of traps'                     ),
         ('dnsbl.cobion.com'             , 'used in IBM products'             ),
         ('psbl.surriel.com'             , 'passive list, easy to unlist'     ),
-        ('dnsrbl.org'                   , 'Real-time black list'             ),
         ('db.wpbl.info'                 , 'Weighted private'                 ),
         ('bl.spamcop.net'               , 'Based on spamcop users'           ),
         ('dyna.spamrats.com'            , 'Dynamic IP addresses'             ),
