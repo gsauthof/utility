@@ -1413,10 +1413,15 @@ bool Regex_Filter::matches(size_t pid)
     base.append(buf.begin(), r.ptr);
     base.append("/comm");
 
-    ixxx::util::FD fd(base, O_RDONLY);
-    size_t n = ixxx::util::read_all(fd, buf);
-    bool b = regex_search(buf.data(), buf.data() + n, expr);
-    return b;
+    try {
+        ixxx::util::FD fd(base, O_RDONLY);
+        size_t n = ixxx::util::read_all(fd, buf);
+        bool b = regex_search(buf.data(), buf.data() + n, expr);
+        return b;
+    } catch (const ixxx::open_error &) {
+        // race condition with process termination
+        return false;
+    }
 }
 
 
