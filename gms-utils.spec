@@ -12,7 +12,7 @@
 %endif
 
 Name:       gms-utils
-Version:    0.5.5
+Version:    0.5.6
 Release:    1%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
