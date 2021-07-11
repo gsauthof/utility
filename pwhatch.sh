@@ -127,7 +127,7 @@ function check_entropy
   if [ $quiet -eq 0 ]; then
     echo "$entropy bits of entropy" >&2
   fi
-  if [ $entropy -lt $min_entropy ]; then
+  if [ "$entropy" -lt "$min_entropy" ]; then
     echo "not enough entropy ($min_entropy)\
 - use bigger dictionary and/or more words" >&2
     exit 1
@@ -214,7 +214,7 @@ function gen_dict
 
     local n=$(zcat "$wfile" | wc -l)
     if [ "$n" -eq 0 ]; then
-      echo "Wordlist $wfile is empty"
+      echo "Wordlist $wfile is empty" >&2
       exit 1
     fi
 
@@ -227,9 +227,14 @@ function gen_dict
         | tr -d "'" \
         | "$paste" -sd '-'
     else
+      # NB: 1048576 = 2**20
+      if [ "$n" -ge 1048576 ]; then
+          echo "Wordlist $wfile is too large" >&2
+          exit 1
+      fi
       for i in `seq 1 $words`; do
         zcat "$wfile" \
-          | "$sed" -n $(($(< /dev/urandom od -N4 -tu4 -An)%n+1))p \
+          | "$sed" -n $(< /dev/urandom od  -tu4 -An -v  -w4 | awk '{ $1 = $1 % 1048576 }  $1 < '$n' { print $1+1; exit; }')p \
           | "$awk" '{print(tolower($0))}' \
           | tr -d "'"
       done | "$paste" -sd '-'
