@@ -163,6 +163,7 @@ set(scripts
     check-dnsbl.py
     chromium-extensions.py
     cpufreq.py
+    detect-size.py
     devof.sh
     disas.sh
     firefox-addons.py

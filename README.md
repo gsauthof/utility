@@ -31,6 +31,8 @@ This repository contains a collection of command line utilities.
     -- decompressing cat (autodetects gzip/zstd/bz2/...)
 - [dcheck](#dcheck)
     -- run a program under DBX's memory check mode
+- detect-size
+    -- detect and set real height/width of a terminal
 - devof
     -- list network device names given an address (prefix)
 - disas
