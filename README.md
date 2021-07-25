@@ -61,6 +61,9 @@ This repository contains a collection of command line utilities.
     -- Python implementation of macgen
 - matrixto
     -- Send messages to a Matrix room from the command line
+- netio2csv.py
+    -- Collect metering data from Netio power sockets into CSV files.
+    See also check-bat.py.
 - [oldprocs](#oldprocs)
     -- list running (and possibly restart) old processes/services whose object
       files were updated
