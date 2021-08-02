@@ -6,8 +6,7 @@
 # Alternatively, it switches off a networked power socket if
 # the threshold is reached.
 #
-# Has to run inside termux environment, in a local session
-# that should have the wake-lock aquired.
+# Has to run inside termux environment, in a local session.
 #
 # SPDX-FileCopyrightText: © 2020 Georg Sauthoff <mail@gms.tf>
 # SPDX-License-Identifier: GPL-3.0-or-later
@@ -46,6 +45,8 @@ def parse_args(*xs):
             help='config file for netio settings (default: %(default)s)')
     p.add_argument('--high', type=int, default=80,
             help='alarm/power-off threshold (default: %(default)d)')
+    p.add_argument('--no-wake-lock', dest='wake_lock', action='store_false', default=True,
+            help="don't obtain wake-lock")
     args = p.parse_args(*xs)
     return args
 
@@ -79,39 +80,54 @@ def alarm():
     p.stdin.close()
     p.wait()
 
+class Stay_Awake:
+    def __init__(self, enabled=True):
+        self.enabled = enabled
+    def __enter__(self):
+        if not self.enabled:
+            return
+        subprocess.check_output(['termux-wake-lock'])
+        return self
+    def __exit__(self, typ, value, traceback):
+        if not self.enabled:
+            return
+        subprocess.check_output(['termux-wake-unlock'])
+
 
 def main():
     setup_logging()
     args = parse_args()
-    conf = None
-    if args.netio:
-        conf = configparser.ConfigParser()
-        conf.read(args.config)
-        power_switch(conf['netio']['user'], conf['netio']['password'],
-                conf['netio']['host'], conf['netio']['no'], 1)
 
-    i = 0
-    while True:
-        d = status()
-        p = d['percentage']
-        t = d['temperature']
-        log.info(f'{p:3d} % - {t:6.2f} C')
+    with Stay_Awake(args.wake_lock):
+        conf = None
+        if args.netio:
+            conf = configparser.ConfigParser()
+            conf.read(args.config)
+            power_switch(conf['netio']['user'], conf['netio']['password'],
+                    conf['netio']['host'], conf['netio']['no'], 1)
 
-        if p > args.high:
-            if args.netio:
-                return power_switch(conf['netio']['user'], conf['netio']['password'],
-                        conf['netio']['host'], conf['netio']['no'], 0)
+        i = 0
+        while True:
+            d = status()
+            p = d['percentage']
+            t = d['temperature']
+            log.info(f'{p:3d} % - {t:6.2f} C')
+
+            if p > args.high:
+                if args.netio:
+                    return power_switch(conf['netio']['user'], conf['netio']['password'],
+                            conf['netio']['host'], conf['netio']['no'], 0)
+                else:
+                    return alarm()
+
+            if d['plugged'] == 'UNPLUGGED':
+                i += 1
             else:
-                return alarm()
+                i = 0
+            if i > 1:
+                break
 
-        if d['plugged'] == 'UNPLUGGED':
-            i += 1
-        else:
-            i = 0
-        if i > 1:
-            break
-
-        time.sleep(60)
+            time.sleep(60)
 
 
 if __name__ == '__main__':
