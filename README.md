@@ -657,7 +657,7 @@ access to.
 
 Example output when user with id 1000 executes it:
 
-   $ ./oldprocs
+    $ ./oldprocs
     You have to restart the following user services:
 
     systemctl --user restart evolution-addressbook-factory.service
