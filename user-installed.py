@@ -330,15 +330,15 @@ Auto-Installed: 1
 
 
 list_fn = {
-     'Fedora': list_fedora
-    ,'CentOS Linux': list_centos
-    ,'Red Hat Enterprise Linux': list_centos
+     'fedora': list_fedora
+    ,'centos': list_centos
+    ,'rhel': list_centos
     ,'debian': list_debian
-    ,'Ubuntu': list_debian
+    ,'ubuntu': list_debian
     }
 
 def main():
-  (dname, version, _) = distro.linux_distribution()
+  dname, version = distro.id(), distro.version()
   try:
     fn = list_fn[dname]
     if fn == list_centos and LooseVersion(version) >= LooseVersion('8.0'):
