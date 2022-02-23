@@ -139,6 +139,8 @@ async def do_with_relogin(client, args, f, *xs, **kws):
             if args.store_state:
                 update_state(client, args.state_filename, args.profile)
             x = await f(*xs, **kws)
+        else:
+            raise
     return x
 
 def update_state(client, filename, profile):
