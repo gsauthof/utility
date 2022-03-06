@@ -91,8 +91,10 @@ This repository contains a collection of command line utilities.
     -- C++ implementation of silence
 - [swap](#swap)
     -- atomically exchange names of two files on Linux
+- tailuart.py
+    -- read lines from a UART tty device, timestamp and dump them to stdout
 - train-spam
-    -- feed spam maildir messages into bogofilter and remove them
+    -- feed spam maildir messages into gonzofilter and remove them
 - unrpm
     -- extract an RPM file
 - [user-installed](#user-installed)
