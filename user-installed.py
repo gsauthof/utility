@@ -286,7 +286,7 @@ vim
        mock.patch('distro.version', f_distro_version), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('os.listdir', f_listdir), \
-       mock.patch('{}.open'.format(__name__), f_open), \
+       mock.patch('builtins.open', f_open), \
        mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
     main() # calls list_debian()
     assert fake_out.getvalue() == 'curl\nvim\n'
@@ -330,7 +330,7 @@ Auto-Installed: 1
        mock.patch('distro.version', f_distro_version), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('os.path.exists', f_exists), \
-       mock.patch('{}.open'.format(__name__), f_open), \
+       mock.patch('builtins.open', f_open), \
        mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
     main() # calls list_termux()
     assert fake_out.getvalue() == 'bc\nzsh\n'
@@ -359,7 +359,7 @@ def main():
     if os.path.exists('/data/data/com.termux'):
       list_termux()
     else:
-      raise RuntimeError('Unknown system (distribution: {})'.format(dname))
+      raise RuntimeError(f'Unknown system (distribution: {dname})')
   return 0
   
 
