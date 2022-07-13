@@ -30,6 +30,9 @@ BuildRequires:   python3-psutil
 BuildRequires:   procps-ng
 # i.e. because of gcore
 BuildRequires:   gdb
+BuildRequires:   python3-dnf
+# i.e. for test suite
+BuildRequires:   lz4
 
 %if %{__isa_bits} == 64
 BuildRequires: glibc-devel(%{__isa_name}-32)
@@ -42,6 +45,8 @@ Requires: python3-dns
 Requires: python3-matrix-nio
 # workaround missing matrix-nio depedency: https://bugzilla.redhat.com/show_bug.cgi?id=1925689
 Requires: python3-crypto
+# for user_installed
+Requires: python3-dnf
 
 
 %description
