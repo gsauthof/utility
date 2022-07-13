@@ -200,7 +200,7 @@ async def send_line_by_line(client, args, room):
 def main():
     args = parse_args()
     logging.basicConfig(level=logging.WARN)
-    asyncio.get_event_loop().run_until_complete(run(args))
+    asyncio.run(run(args))
 
 if __name__ == '__main__':
     sys.exit(main())
