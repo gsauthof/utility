@@ -48,7 +48,8 @@ def list_fedora():
   print("\n".join(l))
 
 def test_list_fedora():
-  f_linux_distribution = lambda : ('Fedora', '23', '')
+  f_distro_id = lambda : 'fedora'
+  f_distro_version = lambda : '23'
   import collections
   Rec = collections.namedtuple('Rec', ['name'])
   f_dnf = mock.Mock()
@@ -57,7 +58,8 @@ def test_list_fedora():
   f_Base.iter_userinstalled.return_value = iter([Rec('kernel-modules'), Rec('foo-debuginfo'), Rec('zsh'), Rec('vim')])
   f_dnf.Base.return_value = f_Base
   # yes, we are mocking the local import of dnf
-  with mock.patch('distro.linux_distribution', f_linux_distribution), \
+  with mock.patch('distro.id', f_distro_id), \
+       mock.patch('distro.version', f_distro_version), \
        mock.patch.dict('sys.modules', {'dnf': f_dnf}), \
        mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
     main() # calls list_fedora()
@@ -75,8 +77,9 @@ def list_centos():
     print(p)
 
 
-def test_list_centos(name='CentOS Linux'):
-  f_linux_distribution = lambda : (name, '7.3.1611', '')
+def test_list_centos(name='centos'):
+  f_distro_id = lambda : name
+  f_distro_version  = lambda : '7.3.1611'
   f_check_output = mock.Mock(return_value=b'''time,user,0
 xfsprogs,user,4294967295
 xz,dep,4294967295
@@ -85,13 +88,14 @@ yum-cron,user,0
 yum-cron,user,0
 yum-utils,dep,0
 zsh,user,1000''')
-  with mock.patch('distro.linux_distribution', f_linux_distribution), \
+  with mock.patch('distro.id', f_distro_id), \
+       mock.patch('distro.version', f_distro_version), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('sys.stdout', new=io.StringIO()) as fake_out:
     main() # calls list_centos
-    assert fake_out.getvalue() == 'time\nyum-cron\nzsh\n'
+  assert fake_out.getvalue() == 'time\nyum-cron\nzsh\n'
 
-def test_list_rhel(name='Red Hat Enterprise Linux'):
+def test_list_rhel(name='rhel'):
   test_list_centos(name)
 
 # i.e. lines from files/usr/var/lib/apt/extended_states
@@ -208,7 +212,7 @@ def get_all_lst(dirname='/var/lib/dpkg/info'):
   return l
 
 def dpkg_log_names(dirname='/var/log'):
-  expr = re.compile('dpkg\.log(\.[0-9]+)?(\.gz)?')
+  expr = re.compile(r'dpkg\.log(\.[0-9]+)?(\.gz)?')
   l = sorted(filter(expr.match, os.listdir(dirname)),
         key=LooseVersion, reverse=True)
   return l
@@ -255,7 +259,8 @@ def list_debian():
       print(p)
 
 def test_list_debian(dname='debian'):
-  f_linux_distribution = lambda : (dname, '', '')
+  f_distro_id = lambda : dname
+  f_distro_version = lambda : ''
   def f_check_output(*args, **kargs):
     return b'''acl
 apt
@@ -277,7 +282,8 @@ vim
 2017-01-22 17:48:06 install curl foo bar
 2017-01-22 17:48:06 install vim foo bar
 ''')
-  with mock.patch('distro.linux_distribution', f_linux_distribution), \
+  with mock.patch('distro.id', f_distro_id), \
+       mock.patch('distro.version', f_distro_version), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('os.listdir', f_listdir), \
        mock.patch('{}.open'.format(__name__), f_open), \
@@ -286,7 +292,7 @@ vim
     assert fake_out.getvalue() == 'curl\nvim\n'
 
 def test_list_ubuntu():
-  test_list_debian('Ubuntu')
+  test_list_debian('ubuntu')
 
 # work-around bug:
 # http://bugs.python.org/issue21258
@@ -297,7 +303,8 @@ def mock_open(*args, **kargs):
   return f_open
 
 def test_list_termux():
-  f_linux_distribution = lambda : ('', '', '')
+  f_distro_id = lambda : ''
+  f_distro_version = lambda : ''
   def f_check_output(*args, **kargs):
     return b'''apt						install
 bash						install
@@ -319,7 +326,8 @@ Architecture: aarch64
 Auto-Installed: 1
 
 ''')
-  with mock.patch('distro.linux_distribution', f_linux_distribution), \
+  with mock.patch('distro.id', f_distro_id), \
+       mock.patch('distro.version', f_distro_version), \
        mock.patch('subprocess.check_output', f_check_output), \
        mock.patch('os.path.exists', f_exists), \
        mock.patch('{}.open'.format(__name__), f_open), \
