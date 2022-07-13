@@ -84,6 +84,7 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 /usr/bin/chromium-extensions
 /usr/bin/cpufreq
 /usr/bin/dcat
+/usr/bin/detect-size
 /usr/bin/devof
 /usr/bin/disas
 /usr/bin/exec
