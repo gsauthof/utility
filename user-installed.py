@@ -13,7 +13,6 @@
 # 2017, Georg Sauthoff <mail@gms.tf>, GPLv3+
 
 
-from distutils.version import LooseVersion
 import gzip
 import io
 import itertools
@@ -24,6 +23,42 @@ import re
 import subprocess
 import sys
 import unittest.mock as mock
+
+
+split_version_re = re.compile('[.+-]')
+
+
+class LooseVersion:
+    def __init__(self, s):
+        self.vs = split_version_re.split(s)
+        self.n  = max(len(x) for x in self.vs)
+    def cmp(self, other, op):
+        n = max(self.n, other.n)
+        return op(tuple(x.zfill(n) for x in self.vs), tuple(x.zfill(n) for x in other.vs))
+    def __lt__(self, other):
+        return self.cmp(other, operator.lt)
+    def __le__(self, other):
+        return self.cmp(other, operator.le)
+    def __gt__(self, other):
+        return self.cmp(other, operator.gt)
+    def __ge__(self, other):
+        return self.cmp(other, operator.ge)
+    def __eq__(self, other):
+        return self.cmp(other, operator.eq)
+    def __ne__(self, other):
+        return self.cmp(other, operator.ne)
+
+
+def cmp_version(a, b, cmp):
+    xs = split_version_re.split(a)
+    ys = split_version_re.split(b)
+    n = max(len(x) for x in xs + ys)
+    return cmp(tuple(x.zfill(n) for x in xs), tuple(x.zfill(n) for x in ys))
+
+
+def test_cmp_version():
+    assert LooseVersion('10.3.5') > LooseVersion('9.3.5')
+    assert LooseVersion('1.2.4-rc3') < LooseVersion('1.2.4-rc4')
 
 # to try something different: pytest instead of unittest and
 # in-module tests instead of separate test file
