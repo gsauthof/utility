@@ -27,7 +27,7 @@ def mk_testcase(case):
   if iteration != '0':
     name = name + '_' + iteration
   fn = case.xpath('./c:fn')[0].text
-  fn = re.sub('\.[^.]+:.+$', '', fn)
+  fn = re.sub(r'\.[^.]+:.+$', '', fn)
   result = case.attrib['result']
   if result == 'success':
     duration = case.xpath('./c:duration')[0].text
