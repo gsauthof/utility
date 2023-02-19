@@ -79,7 +79,8 @@ enum class Column {
     CWD       , //
     ENV       , //
     EXE       , //
-    FDSIZE    , //
+    FDS       , // ls /proc/$pid/fd | wc -l
+    FDSIZE    , // /proc/$pid/status::FDSize
     FLAGS     , // process flags, /proc/$pid/stat
     GID       , // effective ...
     HELP      , // dummy, displays column help ...
@@ -133,7 +134,8 @@ static const string_view col2header[] = {
     "cwd"       , // CWD
     "env"       , // ENV
     "exe"       , // EXE
-    "fds"       , // FDSIZE
+    "fds"       , // FDS
+    "fdsz"      , // FDSIZE
     "flags"     , // FLAGS
     "gid"       , // GID
     "XXXhelp"   , // HELP
@@ -179,6 +181,7 @@ static const char * const col2help[] = {
     "current wording directory"       , // CWD
     "display an environment variable, e.g. env:MYID"       , // ENV
     "process' executable"       , // EXE
+    "number of open files"       , // FDS
     "number of allocated file descriptor slots"       , // FDSIZE
     "process flags (e.g. PF_KTHREAD, PF_WQ_WORKER or PF_NO_SETAFFINITY)", // FLAGS
     "group ID"       , // GID
@@ -225,6 +228,7 @@ static const unsigned col2width[] = {
     15 , // CWD
      8 , // ENV
     10 , // EXE
+     3 , // FDS
      3 , // FDSIZE
      5 , // FLAGS
      4 , // GID
@@ -315,8 +319,8 @@ static const unordered_map<string_view, Column> str2column = {
     { "rss"       , Column::RSS       },
     { "vsize"     , Column::VSIZE     },
     { "vmem"      , Column::VSIZE     },
+    { "fds"       , Column::FDS       },
     { "fdsize"    , Column::FDSIZE    },
-    { "fds"       , Column::FDSIZE    },
     { "numagid"   , Column::NUMAGID   },
     { "numa"      , Column::NUMAGID   },
     { "ngid"      , Column::NUMAGID   },
@@ -648,6 +652,7 @@ struct Process {
         string_view rss();
         string_view rtprio();
         string_view vsize();
+        string_view fds();
         string_view fdsize();
         string_view numagid();
         string_view nice();
@@ -676,6 +681,7 @@ Process_Attr process_attrs[] = {
     &Process::cwd       , // CWD
     nullptr             , // ENV
     &Process::exe       , // EXE
+    &Process::fds       , // FDS
     &Process::fdsize    , // FDSIZE
     &Process::pflags    , // FLAGS
     &Process::gid       , // GID
@@ -1211,6 +1217,38 @@ string_view Process::numagid()
     return read_status("\nNgid:");
 }
 
+string_view Process::fds()
+{
+    size_t l = fn.size();
+    fn.append("fd");
+
+    size_t n = 0;
+    try {
+        ixxx::util::Directory fds{fn};
+        fn.resize(l);
+        for (const struct dirent *d = fds.read(); d; d = fds.read()) {
+            if (*d->d_name == '.' && (!d->d_name[1] || (d->d_name[1] == '.' && !d->d_name[2])))
+                continue;
+            ++n;
+        }
+    } catch (const ixxx::opendir_error &e) {
+        fn.resize(l);
+
+        // ignore permission denied ...
+        misc_arr[0] = '#';
+        misc = string_view(misc_arr.begin(), 1);
+        return misc;
+    }
+
+
+    auto r = to_chars(misc_arr.begin(), misc_arr.end(), n);
+#if __cplusplus > 201703L
+    misc   = string_view(misc_arr.begin(), r.ptr);
+#else
+    misc   = string_view(misc_arr.begin(), r.ptr - misc_arr.begin());
+#endif
+    return misc;
+}
 
 struct Proc_Traverser {
     virtual ~Proc_Traverser() = default;
