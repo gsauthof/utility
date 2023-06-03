@@ -16,16 +16,16 @@ add_subdirectory(libixxx)
 add_subdirectory(libixxxutil)
 
 if((CMAKE_C_COMPILER_ID STREQUAL "GNU"
-        AND CMAKE_C_COMPILER_VERSION VERSION_LESS "5")
-   OR
-   (CMAKE_C_COMPILER_ID STREQUAL "Clang"
-        AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4")
-  )
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(NO_SANITIZE "-fno-sanitize=address")
-  endif()
+          AND CMAKE_C_COMPILER_VERSION VERSION_LESS "5")
+     OR
+     (CMAKE_C_COMPILER_ID STREQUAL "Clang"
+          AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4")
+    )
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set(NO_SANITIZE "-fno-sanitize=address")
+    endif()
 else()
-  set(NO_SANITIZE "-fno-sanitize=all")
+    set(NO_SANITIZE "-fno-sanitize=all")
 endif()
 
 check_library_exists(c clock_gettime "" CLOCK_GETTIME_IN_C)
@@ -36,101 +36,78 @@ else()
 endif()
 
 add_executable(silence silence.c)
-set_property(TARGET silence PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
+target_compile_definitions(silence PRIVATE _GNU_SOURCE)
 
 add_executable(fail test/fail.c)
 
 
 add_executable(silencce silence.cc)
-# not necessary, e.g. on Fedora 26
-#set_property(TARGET silencce PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
-set_property(TARGET silencce PROPERTY INCLUDE_DIRECTORIES
-  ${CMAKE_SOURCE_DIR}/libixxx
-  ${CMAKE_SOURCE_DIR}/libixxxutil
-  )
 target_link_libraries(silencce
     ixxxutil_static
     ixxx_static
-    )
+)
 
 
 add_executable(oldprocs oldprocs.cc)
-set_property(TARGET oldprocs PROPERTY INCLUDE_DIRECTORIES
-  ${CMAKE_SOURCE_DIR}/libixxx
-  ${CMAKE_SOURCE_DIR}/libixxxutil
-  )
 target_link_libraries(oldprocs
     ixxxutil_static
     ixxx_static
-    )
+)
 
 add_executable(lockf lockf.c)
 
 
 add_executable(dcat dcat.cc)
-set_property(TARGET dcat PROPERTY INCLUDE_DIRECTORIES
-  ${CMAKE_SOURCE_DIR}/libixxx
-  ${CMAKE_SOURCE_DIR}/libixxxutil
-  )
 target_link_libraries(dcat
     ixxxutil_static
     ixxx_static
-    )
+)
 
 add_executable(swap swap.c)
-set_property(TARGET swap PROPERTY INCLUDE_DIRECTORIES ${CMAKE_BINARY_DIR})
+target_include_directories(swap PRIVATE ${CMAKE_BINARY_DIR})
 
 add_executable(pargs pargs.c)
-set_property(TARGET pargs PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
+target_compile_definitions(pargs PRIVATE _GNU_SOURCE)
 
-add_executable(pargs32 pargs.c)
-set_property(TARGET pargs32 PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE)
-set_target_properties(pargs32
-  PROPERTIES COMPILE_FLAGS "-m32 ${NO_SANITIZE}"
-  LINK_FLAGS "-m32 ${NO_SANITIZE}")
+add_executable            (pargs32 pargs.c)
+target_compile_definitions(pargs32 PRIVATE _GNU_SOURCE)
+target_compile_options    (pargs32 PRIVATE -m32 ${NO_SANITIZE})
+target_link_options       (pargs32 PRIVATE -m32 ${NO_SANITIZE})
 
 # NOTE: when compiling with sanitizers (address etc.) it's important
 # that these test programs are compiled without those flags because
 # we need to create some core files of them.
 # Apparently, the sanitizing might blow up the core files, i.e. yielding:
 # warning: Failed to write corefile contents (No space left on device).
-add_executable(snooze test/snooze.c)
-set_target_properties(snooze
-  PROPERTIES COMPILE_FLAGS "${NO_SANITIZE}" LINK_FLAGS "${NO_SANITIZE}")
-add_executable(snooze32 test/snooze.c)
-set_target_properties(snooze32
-  PROPERTIES COMPILE_FLAGS "-m32 ${NO_SANITIZE}"
-  LINK_FLAGS "-m32 ${NO_SANITIZE}")
-add_executable(busy_snooze test/busy_snooze.c)
-set_target_properties(busy_snooze
-  PROPERTIES COMPILE_FLAGS "${NO_SANITIZE}" LINK_FLAGS "${NO_SANITIZE}")
-target_link_libraries(busy_snooze ${RT_LIB})
+add_executable        (snooze test/snooze.c)
+target_compile_options(snooze PRIVATE ${NO_SANITIZE})
+target_link_options   (snooze PRIVATE ${NO_SANITIZE})
+add_executable        (snooze32 test/snooze.c)
+target_compile_options(snooze32 PRIVATE -m32 ${NO_SANITIZE})
+target_link_options   (snooze32 PRIVATE -m32 ${NO_SANITIZE})
+add_executable        (busy_snooze test/busy_snooze.c)
+target_compile_options(busy_snooze PRIVATE ${NO_SANITIZE})
+target_link_options   (busy_snooze PRIVATE ${NO_SANITIZE})
+target_link_libraries (busy_snooze ${RT_LIB})
 
 add_executable(searchb searchb.c)
 
 add_executable(searchbxx searchb.cc)
-set_property(TARGET searchbxx PROPERTY INCLUDE_DIRECTORIES
-  ${CMAKE_SOURCE_DIR}/libixxx
-  ${CMAKE_SOURCE_DIR}/libixxxutil
-  )
 target_link_libraries(searchbxx
   ixxxutil_static
   ixxx_static
-  )
+)
 
 add_executable(exec exec.c)
 
 add_executable(adjtimex adjtimex.c)
 
 add_executable(pq pq.cc syscalls.cc)
-set_property(TARGET pq PROPERTY INCLUDE_DIRECTORIES
-  ${CMAKE_SOURCE_DIR}/libixxx
-  ${CMAKE_SOURCE_DIR}/libixxxutil
-  )
-target_link_libraries(pq
+target_link_libraries(pq PUBLIC
     ixxxutil_static
     ixxx_static
-    )
+)
+
 
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
