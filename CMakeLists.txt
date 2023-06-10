@@ -109,6 +109,27 @@ target_link_libraries(pq PUBLIC
 )
 
 
+add_custom_command(OUTPUT pp_link_stats64.c
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_pp_link_stats64.sh
+    ARGS pp_link_stats64.c
+    COMMENT "generate rtnl_link_stats64 pretty-printer"
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gen_pp_link_stats64.sh
+)
+add_custom_target(pp_link_stats64 DEPENDS pp_link_stats64.c)
+
+add_custom_command(OUTPUT csv_link_stats64.c
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_csv_link_stats64.py
+    ARGS csv_link_stats64.c
+    COMMENT "generate rtnl_link_stats64 csv printer"
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gen_csv_link_stats64.py
+)
+add_custom_target(csv_link_stats64 DEPENDS csv_link_stats64.c)
+
+add_executable(link_stats64 link_stats64.c)
+add_dependencies(link_stats64 pp_link_stats64 csv_link_stats64)
+target_include_directories(link_stats64 PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py

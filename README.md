@@ -51,6 +51,8 @@ This repository contains a collection of command line utilities.
     -- detect empty images (e.g. in batch scan results)
 - [latest-kernel-running](#latest-kernel)
     -- is the latest installed kernel actually running?
+- [link_stats64](#link_stats64)
+    -- dump the kernel's rtnl_link_stats64 structs
 - [lockf](#lockf)
     -- protect command execution with a lock
 - lsata.sh
@@ -523,6 +525,42 @@ like etcd.
 This check complements what [tracer][tracer] does.
 Tracer checks if outdated applications or libraries are loaded
 but (currently) doesn't check the kernel (cf. [Issue 45][tracer45]).
+
+
+## Link_stats64
+
+The `link_stats64` utility dumps for each network interface its
+[link_stats64 struct](https://docs.kernel.org/networking/statistics.html#c.rtnl_link_stats64).
+
+Inspecting the raw fields of this struct may be useful since
+other views (such as procfs or `ip -s l`) aggregate some fields
+together (e.g. drops) or might miss recent additions, such as
+`rx_otherhost_dropped`.
+
+In particular the `rx_otherhost_dropped` field is interesting for
+detecting misconfigured network devices that yield unicast
+flooding on switches. See also the `ping.py` utility for sending
+ICMP echo request for non-existant destinations.
+
+However, as of 6.2 Linux kernel timeframe, at least some network
+drivers don't maintain `rx_otherhost_dropped` (since they install
+MAC address filters and their hardware might not have a hardware
+counter for this) and thus the field is only ever incremented
+when the network device is in promiscuous mode.
+
+This repository also contains `otherhost.py` which just dumps the
+`rx_otherhost_dropped` field using the [drgn](https://github.com/osandov/drgn)
+programmable debugger.
+
+Link_stats64 is perhaps also a simple example of how to
+communicate with the Linux kernel over netlink in general,
+and sending `RTM_GETSTATS`/`IFLA_STATS_LINK_64` requests in
+particular, which doesn't seem to documented much elsewhere.
+
+It doesn't use libnl since it doesn't seem to be beneficial for
+this use case. Also, digging through the netlink interface and
+structs felt like less work than dealing with the arguably
+lightly documented libnl.
 
 
 ## Lockf
