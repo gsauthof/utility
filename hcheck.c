@@ -173,6 +173,14 @@ static CURL *mk_curl_handle(char *curl_msg, int *rc)
         fprintf(stderr, "CURLOPT_READFUNCTION failed: %s\n", curl_easy_strerror(r));
         *rc = hc_error_code;
     }
+    // tell curl to sned HTTP POST instead of the default GET requests;
+    // healthchecks.io checks accept GET/HEAD/POST, by default,
+    // but it's also possible to create POST-only checks
+    r = curl_easy_setopt(h, CURLOPT_POSTFIELDS, "");
+    if (r) {
+        fprintf(stderr, "CURLOPT_POSTFIELDS failed: %s\n", curl_easy_strerror(r));
+        *rc = hc_error_code;
+    }
 
     return h;
 }
