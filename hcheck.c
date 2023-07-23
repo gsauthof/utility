@@ -291,6 +291,7 @@ int main(int argc, char **argv)
     transmit_exit(h, args.url, args.uuid, r, curl_msg, &rc);
 
     cleanup_curl(args.dry, h);
+    free(curl_msg);
 
     if (r)
         return r;
