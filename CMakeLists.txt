@@ -42,14 +42,14 @@ add_executable(fail test/fail.c)
 
 
 add_executable(silencce silence.cc)
-target_link_libraries(silencce
+target_link_libraries(silencce PRIVATE
     ixxxutil_static
     ixxx_static
 )
 
 
 add_executable(oldprocs oldprocs.cc)
-target_link_libraries(oldprocs
+target_link_libraries(oldprocs PRIVATE
     ixxxutil_static
     ixxx_static
 )
@@ -58,7 +58,7 @@ add_executable(lockf lockf.c)
 
 
 add_executable(dcat dcat.cc)
-target_link_libraries(dcat
+target_link_libraries(dcat PRIVATE
     ixxxutil_static
     ixxx_static
 )
@@ -88,12 +88,12 @@ target_link_options   (snooze32 PRIVATE -m32 ${NO_SANITIZE})
 add_executable        (busy_snooze test/busy_snooze.c)
 target_compile_options(busy_snooze PRIVATE ${NO_SANITIZE})
 target_link_options   (busy_snooze PRIVATE ${NO_SANITIZE})
-target_link_libraries (busy_snooze ${RT_LIB})
+target_link_libraries (busy_snooze PRIVATE ${RT_LIB})
 
 add_executable(searchb searchb.c)
 
 add_executable(searchbxx searchb.cc)
-target_link_libraries(searchbxx
+target_link_libraries(searchbxx PRIVATE
   ixxxutil_static
   ixxx_static
 )
@@ -103,7 +103,7 @@ add_executable(exec exec.c)
 add_executable(adjtimex adjtimex.c)
 
 add_executable(pq pq.cc syscalls.cc)
-target_link_libraries(pq PUBLIC
+target_link_libraries(pq PRIVATE
     ixxxutil_static
     ixxx_static
 )
