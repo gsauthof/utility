@@ -45,8 +45,9 @@ static void help(FILE *o, const char *argv0)
             "\n"
             "In case of healthchecks transmission failures the command is still executed.\n"
             "Exit status is the exit status of the child command, unless:\n"
-            "    - spawning failed, then it's 127 (not found) or 126 (other error)\n"
-            "    - healthchecks communicateion error, then it's 23\n"
+            "\n"
+            "- spawning failed, then it's 127 (not found) or 126 (other error)\n"
+            "- healthchecks communicateion error, then it's 23\n"
             "\n"
             "2023, Georg Sauthoff <mail@gms.tf>, GPLv3+\n"
             ,
