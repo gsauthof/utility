@@ -45,6 +45,8 @@ This repository contains a collection of command line utilities.
     -- list installed Firefox addons
 - gs-ext
     -- list and manage installed Gnome Shell Extensions
+- [hcheck](#hcheck)
+    -- health-check command execution using a [healthchecks.io][hcio] instance
 - inhibit
     -- temporarily disable Gnome-Shell screen blanking from the terminal
 - isempty
@@ -502,6 +504,37 @@ Transfer the file to user Y on computer B and execute:
 
 After that, you 'just' have to click a bunch of 'Add to Firefox'
 buttons and close some tabs.
+
+
+## hcheck
+
+The `hcheck` tool health-checks a command execution, i.e. it
+reports command forking and exit status to a
+[healthchecks.io][hcio] instance.
+
+Healthchecks.io is a notification service for monitoring periodic
+jobs. It's open-source and can be self-hosted, however there is
+also a public instance. An healthchecks instance basically pages
+you when a cron-job doesn't keep it's schedule or fails.
+In other words, it implements an external dead-man switch like monitoring
+approach.
+
+Example usage:
+
+    export hcheck_uuid=20fc5ce7-53f2-401f-a5ac-a0b5a718c5fc
+    hcheck /usr/local/bin/daily-backup.sh /home/juser
+
+As a results the healthchecks events log contains the
+(externally) measured script runtime and exit status for each
+command execution. Depending on the check's configuration, you
+get notified when the script runs too long or completely misses a
+schedule.
+
+For jobs that aren't 100 % silent even in the good case, you can
+combine `hcheck` with [`silence`](#silence), to avoid superfluous mails from
+the cron daemon.
+
+See also healthcheck.io's list of [similar tools](https://healthchecks.io/docs/resources/) (Section Command Runners, Shell Wrappers).
 
 
 ## Latest Kernel
@@ -1319,3 +1352,4 @@ or
 [sparc]: https://en.wikipedia.org/wiki/SPARC
 [endian]: https://en.wikipedia.org/wiki/Endianness
 [solpargs]: https://www.freebsd.org/cgi/man.cgi?query=pargs&apropos=0&sektion=0&manpath=SunOS+5.10&arch=default&format=html
+[hcio]: https://healthchecks.io

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.7...3.26)
 
 project(utility C CXX)
 
@@ -128,6 +128,11 @@ add_custom_target(csv_link_stats64 DEPENDS csv_link_stats64.c)
 add_executable(link_stats64 link_stats64.c)
 add_dependencies(link_stats64 pp_link_stats64 csv_link_stats64)
 target_include_directories(link_stats64 PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+
+find_package(CURL REQUIRED)
+add_executable(hcheck hcheck.c)
+target_link_libraries(hcheck PRIVATE CURL::libcurl)
 
 
 add_custom_target(check-old
