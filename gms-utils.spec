@@ -12,7 +12,7 @@
 %endif
 
 Name:       gms-utils
-Version:    0.5.9
+Version:    0.6.0
 Release:    1%{?dist}
 Summary:    Collection of command line utilities
 URL:        https://github.com/gsauthof/utility
@@ -33,6 +33,8 @@ BuildRequires:   gdb
 BuildRequires:   python3-dnf
 # i.e. for test suite
 BuildRequires:   lz4
+# i.e. for hcheck
+BuildRequires:   libcurl-devel
 
 %if %{__isa_bits} == 64
 BuildRequires: glibc-devel(%{__isa_name}-32)
@@ -90,6 +92,7 @@ mv %{buildroot}/usr/bin/unrpm %{buildroot}/usr/local/bin/
 /usr/bin/exec
 /usr/bin/firefox-addons
 /usr/bin/gs-ext
+/usr/bin/hcheck
 /usr/bin/inhibit
 /usr/bin/isempty
 /usr/bin/latest-kernel-running

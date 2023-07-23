@@ -156,7 +156,7 @@ add_custom_target(check-new
 add_custom_target(check DEPENDS check-old check-new)
 
 
-install(TARGETS adjtimex dcat exec lockf oldprocs pargs pq searchb silence swap
+install(TARGETS adjtimex dcat exec hcheck lockf oldprocs pargs pq searchb silence swap
     RUNTIME DESTINATION bin)
 set(scripts
     addrof.sh
