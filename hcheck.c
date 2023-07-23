@@ -185,6 +185,28 @@ static CURL *mk_curl_handle(char *curl_msg, int *rc)
     return h;
 }
 
+static CURL *init_curl(bool dry, char *curl_msg, int *rc)
+{
+    if (dry)
+        return 0;
+    CURLcode cc = curl_global_init(CURL_GLOBAL_DEFAULT);
+    if (cc) {
+        fprintf(stderr, "curl_global_init() failed: %s\n", curl_easy_strerror(cc));
+        *rc = hc_error_code;
+    }
+    CURL *h = mk_curl_handle(curl_msg, rc);
+    return h;
+}
+
+static void cleanup_curl(bool dry, CURL *h)
+{
+    if (dry)
+        return;
+    if (h)
+        curl_easy_cleanup(h);
+    curl_global_cleanup();
+}
+
 static void transmit_start(CURL *h, const char *url, const char *uuid,
         char *curl_msg, int *rc)
 {
@@ -262,24 +284,13 @@ int main(int argc, char **argv)
         perror("calloc");
         return hc_error_code;
     }
-    CURLcode cc = args.dry ? 0 : curl_global_init(CURL_GLOBAL_DEFAULT);
-    if (cc) {
-        fprintf(stderr, "curl_global_init() failed: %s\n", curl_easy_strerror(cc));
-        rc = hc_error_code;
-    }
-    CURL *h = (args.dry || cc) ? 0 : mk_curl_handle(curl_msg, &rc);
+    CURL *h = init_curl(args.dry, curl_msg, &rc);
 
     transmit_start(h, args.url, args.uuid, curl_msg, &rc);
     int r = run(args.argc, args.argv);
     transmit_exit(h, args.url, args.uuid, r, curl_msg, &rc);
 
-    if (h) {
-        curl_easy_cleanup(h);
-        h = 0;
-    }
-
-    if (!args.dry && !cc)
-        curl_global_cleanup();
+    cleanup_curl(args.dry, h);
 
     if (r)
         return r;
