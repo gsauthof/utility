@@ -147,7 +147,7 @@ See also https://en.wikipedia.org/wiki/Comparison_of_DNS_blacklists for the
 mechanics and policies of the different lists.
 
 2016, Georg Sauthoff <mail@georg.so>, GPLv3+''')
-    p.add_argument('dests', metavar='DESTINATION', nargs='+',
+    p.add_argument('dests', metavar='DESTINATION', nargs='*',
             help = 'servers, a MX lookup is done if it is a domain')
     p.add_argument('--bl', action='append', default=[],
             help='add another blacklist')
@@ -183,6 +183,8 @@ mechanics and policies of the different lists.
     p.add_argument('--with-garbage', action='store_true',
             help=('also include low-quality blacklists that are maintained'
             ' by clueless operators and thus easily return false-positives'))
+    p.add_argument('--check-lists', action='store_true',
+            help='check lists for mandatory RFC 5782 test entries')
     return p
 
 
@@ -213,6 +215,8 @@ def parse_args(*a):
     if args.debug:
         l = logging.getLogger() # root logger
         l.setLevel(logging.DEBUG)
+    if not args.dests and not args.check_lists:
+        raise RuntimeError('supply either destinations or --check-lists')
     return args
 
 
@@ -276,6 +280,16 @@ def check_dnsbl(addr, bl):
     return 1
 
 
+def check_not_dnsbl(addr, bl):
+    rev = dns.reversename.from_address(addr)
+    domain = str(rev.split(3)[0]) + '.' + bl
+    try:
+        r = dns.resolver.resolve(domain, 'a')
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
+        log.error(f'OMG, mandatory {addr} is NOT listed in DNSBL {bl}')
+        return 1
+    return 0
+
 
 def check_rdns(addrs):
     errs = 0
@@ -301,6 +315,16 @@ def check_rdns(addrs):
 
 
 def run(args):
+    if args.check_lists:
+        errs = 0
+        for bl, blv in args.bls:
+            try:
+                errs += check_dnsbl('127.0.0.1', bl)
+                errs += check_not_dnsbl('127.0.0.2', bl)
+            except dns.exception.Timeout as e:
+                log.error(f'Resolving mandatory entries timed out on {bl}')
+        return errs != 0
+
     log.debug('Checking {} DNS blacklists'.format(args.bls.__len__()))
     errs = 0
     for dest in args.dests:
