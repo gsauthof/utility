@@ -95,6 +95,17 @@ default_blacklists = [
         ('rbl.lugh.ch'                  , 'traps and suspicious login attempts'),
         ('singular.ttk.pte.hu'          , 'traps, stats and user reports'    ),
 
+        ('bl.nosolicitado.org'          , 'whatever'                         ),
+        ('bl.worst.nosolicitado.org'    , 'whatever'                         ),
+        ('dnsbl.beetjevreemd.nl'        , 'personal curated blocklist'       ),
+        ('dnsbl.dronebl.org'            , 'whatever'                         ),
+        ('ip4.bl.zenrbl.pl'             , 'some polish bl'                   ),
+        ('iprbl.mailcleaner.net'        , 'whatever'                         ),
+        ('rbl.interserver.net'          , 'whatever'                         ),
+        ('rbl.ircbl.org'                , 'IRC abuse blacklist'              ),
+        ('rbl.rbldns.ru'                , 'some russian blocklist'           ),
+        ('reputation-ip.rbl.scrolloutf1.com', 'whatever'                     ),
+
         ]
 
 # blacklists disabled by default because they return mostly garbage
