@@ -47,6 +47,10 @@ default_blacklists = [
         # seems to include dnsbl-1.uceprotect.net
         ('black.dnsbl.brukalai.lt'      , 'Brukalai.lt junk mail'            ),
         ('light.dnsbl.brukalai.lt'      , 'Brukalai.lt abuse'                ),
+        ('bip.virusfree.cz'             , 'botnet IP addresses'              ),
+        ('bad.virusfree.cz'             , 'high spam rate/malware senders'   ),
+        ('rbl.mailspike.org'            , 'whatever'                         ),
+        ('rbl.metunet.com'              , 'whatever'                         ),
 
         ('all.spam-rbl.fr'              , 'French DNSBL'                     ),
         ('bl.drmx.org'                  , 'traps and provider feedback'      ),
