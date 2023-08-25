@@ -84,6 +84,17 @@ default_blacklists = [
         ('tor.dan.me.uk'                , 'tor nodes - exit and others'      ),
         ('torexit.dan.me.uk'            , 'tor exit nodes'                   ),
 
+        ('bl.scientificspam.net'        , 'scientifc spam specific traps'    ),
+        ('bl.suomispam.net'             , 'finish language spam'             ),
+        ('dnsblchile.org'               , 'whatever from chile'              ),
+        ('free.v4bl.org'                , 'whatever'                         ),
+        # Spanish academic and research network
+        ('weak.dnsbl.rediris.es'        , 'traps and aggregation with other lists'),
+        ('strong.dnsbl.rediris.es'        , 'traps and aggregation with other lists'),
+        ('netblockbl.spamgrouper.to'    , 'bad networks'                     ),
+        ('rbl.lugh.ch'                  , 'traps and suspicious login attempts'),
+        ('singular.ttk.pte.hu'          , 'traps, stats and user reports'    ),
+
         ]
 
 # blacklists disabled by default because they return mostly garbage
