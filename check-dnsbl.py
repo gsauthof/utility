@@ -243,7 +243,7 @@ def get_addrs(dest, mx=True):
     domains = [ dest ]
     if mx:
         try:
-            r = dns.resolver.resolve(dest, 'mx', search=True)
+            r = dns.resolver.resolve(dest, 'mx', search=False)
             domains = [ answer.exchange for answer in r ]
             log.debug('destinatin {} has MXs: {}'
                       .format(dest, ', '.join([str(d) for d in domains])))
@@ -253,7 +253,7 @@ def get_addrs(dest, mx=True):
     for domain in domains:
         for t in ['a', 'aaaa']:
             try:
-                r = dns.resolver.resolve(domain, t, search=True)
+                r = dns.resolver.resolve(domain, t, search=False)
             except dns.resolver.NoAnswer:
                 continue
             xs = [ ( answer.address, domain ) for answer in r ]
@@ -270,12 +270,12 @@ def check_dnsbl(addr, bl):
     rev = dns.reversename.from_address(addr)
     domain = str(rev.split(3)[0]) + '.' + bl
     try:
-        r = dns.resolver.resolve(domain, 'a', search=True)
+        r = dns.resolver.resolve(domain, 'a', search=False)
     except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
         return 0
     address = list(r)[0].address
     try:
-        r = dns.resolver.resolve(domain, 'txt', search=True)
+        r = dns.resolver.resolve(domain, 'txt', search=False)
         txt = list(r)[0].to_text()
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
         txt = ''
@@ -288,7 +288,7 @@ def check_not_dnsbl(addr, bl):
     rev = dns.reversename.from_address(addr)
     domain = str(rev.split(3)[0]) + '.' + bl
     try:
-        r = dns.resolver.resolve(domain, 'a')
+        r = dns.resolver.resolve(domain, 'a', search=False)
     except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
         log.error(f'OMG, mandatory {addr} is NOT listed in DNSBL {bl}')
         return 1
@@ -301,7 +301,7 @@ def check_rdns(addrs):
         log.debug('Check if there is a reverse DNS record that maps address {} to {}'
                   .format(addr, domain))
         try:
-            r = dns.resolver.resolve(dns.reversename.from_address(addr), 'ptr', search=True)
+            r = dns.resolver.resolve(dns.reversename.from_address(addr), 'ptr', search=False)
             a = list(r)[0]
             target = str(a.target).lower()
             source = str(domain).lower()
