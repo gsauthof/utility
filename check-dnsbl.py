@@ -83,10 +83,6 @@ default_blacklists = [
         ('spamsources.fabel.dk'         , 'whatever'                         ),
         ('tor.dan.me.uk'                , 'tor nodes - exit and others'      ),
         ('torexit.dan.me.uk'            , 'tor exit nodes'                   ),
-        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
-        ('vote.drbl.gremlin.ru'         , 'distributed blacklist'            ),
-        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
-        ('work.drbl.gremlin.ru'         , 'distributed blacklist aggregation'),
 
         ]
 
@@ -118,6 +114,12 @@ garbage_blacklists = [
         # seems to be a fraudulent operation:
         # https://www.spamhaus.org/organization/statement/008/fraudulent-fake-dnsbl-uncovered-nszones.com
         ('bl.nszones.com'               , 'dynamic IP addresses etc.'        ),
+        # references outdated contact information
+        # DNSBL contains stale entries/false positives
+        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
+        ('vote.drbl.gremlin.ru'         , 'distributed blacklist'            ),
+        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
+        ('work.drbl.gremlin.ru'         , 'distributed blacklist aggregation'),
         ]
 
 
