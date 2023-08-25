@@ -47,6 +47,43 @@ default_blacklists = [
         # seems to include dnsbl-1.uceprotect.net
         ('black.dnsbl.brukalai.lt'      , 'Brukalai.lt junk mail'            ),
         ('light.dnsbl.brukalai.lt'      , 'Brukalai.lt abuse'                ),
+
+        ('all.spam-rbl.fr'              , 'French DNSBL'                     ),
+        ('bl.drmx.org'                  , 'traps and provider feedback'      ),
+        ('bl.spameatingmonkey.net'      , 'traps and policy'                 ),
+        ('backscatter.spameatingmonkey.net', 'backscatter to traps'          ),
+        ('bl.ipv6.spameatingmonkey.net', 'traps and policy for ipv6'         ),
+        ('netbl.spameatingmonkey.net',  'low reputation networks'            ),
+        ('bogons.cymru.com'             , 'unallocated netblocks'            ),
+        ('combined.rbl.msrbl.net'       , 'traps, virus scanners etc.'       ),
+        ('dnsbl.justspam.org'           , 'whatever'                         ),
+        ('dnsbl.madavi.de'              , 'website comment spam'             ),
+        ('dnsbl.rv-soft.info'           , 'whatever from czech repuplic'     ),
+        ('dnsbl.zapbl.net'              , 'traps and admin choice'           ),
+        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
+        ('dnsrbl.swinog.ch'             , 'traps'                            ),
+        ('korea.services.net'           , 'korean networks minus whitelisted'),
+        ('mail-abuse.blacklist.jippg.org', 'whatever from japan'             ),
+        ('rbl.blockedservers.com'       , 'whatever'                         ),
+        ('spam.rbl.blockedservers.com'  , 'whatever'                         ),
+        ('netscan.rbl.blockedservers.com', 'whatever'                        ),
+        ('torexit.rbl.blockedservers.com', 'whatever'                        ),
+        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
+        ('pofon.foobar.hu'              , 'the fast-expiration spambot-network DNSBL'),
+        ('rbl.abuse.ro'                 , 'spamtraps'                        ),
+        ('pbl.abuse.ro'                 , 'spamtraps'                        ),
+        ('rbl.efnetrbl.org'             , 'BL for IRC servers'               ),
+        ('rbl.schulte.org'              , 'personal blocklist'               ),
+        ('spam.dnsbl.anonmails.de'      , 'whatever'                         ),
+        ('spam.pedantic.org'            , 'personal blocklist'               ),
+        ('spamsources.fabel.dk'         , 'whatever'                         ),
+        ('tor.dan.me.uk'                , 'tor nodes - exit and others'      ),
+        ('torexit.dan.me.uk'            , 'tor exit nodes'                   ),
+        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
+        ('vote.drbl.gremlin.ru'         , 'distributed blacklist'            ),
+        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
+        ('work.drbl.gremlin.ru'         , 'distributed blacklist aggregation'),
+
         ]
 
 # blacklists disabled by default because they return mostly garbage
@@ -72,6 +109,11 @@ garbage_blacklists = [
         # Thus, the value of querying this blacklist is utterly low as
         # you get false-positive results, very likely.
         ('dnsbl.spfbl.net'              , 'Reputation Database'              ),
+        # offers paid delisting, violates RFC 5782 by listing 127.0.0.1 test entry
+        # and NOT listing 127.0.0.2 ...
+        # seems to be a fraudulent operation:
+        # https://www.spamhaus.org/organization/statement/008/fraudulent-fake-dnsbl-uncovered-nszones.com
+        ('bl.nszones.com'               , 'dynamic IP addresses etc.'        ),
         ]
 
 
