@@ -106,6 +106,16 @@ default_blacklists = [
         ('rbl.rbldns.ru'                , 'some russian blocklist'           ),
         ('reputation-ip.rbl.scrolloutf1.com', 'whatever'                     ),
 
+        ('bl.fmb.la'                    , 'whatever'                         ),
+        ('bl.rbl.polspam.pl'            , 'some polish blacklist'            ),
+        ('bl6.rbl.polspam.pl'           , 'some polish blacklist'            ),
+        ('nsbl.ascams.com'              , 'whatever'                         ),
+        ('bl.octopusdns.com'            , 'whatever'                         ),
+        ('dnsbl.calivent.com.pe'        , 'some peruan blacklist'            ),
+        ('openproxy.bls.digibase.ca'    , 'whatever'                         ),
+        ('proxyabuse.bls.digibase.ca'   , 'whatever'                         ),
+        ('spambot.bls.digibase.ca'      , 'whatever'                         ),
+
         ]
 
 # blacklists disabled by default because they return mostly garbage
