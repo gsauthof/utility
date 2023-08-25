@@ -21,26 +21,30 @@ default_blacklists = [
         ('safe.dnsbl.sorbs.net'         , "'safe' subset of SORBS aggregated"),
         ('ix.dnsbl.manitu.net'          , 'Heise iX NiX Spam'                ),
         ('truncate.gbudb.net'           , 'Exclusively Spam/Malware'         ),
+        # accepts de-listing payments, overblocking
+        # https://en.wikipedia.org/w/index.php?title=Comparison_of_DNS_blacklists&oldid=1169665628#Suspect_RBL_providers
         ('dnsbl-1.uceprotect.net'       , 'Trapserver Cluster'               ),
         ('cbl.abuseat.org'              , 'Net of traps'                     ),
-        ('dnsbl.cobion.com'             , 'used in IBM products'             ),
         ('psbl.surriel.com'             , 'passive list, easy to unlist'     ),
         ('db.wpbl.info'                 , 'Weighted private'                 ),
         ('bl.spamcop.net'               , 'Based on spamcop users'           ),
+        # spamrats doesn't serve DNS servers of hosting providers such as hetzner
         ('dyna.spamrats.com'            , 'Dynamic IP addresses'             ),
         ('spam.spamrats.com'            , 'Manual submissions'               ),
         ('auth.spamrats.com'            , 'Suspicious authentications'       ),
-        ('dnsbl.inps.de'                , 'automated and reported'           ),
         ('bl.blocklist.de'              , 'fail2ban reports etc.'            ),
         ('all.s5h.net'                  , 'traps'                            ),
-        ('rbl.realtimeblacklist.com'    , 'lists ip ranges'                  ),
         ('b.barracudacentral.org'       , 'traps'                            ),
+        # also returns white-listed entries with return code 127.0.0.1
         ('hostkarma.junkemailfilter.com', 'Autotected Virus Senders'         ),
-        ('ubl.unsubscore.com'           , 'Collected Opt-Out Addresses'      ),
-        ('0spam.fusionzero.com'         , 'Spam Trap'                        ),
+        ('bl.0spam.org'                 , 'Main 0spam DNSBL'                 ),
+        ('rbl.0spam.org'                , 'Main 0spam realtime BL'           ),
+        ('nbl.0spam.org'                , '0spam network BL'                 ),
         ('bl.nordspam.com'              , 'NordSpam IP addresses'            ),
         ('rbl.nordspam.com'             , 'NordSpam Domain list '            ),
+        # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
         ('combined.mail.abusix.zone'    , 'Abusix aggregated'                ),
+        # seems to include dnsbl-1.uceprotect.net
         ('black.dnsbl.brukalai.lt'      , 'Brukalai.lt junk mail'            ),
         ('light.dnsbl.brukalai.lt'      , 'Brukalai.lt abuse'                ),
         ]
