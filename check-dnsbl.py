@@ -116,6 +116,8 @@ default_blacklists = [
         ('proxyabuse.bls.digibase.ca'   , 'whatever'                         ),
         ('spambot.bls.digibase.ca'      , 'whatever'                         ),
 
+        ('bl.mxrbl.com'                 , 'whatever'                         ),
+
         ]
 
 # blacklists disabled by default because they return mostly garbage
