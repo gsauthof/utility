@@ -168,6 +168,38 @@ garbage_blacklists = [
 # useful for testing
 
 
+default_domain_blacklists = [
+        ('dbl.spamhaus.org', 'Spamhaus DBL', 'https://www.spamhaus.org/dbl/'),
+        ('rhsbl.sorbs.net' , 'SORBS DBL'   , 'http://www.sorbs.net'         ),
+        ('hostkarma.junkemailfilter.com', 'Hostkarma DBL', 'https://wiki.junkemailfilter.com/index.php/Spam_DNS_Lists#Name_Based_Lookups'),
+        ('dbl.0spam.org'   , '0spam URLBL' , 'https://0spam.org'            ),
+        ('dbl.nordspam.com', 'NordPM URIBL', 'https://www.nordspam.com/usage/'),
+        ('dblack.mail.abusix.zone', 'Abusix URIBL', 'https://abu.sx/dblack' ),
+        ('black.dnsbl.brukalai.lt', 'Brukalai also lists domains', 'https://www.brukalai.lt'),
+        ('uribl.spameatingmonkey.net', 'Spameatingmonkey URIBL', 'https://spameatingmonkey.com/services'),
+        ('urired.spameatingmonkey.net', 'Spameatingmonkey likely URIBL (includes uribl)', 'https://spameatingmonkey.com/services'),
+        ('rhsbl.zapbl.net' , 'whatever', 'https://zapbl.net/using'),
+        ('uribl.swinog.ch' , 'realtime URL blacklist', 'https://antispam.imp.ch'),
+        ('uribl.pofon.foobar.hu', 'URIBL',   'https://rbl.foobar.hu'        ),
+        ('uribl.abuse.ro'  , 'spamvertized domains', 'https://abuse.ro'     ),
+        ('dbl.abuse.ro'    , 'spam sending domains', 'https://abuse.ro'     ),
+        ('rhsbl.scientificspam.net', 'whatever', 'https://www.scientificspam.net'),
+        ('dbl.suomispam.net', 'Finish DBL', 'https://suomispam.net'),
+        # offer paid list removal ($ 50)
+        # https://www.mailcleaner.net/support/request-removal-from-mailcleaner-uribl/
+        ('uribl.mailcleaner.net', 'Pay for removal URIBL', 'https://multirbl.valli.org/detail/uribl.mailcleaner.net.html'),
+        ('rbluri.interserver.net', 'whatever', 'http://rbl.interserver.net/usage.php'),
+        ('bl-domain.rbl.scrolloutf1.com', 'whatever', 'http://www.scrolloutf1.com/rbl'),
+        ('UnsafeSenders.rbl.scrolloutf1.com', 'whatever', 'http://www.scrolloutf1.com/rbl'),
+        ('bl.fmb.la', 'BL also contains domains', 'https://fmb.la/pages/about'),
+        ('short.fmb.la', 'URL shortener domain', 'https://fmb.la/pages/about'),
+        ('rhsbl.rbl.polspam.pl', 'Polish DBL', 'https://polspam.pl/rbll.php'),
+        ('rhsbl-h.rbl.polspam.pl', 'Polish URIBL', 'https://polspam.pl/rbll.php'),
+        ('rhsbl-v.rbl.polspam.pl', 'Polish URIBL for suspicious URI', 'https://polspam.pl/rbll.php'),
+        ('rhsbl-danger.rbl.polspam.pl', 'Polish DBL of dangerous domains', 'https://polspam.pl/rbll.php'),
+        ]
+
+
 log_format      = '%(asctime)s - %(levelname)-8s - %(message)s [%(name)s]'
 log_date_format = '%Y-%m-%d %H:%M:%S'
 
