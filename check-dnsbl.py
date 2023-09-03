@@ -173,7 +173,7 @@ log_date_format = '%Y-%m-%d %H:%M:%S'
 
 # Note that the basicConfig() call is a NOP in Jupyter
 # because Jupyter calls it before
-logging.basicConfig(format=log_format, datefmt=log_date_format, level=logging.WARNING)
+logging.basicConfig(format=log_format, datefmt=log_date_format, level=logging.ERROR)
 log = logging.getLogger(__name__)
 
 
@@ -199,6 +199,8 @@ mechanics and policies of the different lists.
             help="use Cloudflare's public DNS nameservers")
     p.add_argument('--debug', action='store_true',
             help='print debug log messages')
+    p.add_argument('--verbose', '-v', action='store_true',
+                   help='print warnings')
     # cf. https://en.wikipedia.org/wiki/Google_Public_DNS
     p.add_argument('--google', action='store_true',
             help="use Google's public DNS nameservers")
@@ -252,9 +254,14 @@ def parse_args(*a):
     if args.ns:
         dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
         dns.resolver.default_resolver.nameservers = args.ns
+
     if args.debug:
         l = logging.getLogger() # root logger
         l.setLevel(logging.DEBUG)
+    elif args.verbose:
+        l = logging.getLogger() # root logger
+        l.setLevel(logging.INFO)
+
     if not args.dests and not args.check_lists:
         raise RuntimeError('supply either destinations or --check-lists')
     return args
@@ -387,7 +394,7 @@ def run(args):
                     if i >= args.retries:
                         log.warn(m)
                     else:
-                        log.debug(m)
+                        log.warning(m)
                         ms.append( (addr, domain, bl) )
             ls.pop(0)
             if ms and i + 1 < args.retries:
