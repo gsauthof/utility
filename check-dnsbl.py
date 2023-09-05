@@ -380,27 +380,15 @@ def check_dnsbl(addr, bl):
     try:
         r = dns.resolver.resolve(domain, 'a', search=False)
     except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
-        return 0
+        return None
     address = list(r)[0].address
     try:
         r = dns.resolver.resolve(domain, 'txt', search=False)
         txt = list(r)[0].to_text()
     except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
         txt = ''
-    log.error('OMG, {} is listed in DNSBL {}: {} ({})'.format(
-        addr, bl, address, txt))
-    return 1
-
-
-def check_not_dnsbl(addr, bl):
-    rev = dns.reversename.from_address(addr)
-    domain = str(rev.split(3)[0]) + '.' + bl
-    try:
-        r = dns.resolver.resolve(domain, 'a', search=False)
-    except (dns.resolver.NXDOMAIN, dns.resolver.NoNameservers, dns.resolver.NoAnswer):
-        log.error(f'OMG, mandatory {addr} is NOT listed in DNSBL {bl}')
-        return 1
-    return 0
+    m = f'OMG, {addr} is listed in DNSBL {bl}: {address} ({txt})'
+    return m
 
 
 def check_rdns(addrs):
@@ -413,7 +401,7 @@ def check_rdns(addrs):
             a = list(r)[0]
             target = str(a.target).lower()
             source = str(domain).lower()
-            log.debug('Reserve DNS record for {} points to {}'.format(addr, target))
+            log.debug('Reverse DNS record for {} points to {}'.format(addr, target))
             if domain and source + '.' != target and source != target:
                 log.error('domain {} resolves to {}, but the reverse record resolves to {}'.
                          format(domain, addr, target))
@@ -451,36 +439,70 @@ def check_dbls(domain, dbls, retries):
     return errs
 
 
+def check_bls(addrs, bls, dest, retries):
+    ls = [ (x[0], x[1], y, 0, 0) for x in addrs for y in bls ]
+    errs = 0
+    while ls:
+        addr, domain, bl, i, ts = ls.pop(0)
+        if i > 0:
+            now = time.clock_gettime(time.CLOCK_REALTIME)
+            t = max(i * 23 - max(now - ts, 0), 0)
+            time.sleep(t)
+        try:
+            log.debug(f'Checking if address {addr} (via {dest}) is listed in {bl[0]} ({bl[1]})')
+            s = check_dnsbl(addr, bl[0])
+            if s:
+                errs += 1
+                log.error(s)
+        except dns.exception.Timeout as e:
+            if i + 1 < retries:
+                log.warning(f'Resolving {addr} in {bl[0]} timed out - retrying later ...')
+                ls.append((addr, domain, bl, i+1, time.clock_gettime(time.CLOCK_REALTIME)))
+            else:
+                log.warning(f'Resolving {addr} in {bl[0]} timed out - giving up on it.')
+    return errs
+
+
+def check_domain_lists(dbls):
+    errs = 0
+    for d in dbls:
+        bl = d[0]
+        log.debug(f'Checking {bl}')
+        s = check_dbl('test', bl)
+        if s is None:
+            log.error(f'Mandatory "test" name is NOT listed in DBL {bl}')
+            errs += 1
+        s = check_dbl('invalid', bl)
+        if s:
+            log.error(s)
+            errs += 1
+    return errs
+
+def check_addr_lists(bls):
+    errs = 0
+    for bl, blv, _ in bls:
+        try:
+            s = check_dnsbl('127.0.0.1', bl)
+            if s:
+                log.error(s)
+                errs += 1
+            s = check_dnsbl('127.0.0.2', bl)
+            if not s:
+                log.error(f'OMG, mandatory 127.0.0.2 is NOT listed in DNSBL {bl}')
+                errs += 1
+        except dns.exception.Timeout as e:
+            log.error(f'Resolving mandatory entries timed out on {bl}')
+    return errs
+
 
 def run(args):
     if args.check_lists:
-        errs = 0
-
-        if args.domain:
-            for d in args.dbls:
-                bl = d[0]
-                log.debug(f'Checking {bl}')
-                s = check_dbl('test', bl)
-                if s is None:
-                    log.error(f'Mandatory "test" name is NOT listed in DBL {bl}')
-                    errs += 1
-                s = check_dbl('invalid', bl)
-                if s:
-                    log.error(s)
-                    errs += 1
-
-        if args.address:
-            for bl, blv, _ in args.bls:
-                try:
-                    errs += check_dnsbl('127.0.0.1', bl)
-                    errs += check_not_dnsbl('127.0.0.2', bl)
-                except dns.exception.Timeout as e:
-                    log.error(f'Resolving mandatory entries timed out on {bl}')
-        return errs != 0
+        return (  (check_addr_lists  (args.bls ) if args.address else 0)
+                + (check_domain_lists(args.dbls) if args.domain  else 0) != 0 )
 
     errs = 0
     if args.address:
-        log.debug('Checking {} DNS blacklists'.format(args.bls.__len__()))
+        log.debug(f'Checking {len(args.bls)} DNS blacklists')
     if args.domain:
         log.debug(f'Checking {len(args.dbls)} domain based DNS blacklist')
 
@@ -489,32 +511,11 @@ def run(args):
         if args.address:
             if args.rev:
                 errs = errs + check_rdns(addrs)
-            old_errs = errs
-            ls = [ ( (x[0], x[1], y) for x in addrs for y in args.bls) ]
-            i = 0
-            while ls:
-                ms = []
-                for addr, domain, bl in ls[0]:
-                    log.debug('Checking if address {} (via {}) is listed in {} ({})'
-                              .format(addr, dest, bl[0], bl[1]))
-                    try:
-                        errs = errs + check_dnsbl(addr, bl[0])
-                    except dns.exception.Timeout as e:
-                        m = 'Resolving  {}/{} in {} timed out: {}'.format(
-                            addr, domain, bl[0], e)
-                        if i >= args.retries:
-                            log.warn(m)
-                        else:
-                            log.warning(m)
-                            ms.append( (addr, domain, bl) )
-                ls.pop(0)
-                if ms and i + 1 < args.retries:
-                    ls.append(ms)
-                    log.debug('({}) Retrying {} timed-out entries'.format(i, len(ms)))
-                    time.sleep(23+i*23)
-                i = i + 1
-            if old_errs < errs:
-                log.error('{} is listed in {} blacklists'.format(dest, errs - old_errs))
+
+            e = check_bls(addrs, args.bls, dest, args.retries)
+            if e:
+                log.error(f'{dest} is listed in {e} blacklists')
+            errs += e
 
         if args.domain:
             for d in domains:
@@ -523,7 +524,7 @@ def run(args):
                     log.error(f'{d} is listed {e} blacklists')
                 errs += e
 
-    return 0 if errs == 0 else 1
+    return errs != 0
 
 
 
@@ -534,11 +535,15 @@ def main(*a):
 
 
 if __name__ == '__main__':
-  if 'IPython' in sys.modules:
-    # do something different when running inside a Jupyter notebook
-    pass
-  else:
-    sys.exit(main())
+    if 'IPython' in sys.modules:
+        # do something different when running inside a Jupyter notebook
+        pass
+    else:
+        try:
+            sys.exit(main())
+        except Exception as e:
+            log.error(e)
+            sys.exit(1)
 
 
 
