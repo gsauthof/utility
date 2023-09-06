@@ -470,7 +470,7 @@ def check_domain_lists(dbls):
         log.debug(f'Checking {bl}')
         s = check_dbl('test', bl)
         if s is None:
-            log.error(f'Mandatory "test" name is NOT listed in DBL {bl}')
+            log.error(f'OMG, mandatory "test" name is NOT listed in DBL {bl}')
             errs += 1
         s = check_dbl('invalid', bl)
         if s:
