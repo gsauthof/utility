@@ -16,6 +16,9 @@ import sys
 import time
 
 
+ipv6_incapable = { 'bl.0spam.org', 'rbl.0spam.org', 'nbl.0spam.org' }
+
+
 default_blacklists = [
         ('zen.spamhaus.org'             , 'Spamhaus SBL, XBL and PBL'         , 'https://www.spamhaus.org'        ),
         ('dnsbl.sorbs.net'              , 'SORBS aggregated'                  , 'http://www.sorbs.net'            ),
@@ -394,6 +397,8 @@ def check_dnsbl(addr, bl):
 def check_rdns(addrs):
     errs = 0
     for (addr, domain) in addrs:
+        if domain is None:
+            continue
         log.debug('Check if there is a reverse DNS record that maps address {} to {}'
                   .format(addr, domain))
         try:
@@ -449,6 +454,9 @@ def check_bls(addrs, bls, dest, retries):
             t = max(i * 23 - max(now - ts, 0), 0)
             time.sleep(t)
         try:
+            if ':' in addr and bl[0] in ipv6_incapable:
+                log.debug(f"Ignoring {bl[0]} because it doesn't support IPv6 ({addr})")
+                continue
             log.debug(f'Checking if address {addr} (via {dest}) is listed in {bl[0]} ({bl[1]})')
             s = check_dnsbl(addr, bl[0])
             if s:
