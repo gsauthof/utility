@@ -145,10 +145,17 @@ static void cat_files(const deque<const char*> &filenames)
             ixxx::posix::waitid(P_PID, pid, &info, WEXITED);
             if (info.si_code == CLD_EXITED) {
                 if (info.si_status)
-                    throw runtime_error("decompress failed (" + string(filename));
+                    throw runtime_error("decompress failed ("
+                            + string(filename) + " => "
+                            + to_string(info.si_status) + ")");
             } else {
-                throw runtime_error("decompress command terminated by a signal ("
-                        + string(filename) + ")");
+                if (info.si_status == SIGPIPE) {
+                    raise(SIGPIPE);
+                } else {
+                    throw runtime_error("decompress command terminated by a signal ("
+                            + string(filename) + " => "
+                            + to_string(info.si_status) + ")");
+                }
             }
         }
     }
