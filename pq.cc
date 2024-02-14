@@ -113,7 +113,9 @@ enum class Column {
     VSIZE     , //
     WBYTE     , // /proc/$pid/io::write_bytes
     WCHAN     , // /proc/$pid/wchan
-    WCHAR       // /proc/$pid/io::wchar
+    WCHAR     , // /proc/$pid/io::wchar
+
+    END_OF_ENUM // just a sentinel for this enum ...
 
     // TODO:
     //
@@ -170,6 +172,7 @@ static const string_view col2header[] = {
     "wchan"     , // WCHAN
     "wchar"       // WCHAR
 };
+static_assert(sizeof col2header / sizeof col2header[0] == static_cast<size_t>(Column::END_OF_ENUM));
 
 static const char * const col2help[] = {
     "CPU (core) affinity, i.e. task only runs on those cores"       , // AFFINITY
@@ -213,10 +216,11 @@ static const char * const col2help[] = {
     "(effective) user name", // USER
     "number of voluntary context-switches"      , // VCTX
     "virtual memory usage in KiB"     , // VSIZE
-    "bytes written, actually"       // WBYTE
+    "bytes written, actually",       // WBYTE
     "kernel function the task waits for, cf. stack (some kernels doesn't support it - e.g. Fedora's doesn't)",       // WCHAN
     "bytes written"       // WCHAR
 };
+static_assert(sizeof col2header / sizeof col2header[0] == sizeof col2help / sizeof col2help[0]);
 
 static const unsigned col2width[] = {
      3 , // AFFINITY
@@ -264,6 +268,7 @@ static const unsigned col2width[] = {
     10 , // WCHAN
     11   // WCHAR
 };
+static_assert(sizeof col2header / sizeof col2header[0] == sizeof col2width / sizeof col2width[0]);
 
 static const unordered_map<string_view, Column> str2column = {
     { "pid"       , Column::PID       },
