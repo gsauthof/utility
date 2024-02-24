@@ -12,6 +12,7 @@ import email.policy
 import nacl.encoding
 import nacl.signing
 import nacl.exceptions
+import os
 import re
 import smtplib
 import sys
@@ -76,10 +77,15 @@ def parse_args():
   p.add_argument('--from', dest='frm', help='mail sender')
   p.add_argument('--subject', default='1337 health check beacon', help='mail subject (default: %(default)s)')
   p.add_argument('--mta', default='localhost', help='mail server to use with --mail (default: %(default)s)')
-  p.add_argument('key', metavar='HEXKEY', help='signature verification key (or gen-key for key generation)')
+  p.add_argument('key', metavar='HEXKEY', help='signature verification key (or gen-key/genkey for key generation - or env for reading key from hc_mail_key environment variable)')
   p.add_argument('--delta', '-d', type=int, default=10,
                  help='timestamp delta window in seconds during verification (default: %(default)d')
-  return p.parse_args()
+  args = p.parse_args()
+  if args.key == 'env':
+      args.key = os.getenv('hc_mail_key')
+      if not args.key:
+          raise RuntimeError('no key in hc_mail_key environment variable')
+  return args
 
 def gen_key():
     skey = nacl.signing.SigningKey.generate()
