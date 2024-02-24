@@ -47,6 +47,8 @@ This repository contains a collection of command line utilities.
     -- list and manage installed Gnome Shell Extensions
 - [hcheck](#hcheck)
     -- health-check command execution using a [healthchecks.io][hcio] instance
+- hc_check
+    -- health check mail delivery mail filter
 - inhibit
     -- temporarily disable Gnome-Shell screen blanking from the terminal
 - isempty
