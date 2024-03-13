@@ -19,12 +19,14 @@
 #include <ixxx/util.hh>
 #include <ixxx/ansi.hh>
 #include <ixxx/posix.hh>
+#include <ixxx/linux.hh>
 #include <ixxx/sys_error.hh>
 
 #include <stdlib.h>      // exit()
 #include <string.h>      // strlen(), memcmp(), memchr(), ...
 #include <fcntl.h>       // O_RDONLY
 #include <unistd.h>      // getopt()
+#include <assert.h>
 
 #include "syscalls.hh"
 
@@ -408,6 +410,9 @@ struct Args {
     time_t           boot_time_s      {0}                ;
     unsigned         clock_ticks      {0}                ;
 
+    unsigned         interval_s       {0}                ;
+    unsigned         count            {0}                ;
+
 
     void parse(int argc, char **argv);
 };
@@ -419,9 +424,11 @@ static void help(FILE *o, const char *argv0)
             "\n"
             "Options:\n"
             "  -a         list all processes\n"
+            "  -c N       repeat N times, if -i is set (default: unlimited)\n"
             "  -e REGEX   filter by regular expression (match against COMM)\n"
             "  -h         display this help\n"
             "  -H         omit header row\n"
+            "  -i X       repeat output after X seconds\n"
             "  -k         only list kernel threads\n"
             "  -K         only list user tasks\n"
             "  -o COL..   columns to display (use `-o help` to get a list)\n"
@@ -484,7 +491,7 @@ void Args::parse(int argc, char **argv)
     // '-' prefix: no reordering of arguments, non-option arguments are
     // returned as argument to the 1 option
     // ':': preceding opting takes a mandatory argument
-    while ((c = getopt(argc, argv, "-ae:HhKkoptu:")) != -1) {
+    while ((c = getopt(argc, argv, "-ae:c:Hhi:Kkoptu:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stderr, "unexpected option character: %c\n", optopt);
@@ -492,6 +499,11 @@ void Args::parse(int argc, char **argv)
                 break;
             case 'a':
                 all_pids = true;
+                break;
+            case 'c':
+                count = atoi(optarg);
+                if (!interval_s)
+                    interval_s = 1;
                 break;
             case 'e':
                 regex_str = optarg;
@@ -502,6 +514,9 @@ void Args::parse(int argc, char **argv)
             case 'h':
                 help(stdout, argv[0]);
                 exit(0);
+                break;
+            case 'i':
+                interval_s = atoi(optarg);
                 break;
             case 'K':
                 show_tasks = Show_Tasks::USER;
@@ -1259,12 +1274,14 @@ struct Proc_Traverser {
     virtual ~Proc_Traverser() = default;
 
     virtual size_t next() = 0;
+    virtual void reset() = 0;
 };
 
 
 struct PID_Traverser : public Proc_Traverser {
     PID_Traverser(const vector<size_t> &pids);
     size_t next() override;
+    void reset() override;
 
     const vector<size_t> &pids;
     vector<size_t>::const_iterator i;
@@ -1281,10 +1298,15 @@ size_t PID_Traverser::next()
         return 0;
     return *i++;
 }
+void PID_Traverser::reset()
+{
+    i = pids.begin();
+}
 
 
 struct All_Traverser : public Proc_Traverser {
     size_t next() override;
+    void reset() override;
 
     ixxx::util::Directory proc{"/proc"};
 };
@@ -1308,6 +1330,10 @@ size_t All_Traverser::next()
 
     }
     return 0;
+}
+void All_Traverser::reset()
+{
+    rewinddir(proc);
 }
 struct Thread_Traverser {
     virtual ~Thread_Traverser() = default;
@@ -1390,6 +1416,50 @@ void Single_Traverser::set_pid(size_t pid)
     this->pid = pid;
 }
 
+
+struct Waiter {
+    Waiter(unsigned interval_s, unsigned count);
+    void forward();
+    bool done() const;
+    uint64_t wait();
+
+    private:
+        ixxx::util::FD fd;
+        unsigned count {0};
+};
+Waiter::Waiter(unsigned interval_s, unsigned count)
+    : count(count)
+{
+    if (count)
+        ++this->count;
+    if (interval_s) {
+        fd = ixxx::linux::timerfd_create(CLOCK_REALTIME, 0);
+        struct itimerspec spec = {
+            .it_interval = { .tv_sec = interval_s },
+            .it_value    = { .tv_sec = interval_s }
+        };
+        ixxx::linux::timerfd_settime(fd, 0, &spec,  0);
+    } else {
+        this->count = 2;
+    }
+}
+void Waiter::forward()
+{
+    if (count > 1)
+        --count;
+}
+bool Waiter::done() const
+{
+    return count == 1;
+}
+uint64_t Waiter::wait()
+{
+    uint64_t v = 0;
+    auto l = ixxx::posix::read(fd, &v, sizeof v);
+    (void)l;
+    assert(l == sizeof v);
+    return v;
+}
 
 
 struct UID_Filter {
@@ -1575,31 +1645,40 @@ int main(int argc, char **argv)
     if (args.show_header)
         print_header(stdout, args);
 
-    while (auto pid = trav->next()) {
+    Waiter w(args.interval_s, args.count);
+    if (w.done())
+        return 0;
+    for (;;) {
+        w.forward();
+        while (auto pid = trav->next()) {
 
-        if (!re_filter.matches(pid))
-            continue;
-        if (!uid_filter.matches(pid))
-            continue;
+            if (!re_filter.matches(pid))
+                continue;
+            if (!uid_filter.matches(pid))
+                continue;
 
-        for (auto &tid_trav : tid_travs) {
-            tid_trav->set_pid(pid);
-            while (auto tid = tid_trav->next()) {
+            for (auto &tid_trav : tid_travs) {
+                tid_trav->set_pid(pid);
+                while (auto tid = tid_trav->next()) {
 
-                proc.set_pid(pid, tid);
+                    proc.set_pid(pid, tid);
 
-                unsigned flags = proc.flags();
-                if (args.show_tasks == Show_Tasks::KERNEL
-                        && (flags & PF_KTHREAD) == 0)
-                    continue;
-                if (args.show_tasks == Show_Tasks::USER && flags & PF_KTHREAD)
-                    continue;
+                    unsigned flags = proc.flags();
+                    if (args.show_tasks == Show_Tasks::KERNEL
+                            && (flags & PF_KTHREAD) == 0)
+                        continue;
+                    if (args.show_tasks == Show_Tasks::USER && flags & PF_KTHREAD)
+                        continue;
 
-                print_row(stdout, proc, args);
+                    print_row(stdout, proc, args);
+                }
             }
         }
+        if (w.done())
+            break;
+        trav->reset();
+        w.wait();
     }
-
 
     return 0;
 }
