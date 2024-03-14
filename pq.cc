@@ -1059,7 +1059,7 @@ string_view Process::wchan()
 {
     misc = string_view(misc_arr.begin(), 0);
     read_proc("wchan", misc_arr, misc);
-    return string_view(misc.data(), misc.size());
+    return misc;
 }
 string_view Process::syscall()
 {
@@ -1081,7 +1081,7 @@ string_view Process::loginuid()
     misc = string_view(misc_arr.begin(), 0);
     read_proc("loginuid", misc_arr, misc);
 
-    return string_view(misc.data(), misc.size());
+    return misc;
 }
 string_view Process::slack()
 {
@@ -1091,7 +1091,7 @@ string_view Process::slack()
     if (!misc.empty())
         misc.remove_suffix(1);
 
-    return string_view(misc.data(), misc.size());
+    return misc;
 }
 string_view Process::stack()
 {
@@ -1116,7 +1116,7 @@ string_view Process::cmd()
     // string_view is read-only ...
     replace(misc_arr.begin(), misc_arr.begin() + misc.size(), '\0', ' ');
 
-    return string_view(&*misc.begin(), misc.size());
+    return misc;
 }
 string_view Process::user()
 {
