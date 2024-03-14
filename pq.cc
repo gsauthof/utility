@@ -228,7 +228,7 @@ static const char * const col2help[] = {
 static_assert(sizeof col2header / sizeof col2header[0] == sizeof col2help / sizeof col2help[0]);
 
 static const unsigned col2width[] = {
-     3 , // AFFINITY
+     5 , // AFFINITY
      3 , // CLS
     15 , // CMD
     15 , // COMM
@@ -420,6 +420,9 @@ struct Args {
 
 
     void parse(int argc, char **argv);
+
+    private:
+        void init_default_columns();
 };
 
 static void help(FILE *o, const char *argv0)
@@ -481,6 +484,16 @@ static void help_col(FILE *o)
         }
         fputc('\n', o);
     }
+}
+
+
+void Args::init_default_columns()
+{
+    auto const default_columns = { Column::PID, Column::TID, Column::PPID,
+            Column::AFFINITY, Column::CPU, Column::CLS, Column::RTPRIO,
+            Column::NICE, Column::SYSCALL, Column::RSS, Column::COMM };
+    columns = default_columns;
+    env_vars.resize(columns.size());
 }
 
 // Not using Boost Program Options because of its atrocious API
@@ -545,13 +558,28 @@ void Args::parse(int argc, char **argv)
             case 1:
                 switch (state) {
                     case IN_PID_LIST:
-                        pids.push_back(atol(optarg));
+                        {
+                            size_t pid;
+                            auto e = optarg + strlen(optarg);
+                            auto r = from_chars(optarg, e, pid);
+                            if (r.ec != std::errc() || r.ptr != e) {
+                                fprintf(stderr, "Invalid pid: %s\n", optarg);
+                                exit(1);
+                            }
+                            pids.push_back(pid);
+                        }
                         break;
                     case IN_COL_LIST:
                         if (strlen(optarg) > 4 && !memcmp(optarg, "env:", 4)) {
                             columns.push_back(Column::ENV);
                             env_vars.emplace_back(optarg + 4);
-                        } else {
+                        } else if (*optarg) {
+                            if (*optarg == '+') {
+                                ++optarg;
+                                init_default_columns();
+                                if (!*optarg)
+                                    continue;
+                            }
                             try {
                                 columns.push_back(str2column.at(string_view(optarg)));
                             } catch (const out_of_range &) {
@@ -559,6 +587,9 @@ void Args::parse(int argc, char **argv)
                                 exit(1);
                             }
                             env_vars.emplace_back();
+                        } else {
+                            fprintf(stderr, "empty column\n");
+                            exit(1);
                         }
                         if (columns.back() == Column::HELP) {
                             help_col(stdout);
@@ -574,6 +605,9 @@ void Args::parse(int argc, char **argv)
                             }
                         }
                         break;
+                    default:
+                        fprintf(stderr, "spurious positional argument: %s\n", optarg);
+                        exit(1);
                 }
                 break;
         }
@@ -586,12 +620,8 @@ void Args::parse(int argc, char **argv)
             all_pids = true;
         }
     }
-    if (columns.empty()) {
-        columns = { Column::PID, Column::TID, Column::PPID,
-            Column::AFFINITY, Column::CPU, Column::CLS, Column::RTPRIO,
-            Column::NICE, Column::SYSCALL, Column::RSS, Column::COMM };
-        env_vars.resize(columns.size());
-    }
+    if (columns.empty())
+        init_default_columns();
 }
 
 struct Process;
