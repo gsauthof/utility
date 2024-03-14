@@ -80,6 +80,7 @@ enum class Column {
     CWBYTE    , // /proc/$pid/io::cancelled_write_bytes
     CWD       , //
     ENV       , //
+    EPOCH     , // clock_gettime()
     EXE       , //
     FDS       , // ls /proc/$pid/fd | wc -l
     FDSIZE    , // /proc/$pid/status::FDSize
@@ -137,6 +138,7 @@ static const string_view col2header[] = {
     "cwbyte"    , // CWBYTE
     "cwd"       , // CWD
     "env"       , // ENV
+    "epoch"     , // EPOCH
     "exe"       , // EXE
     "fds"       , // FDS
     "fdsz"      , // FDSIZE
@@ -185,6 +187,7 @@ static const char * const col2help[] = {
     "write bytes, cancelled"       , // CWBYTE
     "current wording directory"       , // CWD
     "display an environment variable, e.g. env:MYID"       , // ENV
+    "unix time at traversal time, i.e. seconds since the epoch", // EPOCH
     "process' executable"       , // EXE
     "number of open files"       , // FDS
     "number of allocated file descriptor slots"       , // FDSIZE
@@ -233,6 +236,7 @@ static const unsigned col2width[] = {
     11 , // CWBYTE
     15 , // CWD
      8 , // ENV
+    10 , // EPOCH
     10 , // EXE
      3 , // FDS
      3 , // FDSIZE
@@ -277,6 +281,7 @@ static const unordered_map<string_view, Column> str2column = {
     { "tid"       , Column::TID       },
     { "comm"      , Column::COMM      },
     { "name"      , Column::COMM      },
+    { "epoch"     , Column::EPOCH     },
     { "exe"       , Column::EXE       },
     { "affinity"  , Column::AFFINITY  },
     { "aff"       , Column::AFFINITY  },
@@ -638,6 +643,7 @@ struct Process {
         unsigned flags();
 
         string_view comm();
+        string_view epoch();
         string_view exe();
         string_view wchan();
         string_view wchar();
@@ -700,6 +706,7 @@ Process_Attr process_attrs[] = {
     &Process::cwbyte    , // CWBYTE
     &Process::cwd       , // CWD
     nullptr             , // ENV
+    &Process::epoch     , // EXE
     &Process::exe       , // EXE
     &Process::fds       , // FDS
     &Process::fdsize    , // FDSIZE
@@ -1021,6 +1028,20 @@ string_view Process::cls()
             i = t;
     }
     return clss[i];
+}
+
+
+string_view Process::epoch()
+{
+    struct timespec ts;
+    ixxx::posix::clock_gettime(CLOCK_REALTIME, &ts);
+    auto r = std::to_chars(misc_arr.begin(), misc_arr.end(), ts.tv_sec);
+    assert(r.ec == std::errc());
+#if __cplusplus > 201703L
+    return string_view(misc_arr.data(), r.ptr);
+#else
+    return string_view(misc_arr.data(), r.ptr - misc_arr.data());
+#endif
 }
 
 
