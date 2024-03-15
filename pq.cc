@@ -92,6 +92,7 @@ enum class Column {
     MAJFLT    , // major page faults /proc/$pid/status
     MINFLT    , // minor page faults /proc/$pid/status
     NICE      , // /proc/$pid/stat
+    NS        , // UNIX epoch time in ns
     NUMAGID   , // NUMA group ID, /proc/$pid/status::Ngid
     NVCTX     , // non-voluntary context switches /proc/$pid/status
     PID       , //
@@ -150,6 +151,7 @@ static const string_view col2header[] = {
     "majflt"    , // MAJFLT
     "minflt"    , // MINFLT
     "nice"      , // NICE
+    "ns"        , // NS
     "nid"       , // NUMAGID
     "nvctx"     , // NVCTX
     "pid"       , // PID
@@ -199,6 +201,7 @@ static const char * const col2help[] = {
     "major page faults"    , // MAJFLT
     "minor page faults"    , // MINFLT
     "process niceness", // NICE
+    "nanoseconds since the epoch", // NS
     "NUMA group ID"       , // NUMAGID
     "non-voluntary context switches"     , // NVCTX
     "process ID"       , // PID
@@ -248,6 +251,7 @@ static const unsigned col2width[] = {
     10 , // MAJFLT
     10 , // MINFLT
      4 , // NICE
+    19 , // NS
      3 , // NUMAGID
     10 , // NVCTX
      7 , // PID
@@ -347,6 +351,7 @@ static const unordered_map<string_view, Column> str2column = {
     { "policy"    , Column::CLS       },
     { "sched"     , Column::CLS       },
     { "nice"      , Column::NICE      },
+    { "ns"        , Column::NS        },
     { "flags"     , Column::FLAGS     },
     { "pf"        , Column::FLAGS     }
 };
@@ -679,6 +684,7 @@ struct Process {
 
         string_view comm();
         string_view epoch();
+        string_view ns();
         string_view exe();
         string_view wchan();
         string_view wchar();
@@ -753,6 +759,7 @@ Process_Attr process_attrs[] = {
     &Process::majflt    , // MAJFLT
     &Process::minflt    , // MINFLT
     &Process::nice      , // NICE
+    &Process::ns        , // NS
     &Process::numagid   , // NUMAGID
     &Process::nvctx     , // NVCTX
     nullptr             , // PID
@@ -1072,6 +1079,30 @@ string_view Process::epoch()
     ixxx::posix::clock_gettime(CLOCK_REALTIME, &ts);
     auto r = std::to_chars(misc_arr.begin(), misc_arr.end(), ts.tv_sec);
     assert(r.ec == std::errc());
+#if __cplusplus > 201703L
+    return string_view(misc_arr.data(), r.ptr);
+#else
+    return string_view(misc_arr.data(), r.ptr - misc_arr.data());
+#endif
+}
+string_view Process::ns()
+{
+    static struct timespec old_ts;
+    struct timespec ts;
+    ixxx::posix::clock_gettime(CLOCK_REALTIME, &ts);
+    if (__builtin_expect_with_probability((ts.tv_sec == old_ts.tv_sec && ts.tv_nsec == old_ts.tv_nsec), 0, 0.999)) {
+        if (ts.tv_nsec == 1000000000lu - 1) {
+            ++ts.tv_sec;
+            ts.tv_nsec = 0;
+        } else {
+            ++ts.tv_nsec;
+        }
+    }
+    old_ts = ts;
+    auto r = std::to_chars(misc_arr.begin(), misc_arr.end(), ts.tv_sec);
+    assert(r.ec == std::errc());
+    sprintf(r.ptr, "%09lu", ts.tv_nsec);
+    r.ptr += 9;
 #if __cplusplus > 201703L
     return string_view(misc_arr.data(), r.ptr);
 #else
