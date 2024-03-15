@@ -417,6 +417,7 @@ struct Args {
 
     unsigned         interval_s       {0}                ;
     unsigned         count            {0}                ;
+    char             delim            {0}                ;
 
 
     void parse(int argc, char **argv);
@@ -433,6 +434,7 @@ static void help(FILE *o, const char *argv0)
             "Options:\n"
             "  -a         list all processes\n"
             "  -c N       repeat N times, if -i is set (default: unlimited)\n"
+            "  -d CHAR    delimit columns by character instead of whitespace\n"
             "  -e REGEX   filter by regular expression (match against COMM)\n"
             "  -h         display this help\n"
             "  -H         omit header row\n"
@@ -509,7 +511,7 @@ void Args::parse(int argc, char **argv)
     // '-' prefix: no reordering of arguments, non-option arguments are
     // returned as argument to the 1 option
     // ':': preceding opting takes a mandatory argument
-    while ((c = getopt(argc, argv, "-ae:c:Hhi:Kkoptu:")) != -1) {
+    while ((c = getopt(argc, argv, "-ae:c:d:Hhi:Kkoptu:")) != -1) {
         switch (c) {
             case '?':
                 fprintf(stderr, "unexpected option character: %c\n", optopt);
@@ -522,6 +524,9 @@ void Args::parse(int argc, char **argv)
                 count = atoi(optarg);
                 if (!interval_s)
                     interval_s = 1;
+                break;
+            case 'd':
+                delim = *optarg;
                 break;
             case 'e':
                 regex_str = optarg;
@@ -1612,20 +1617,25 @@ static void print_header(FILE *o, const Args &args)
     auto e = args.columns.end();
     if (i != e) {
         auto col = static_cast<unsigned>(*i);
-        lpad(col2width[col], col2header[col], o);
+        auto l = args.delim ? 0 : col2width[col];
+        lpad(l, col2header[col], o);
     }
     ++i;
+    auto c = args.delim ? args.delim : ' ';
     for (; i != e; ++i) {
         auto col = static_cast<unsigned>(*i);
-        fputc(' ', o);
-        lpad(col2width[col], col2header[col], o);
+        auto l = args.delim ? 0 : col2width[col];
+        fputc(c, o);
+        lpad(l, col2header[col], o);
     }
     fputc('\n', o);
 }
 
-static void print_column(FILE *o, Process &p, Column c, const string &env_var)
+static void print_column(FILE *o, Process &p, Column c, const string &env_var, char delim)
 {
     auto l = col2width[static_cast<unsigned>(c)];
+    if (delim)
+        l = 0;
     switch (c) {
         case Column::PID:
             fprintf(o, "%*zu", int(l), p.pid);
@@ -1656,14 +1666,15 @@ static void print_row(FILE *o, Process &proc, const Args &args)
 
     if (b != e) {
         auto col = *b;
-        print_column(o, proc, col, args.env_vars[i]);
+        print_column(o, proc, col, args.env_vars[i], args.delim);
         ++b;
         ++i;
     }
+    auto c = args.delim ? args.delim : ' ';
     for (; b != e; ++b, ++i) {
-        fputc(' ', o);
+        fputc(c, o);
         auto col = *b;
-        print_column(o, proc, col, args.env_vars[i]);
+        print_column(o, proc, col, args.env_vars[i], args.delim);
     }
     fputc('\n', o);
 }
@@ -1748,6 +1759,7 @@ int main(int argc, char **argv)
                 }
             }
         }
+        fflush(stdout);
         if (w.done())
             break;
         trav->reset();
