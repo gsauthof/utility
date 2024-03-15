@@ -1506,9 +1506,14 @@ bool Waiter::done() const
 uint64_t Waiter::wait()
 {
     uint64_t v = 0;
-    auto l = ixxx::posix::read(fd, &v, sizeof v);
-    (void)l;
-    assert(l == sizeof v);
+    try {
+        auto l = ixxx::posix::read(fd, &v, sizeof v);
+        (void)l;
+        assert(l == sizeof v);
+    } catch (const ixxx::read_error &e) {
+        if (e.code() != EINTR)
+            throw;
+    }
     return v;
 }
 
@@ -1664,8 +1669,26 @@ static void print_row(FILE *o, Process &proc, const Args &args)
 }
 
 
+static sig_atomic_t globally_interrupted;
+
+static void int_handler(int)
+{
+    globally_interrupted = 1;
+}
+
+static void setup_signal_handlers()
+{
+    struct sigaction sa = { 0 };
+    sa.sa_handler = int_handler;
+    for (auto i : { SIGINT, SIGTERM })
+        ixxx::posix::sigaction(i, &sa, 0);
+}
+
+
+
 int main(int argc, char **argv)
 {
+    setup_signal_handlers();
     Args args;
     try {
         args.parse(argc, argv);
@@ -1699,7 +1722,7 @@ int main(int argc, char **argv)
     Waiter w(args.interval_s, args.count);
     if (w.done())
         return 0;
-    for (;;) {
+    while (!globally_interrupted) {
         w.forward();
         while (auto pid = trav->next()) {
 
