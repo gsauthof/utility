@@ -26,6 +26,8 @@
 #include <string.h>      // strlen(), memcmp(), memchr(), ...
 #include <fcntl.h>       // O_RDONLY
 #include <unistd.h>      // getopt()
+#include <sys/epoll.h>   // epoll_event
+#include <sys/signalfd.h>    // signalfd_siginfo
 #include <assert.h>
 
 #include "syscalls.hh"
@@ -1510,8 +1512,9 @@ struct Waiter {
     bool done() const;
     uint64_t wait();
 
+    ixxx::util::FD fd;
+
     private:
-        ixxx::util::FD fd;
         unsigned count {0};
 };
 Waiter::Waiter(unsigned interval_s, unsigned count)
@@ -1711,26 +1714,27 @@ static void print_row(FILE *o, Process &proc, const Args &args)
 }
 
 
-static sig_atomic_t globally_interrupted;
 
-static void int_handler(int)
+static ixxx::util::FD add_signals(int efd)
 {
-    globally_interrupted = 1;
+    sigset_t sig_mask;
+    sigemptyset(&sig_mask);
+    sigaddset(&sig_mask, SIGINT);
+    sigaddset(&sig_mask, SIGTERM);
+    // sigaddset(&sig_mask, SIGQUIT);
+    ixxx::posix::sigprocmask(SIG_BLOCK, &sig_mask, nullptr);
+    ixxx::util::FD sfd { ixxx::linux::signalfd(-1, &sig_mask, SFD_CLOEXEC) };
+    struct epoll_event ev = {
+        .events = EPOLLIN,
+        .data = { .fd = sfd }
+    };
+    ixxx::linux::epoll_ctl(efd, EPOLL_CTL_ADD, sfd, &ev);
+    return sfd;
 }
-
-static void setup_signal_handlers()
-{
-    struct sigaction sa = { 0 };
-    sa.sa_handler = int_handler;
-    for (auto i : { SIGINT, SIGTERM })
-        ixxx::posix::sigaction(i, &sa, 0);
-}
-
 
 
 int main(int argc, char **argv)
 {
-    setup_signal_handlers();
     Args args;
     try {
         args.parse(argc, argv);
@@ -1738,6 +1742,38 @@ int main(int argc, char **argv)
         fprintf(stderr, "Error parsing arguments: %s\n", e.what());
         return 1;
     }
+
+
+    // make sure to check before any file-descriptors are getting opened ...
+    bool stdin_closed = (fcntl(0, F_GETFD) == -1);
+
+    ixxx::util::FD efd { ixxx::linux::epoll_create1(EPOLL_CLOEXEC) };
+
+    Waiter w(args.interval_s, args.count);
+    if (w.done())
+        return 0;
+
+    if (!stdin_closed) {
+        // i.e. allow a controlling process to terminate process
+        // after some time by simply closing stdin
+        // instead of having to send a SIGTERM or SIGINT
+        struct epoll_event ev = {
+            .events = EPOLLHUP,
+            .data = { .fd = 0 }
+        };
+        ixxx::linux::epoll_ctl(efd, EPOLL_CTL_ADD, 0, &ev);
+    }
+
+    auto sfd = add_signals(efd);
+
+    if (w.fd != -1) {
+        struct epoll_event ev = {
+            .events = EPOLLIN,
+            .data = { .fd = w.fd }
+        };
+        ixxx::linux::epoll_ctl(efd, EPOLL_CTL_ADD, w.fd, &ev);
+    }
+
 
     Process proc;
     proc.boot_time_s = args.boot_time_s;
@@ -1761,10 +1797,8 @@ int main(int argc, char **argv)
     if (args.show_header)
         print_header(stdout, args);
 
-    Waiter w(args.interval_s, args.count);
-    if (w.done())
-        return 0;
-    while (!globally_interrupted) {
+
+    for (;;) {
         w.forward();
         while (auto pid = trav->next()) {
 
@@ -1794,7 +1828,20 @@ int main(int argc, char **argv)
         if (w.done())
             break;
         trav->reset();
-        w.wait();
+
+        struct epoll_event evs[2];
+        int k = ixxx::linux::epoll_wait(efd, evs, sizeof evs / sizeof evs[0], -1);
+        for (int i = 0; i < k; ++i) {
+            int fd = evs[i].data.fd;
+            if (fd == sfd)
+                return 0;
+            if (!stdin_closed && fd == 0)
+                return 0;
+            if (fd == w.fd)
+                w.wait();
+            else
+                throw std::logic_error("unexpected epoll event");
+        }
     }
 
     return 0;
