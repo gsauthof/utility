@@ -32,7 +32,7 @@ class Cert_Error(Exception):
 
 # In[ ]:
 
-def check_not_expired(lines, now = datetime.datetime.utcnow()):
+def check_not_expired(lines, now = datetime.datetime.now(datetime.UTC)):
     exp = re.compile("expires `([^']+) UTC'")
     thresh = now + datetime.timedelta(days=20)
     for l in lines:
