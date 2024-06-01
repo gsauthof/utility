@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 
-# coding: utf-8
 
-# In[ ]:
 
 # 2016, Georg Sauthoff <mail@georg.so>, GPLv3+
 
 
-# In[ ]:
 
 import sys
 import subprocess
@@ -16,13 +13,11 @@ import datetime
 import logging
 
 
-# In[ ]:
 
 logging.basicConfig()
 log = logging.getLogger(__name__)
 
 
-# In[ ]:
 
 class Cert_Error(Exception):
     def __init__(self, msg, output):
@@ -30,7 +25,6 @@ class Cert_Error(Exception):
         self.output = output
 
 
-# In[ ]:
 
 def check_not_expired(lines, now = datetime.datetime.now(datetime.UTC)):
     exp = re.compile("expires `([^']+) UTC'")
@@ -46,7 +40,6 @@ def check_not_expired(lines, now = datetime.datetime.now(datetime.UTC)):
                 raise ValueError('cert expires in less than 20 days')
 
 
-# In[ ]:
 
 def check_cert(host, port, proto=None):
     start = []
@@ -62,7 +55,6 @@ def check_cert(host, port, proto=None):
         raise Cert_Error(str(e), t)
 
 
-# In[ ]:
 
 def check_certs(args):
     errors = 0
@@ -85,7 +77,6 @@ def check_certs(args):
     return errors
 
 
-# In[ ]:
 
 def main(argv):
     if '-h' in argv or '--help' in argv:
@@ -95,74 +86,8 @@ def main(argv):
     return int(errors>0)
 
 
-# In[ ]:
 
 if __name__ == '__main__':
-    if 'IPython' in sys.modules:
-        pass
-    else:
-        sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv))
 
 
-# In[ ]:
-
-# Start of Jupyter notebook scratch area
-#
-# export script via:
-#
-# { echo '#!/usr/bin/env python3'; ipython3 nbconvert --to script check-cert --stdout | sed '/^####/,$s/^/# #/'  } > check-cert.py && chmod 755 check-cert.py
-#
-# ##### everything below this mark is commented out on export
-# #
-# #
-# ## In[ ]:
-# #
-# #sorted([ x for x in sys.modules.keys() if x[0] == 'i' or x[0] == 'I' ])
-# #
-# #
-# ## In[ ]:
-# #
-# #'IPython' in sys.modules
-# #
-# #
-# ## In[ ]:
-# #
-# #check_certs(['georg.so_25_smtp'])
-# #
-# #
-# ## In[ ]:
-# #
-# ## as of 2016-10-30 fails because of CACert CA not being available or cert being expired
-# #check_certs(['laforge.gnumonks.org_443'])
-# #
-# #
-# ## In[ ]:
-# #
-# #check_certs(['georg.so_25_smtp', 'georg.so_993', 'escher.lru.li_993', 'gms.tf_443'])
-# #
-# #
-# ## In[ ]:
-# #
-# #check_not_expired(lines, now = datetime.datetime(2017, 1, 26, 20, 10, 10))
-# #
-# #
-# ## In[ ]:
-# #
-# #s = subprocess.check_output(['gnutls-cli', 'georg.so', '--port', '443', '--ocsp'],
-# #                        stdin=subprocess.DEVNULL)
-# #
-# #
-# ## In[ ]:
-# #
-# #lines = s.decode('utf8').splitlines()
-# #
-# #
-# ## In[ ]:
-# #
-# #print(s)
-# #
-# #
-# ## In[ ]:
-# #
-# #log.error('foo')
-# #
