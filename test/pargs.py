@@ -114,7 +114,7 @@ def test_envp():
   assert ls[0] == '''{}: {} 1 0'''.format(c.pid, snooze)
   assert ls[1].startswith('envp[0]: ')
   assert ls[-1].startswith('envp[{}]: '.format(len(ls)-2))
-  assert re.search('\nenvp\[[0-9]+\]: PATH={}\n'.format(os.environ['PATH']), p.stdout)
+  assert re.search('\nenvp\\[[0-9]+\\]: PATH={}\n'.format(os.environ['PATH']), p.stdout)
   c.wait()
 
 @pytest.mark.parametrize("opts", [ ['-ea'], ['-a', '-e'] ])
@@ -132,7 +132,7 @@ def test_argv_envp(opts):
   assert ls[4] == ''
   assert ls[5].startswith('envp[0]: ')
   assert ls[-1].startswith('envp[{}]: '.format(len(ls) - 2 - 3 - 1))
-  assert re.search('\nenvp\[[0-9]+\]: PATH={}\n'.format(os.environ['PATH']), p.stdout)
+  assert re.search('\nenvp\\[[0-9]+\\]: PATH={}\n'.format(os.environ['PATH']), p.stdout)
   c.wait()
 
 def test_cmdline():
@@ -307,7 +307,7 @@ def test_hwcap():
   ls = p.stdout.splitlines()
   l = [x for x in ls if x.startswith('AT_HWCAP')][0]
   assert re.match(
-      'AT_HWCAP         0x[0-9a-f]{16} [0-9a-z]+( \| [0-9a-z]+)*', l)
+      'AT_HWCAP         0x[0-9a-f]{16} [0-9a-z]+( \\| [0-9a-z]+)*', l)
   c.wait()
 
 @pytest.fixture(scope='module', params=[snooze, snooze32])

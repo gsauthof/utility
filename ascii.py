@@ -135,7 +135,7 @@ def test_default_table():
    EM    9    Y    y  11001
    SS    :    Z    z  11010
   ESC    ;    [    {  11011
-   FS    <    \    |  11100
+   FS    <    \\    |  11100
    GS    =    ]    }  11101
    RS    >    ^    ~  11110
    US    ?    _  DEL  11111
@@ -157,7 +157,7 @@ def test_8col_table():
    HT   EM    )    9    I    Y    i    y  1001
    LF   SS    *    :    J    Z    j    z  1010
    VT  ESC    +    ;    K    [    k    {  1011
-   FF   FS    ,    <    L    \    l    |  1100
+   FF   FS    ,    <    L    \\    l    |  1100
    CR   GS    -    =    M    ]    m    }  1101
    SO   RS    .    >    N    ^    n    ~  1110
    SI   US    /    ?    O    _    o  DEL  1111
