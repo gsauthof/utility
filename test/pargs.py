@@ -228,7 +228,7 @@ def test_no_such_pid():
 @skip_if_isolated
 @pytest.mark.parametrize("opts", [ [ '-e'], ['-x'] ])
 def test_no_perm(opts):
-  q = subprocess.run(['pgrep', '-u', 'root', '^writeback$'],
+  q = subprocess.run(['pgrep', '-u', 'root', '^kthreadd$'],
       stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True,
       check=True)
   pid = int(q.stdout)
