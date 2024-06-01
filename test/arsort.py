@@ -36,17 +36,25 @@ class Basic(unittest.TestCase):
             stderr=subprocess.STDOUT)
 
   def test_sort(self):
-    self.create_ar('zoo', '''void zoo()
+    self.create_ar('zoo', '''
+#include <stdio.h>
+void yar();
+void zoo()
 {
   puts("zoo");
   yar();
 }''')
-    self.create_ar('yar', '''void yar()
+    self.create_ar('yar', '''
+#include <stdio.h>
+void xaz();
+void yar()
 {
   puts("yar");
   xaz();
 }''')
-    self.create_ar('xaz', '''void xaz()
+    self.create_ar('xaz', '''
+#include <stdio.h>
+void xaz()
 {
   puts("xaz");
 }''')
