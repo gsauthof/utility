@@ -32,7 +32,7 @@ def check_not_expired(lines, now = datetime.datetime.now(datetime.UTC)):
     for l in lines:
         m = exp.search(l)
         if m:
-            d = datetime.datetime.strptime(m.group(1), '%Y-%m-%d %H:%M:%S')
+            d = datetime.datetime.strptime(m.group(1), '%Y-%m-%d %H:%M:%S').replace(tzinfo=datetime.timezone.utc)
             if d <= now:
                 # should not happen, as gnutls-cli should exit with code != 0
                 raise ValueError('cert already expired')
