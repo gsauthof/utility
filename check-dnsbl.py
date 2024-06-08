@@ -21,8 +21,6 @@ ipv6_incapable = { 'bl.0spam.org', 'rbl.0spam.org', 'nbl.0spam.org' }
 
 default_blacklists = [
         ('zen.spamhaus.org'             , 'Spamhaus SBL, XBL and PBL'         , 'https://www.spamhaus.org'        ),
-        ('dnsbl.sorbs.net'              , 'SORBS aggregated'                  , 'http://www.sorbs.net'            ),
-        ('safe.dnsbl.sorbs.net'         , "'safe' subset of SORBS aggregated" , 'http://www.sorbs.net'            ),
         ('ix.dnsbl.manitu.net'          , 'Heise iX NiX Spam'                 , 'https://www.nixspam.net'         ),
         ('truncate.gbudb.net'           , 'Exclusively Spam/Malware'          , 'http://www.gbudb.com/truncate/'  ),
         # accepts de-listing payments, overblocking
@@ -174,7 +172,6 @@ garbage_blacklists = [
 
 default_domain_blacklists = [
         ('dbl.spamhaus.org', 'Spamhaus DBL', 'https://www.spamhaus.org/dbl/'),
-        ('rhsbl.sorbs.net' , 'SORBS DBL'   , 'http://www.sorbs.net'         ),
         ('hostkarma.junkemailfilter.com', 'Hostkarma DBL', 'https://wiki.junkemailfilter.com/index.php/Spam_DNS_Lists#Name_Based_Lookups'),
         ('dbl.0spam.org'   , '0spam URLBL' , 'https://0spam.org'            ),
         ('dbl.nordspam.com', 'NordPM URIBL', 'https://www.nordspam.com/usage/'),
