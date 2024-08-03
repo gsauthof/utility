@@ -94,7 +94,6 @@ default_blacklists = [
         ('weak.dnsbl.rediris.es'        , 'traps and aggregation with other lists', 'https://www.rediris.es/irisrbl/'),
         ('strong.dnsbl.rediris.es'      , 'traps and aggregation with other lists', 'https://www.rediris.es/irisrbl/'),
         ('netblockbl.spamgrouper.to'    , 'bad networks'                      , 'http://www.spamgrouper.to'       ),
-        ('rbl.lugh.ch'                  , 'traps and suspicious login attempts', 'https://lugh.ch/pages/dnsbl.html'),
         ('singular.ttk.pte.hu'          , 'traps, stats and user reports'     , 'https://singular.ttk.pte.hu/en/' ),
 
         ('bl.nosolicitado.org'          , 'whatever'                          , 'https://www.nosolicitado.org'    ),
