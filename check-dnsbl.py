@@ -93,7 +93,6 @@ default_blacklists = [
         # Spanish academic and research network
         ('weak.dnsbl.rediris.es'        , 'traps and aggregation with other lists', 'https://www.rediris.es/irisrbl/'),
         ('strong.dnsbl.rediris.es'      , 'traps and aggregation with other lists', 'https://www.rediris.es/irisrbl/'),
-        ('netblockbl.spamgrouper.to'    , 'bad networks'                      , 'http://www.spamgrouper.to'       ),
         ('singular.ttk.pte.hu'          , 'traps, stats and user reports'     , 'https://singular.ttk.pte.hu/en/' ),
 
         ('bl.nosolicitado.org'          , 'whatever'                          , 'https://www.nosolicitado.org'    ),
@@ -157,6 +156,9 @@ garbage_blacklists = [
         ('vote.drbl.gremlin.ru'         , 'distributed blacklist'            ),
         # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
         ('work.drbl.gremlin.ru'         , 'distributed blacklist aggregation'),
+        # unclear what the listing criteria are, no information given on listed entries,
+        # unprofessional website in general
+        ('netblockbl.spamgrouper.to'    , 'bad networks'                      , 'http://www.spamgrouper.to'       ),
         ]
 
 
