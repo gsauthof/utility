@@ -21,7 +21,6 @@ ipv6_incapable = { 'bl.0spam.org', 'rbl.0spam.org', 'nbl.0spam.org' }
 
 default_blacklists = [
         ('zen.spamhaus.org'             , 'Spamhaus SBL, XBL and PBL'         , 'https://www.spamhaus.org'        ),
-        ('ix.dnsbl.manitu.net'          , 'Heise iX NiX Spam'                 , 'https://www.nixspam.net'         ),
         ('truncate.gbudb.net'           , 'Exclusively Spam/Malware'          , 'http://www.gbudb.com/truncate/'  ),
         # accepts de-listing payments, overblocking
         # https://en.wikipedia.org/w/index.php?title=Comparison_of_DNS_blacklists&oldid=1169665628#Suspect_RBL_providers
