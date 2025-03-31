@@ -60,7 +60,6 @@ default_blacklists = [
         ('bogons.cymru.com'             , 'unallocated netblocks'             , 'https://www.team-cymru.com/bogon-networks'),
         ('combined.rbl.msrbl.net'       , 'traps, virus scanners etc.'        , 'https://www.msrbl.com'           ),
         ('dnsbl.justspam.org'           , 'whatever'                          , 'http://www.justspam.org/usage'   ),
-        ('dnsbl.madavi.de'              , 'website comment spam'              , 'https://www.madavi.de/madavibl/' ),
         ('dnsbl.rv-soft.info'           , 'whatever from czech repuplic'      , 'http://dnsbl.rv-soft.info'       ),
         ('dnsbl.zapbl.net'              , 'traps and admin choice'            , 'https://zapbl.net/using'         ),
         # doesn't list 127.0.0.2 RFC 5782 mandatory test entry
