@@ -16,10 +16,13 @@ def map_file(filename):
 
 def main(qfilename, filename):
   q, t = (map_file(x) for x in (qfilename, filename))
-  i = t.find(q)
-  if i == -1:
-    return 1
-  print(i)
+  off = 0
+  while True:
+      i = t.find(q, off)
+      if i == -1:
+        return 1
+      print(i)
+      off = i + len(q)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1], sys.argv[2]))
