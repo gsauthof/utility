@@ -87,6 +87,8 @@ This repository contains a collection of command line utilities.
     -- sync USB drive cache, power down and remove device
 - reset-tmux
     -- reset a tmux session after binary data escaped to the console
+- rtcdelta
+    -- compute difference between RTC and system clock
 - ripdvd
     -- copy each DVD track into a nicely named .vob file
 - [searchb](#searchb)

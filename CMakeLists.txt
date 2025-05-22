@@ -135,6 +135,9 @@ add_executable(hcheck hcheck.c)
 target_link_libraries(hcheck PRIVATE CURL::libcurl)
 
 
+add_executable(rtcdelta rtcdelta.c)
+
+
 add_custom_target(check-old
   COMMAND env src_dir=${CMAKE_CURRENT_SOURCE_DIR}
                       ${CMAKE_CURRENT_SOURCE_DIR}/test/main.py
