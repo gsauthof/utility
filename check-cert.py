@@ -45,7 +45,7 @@ def check_cert(host, port, proto=None):
     start = []
     if proto:
         start = [ '--starttls-proto', proto]
-    s = subprocess.check_output(['gnutls-cli', host, '--port', port, '--ocsp'] + start,
+    s = subprocess.check_output(['gnutls-cli', host, '--port', port] + start,
                         stdin=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     t = s.decode('utf8')
     lines = t.splitlines()
