@@ -56,7 +56,7 @@ def measure_one(url, session, auth, args, f):
     xs.extend(d['GlobalMeasure'][n] for n in ('Voltage', 'Frequency'))
 
     for k in args.sockets:
-        xs.extend(d['Outputs'][k-1][n] for n in ('State', 'Current', 'PowerFactor'))
+        xs.extend(d['Outputs'][k-1][n] for n in ('State', 'Current', 'Load', 'PowerFactor', 'Energy'))
 
     print(','.join(xs), file=f)
 
@@ -67,7 +67,7 @@ def measure(url, session, auth, args, f):
     hs = [ 's', 'name', 'V', 'Hz' ]
     for k in args.sockets:
         # pf == true power factor -> https://en.wikipedia.org/wiki/Power_factor
-        hs.extend(f'{n}_{k}' for n in ('state', 'mA', 'pf'))
+        hs.extend(f'{n}_{k}' for n in ('state', 'mA', 'W', 'pf', 'Wh'))
     print(','.join(hs), file=f)
 
     while i != args.n:
