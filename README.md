@@ -2,7 +2,7 @@
 
 This repository contains a collection of command line utilities.
 
-- [adjtimex](#adjtime)
+- [adjtimex](#adjtimex)
     -- list some clock related system settings
 - [addrof](#addrofdevof)
     -- list IP address(es) of network devices
