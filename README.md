@@ -143,6 +143,18 @@ PPS frequency discipline (STA_PPSFREQ): disabled
 PPS time discipline (STA_PPSTIME): disabled
 ```
 
+It also allows to explicitly set the `STA_UNSYNC` bit (`-u`)
+which may be useful to verify whether a daemon sets it again and
+to speed up restoring the unsync state after a daemon terminates.
+
+The `STA_UNSYNC` status bit and the `maxerror` fields are
+maintained by an NTP/PTP daemon.
+When the `STA_UNSYNC` bit is absent the kernel periodically syncs
+the RTC.
+If userspace doesn't update the status/maxerror periodically,
+the kernel increases maxerror over time and sets again `STA_UNSYNC`,
+when maxerror grows too large.
+
 
 ## Addrof/Devof
 
