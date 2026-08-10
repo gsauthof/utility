@@ -23,14 +23,14 @@ result_header    = 'x-hc-result'
 signature_header = 'x-hc-signature'
 loop_header      = 'x-hc-loop'
 hc_result_re     = re.compile(result_header    + ':', re.IGNORECASE)
-hc_sig_re        = re.compile(signature_header + ':', re.IGNORECASE)
+hc_sig_re        = re.compile(signature_header + ': [0-9a-f]+\r?$', re.IGNORECASE)
 hc_loop_re       = re.compile(loop_header      + ':', re.IGNORECASE)
 
 
 def verify(vkey, delta, s):
     try:
         m = vkey.verify(s, encoder=nacl.encoding.HexEncoder)
-    except nacl.exceptions.BadSignatureError:
+    except:
         return False
     now = int(time.time())
     ts  = int(m)
